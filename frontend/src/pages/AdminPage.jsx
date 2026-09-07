@@ -51,6 +51,7 @@ export default function AdminPage({ language, onLanguageChange, onLogout, t }) {
         language={language}
         onLanguageChange={onLanguageChange}
         onLogout={onLogout}
+        centreName={centre?.name}
         t={t}
       />
       <main className="mx-auto max-w-290 px-4 py-10 sm:px-7 lg:py-16">

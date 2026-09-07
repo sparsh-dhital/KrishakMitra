@@ -1,4 +1,6 @@
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const API_URL = (
+  import.meta.env.VITE_API_URL || "http://127.0.0.1:8000"
+).replace(/\/$/, "");
 
 async function request(path, options = {}) {
   let response;
@@ -12,12 +14,13 @@ async function request(path, options = {}) {
     });
   } catch {
     throw new Error(
-      `Cannot connect to the backend at ${API_URL}. Start FastAPI and check the API URL.`,
+      `Cannot connect to the backend at ${API_URL}${path}. Start FastAPI and check the API URL.`,
     );
   }
   const body = await response.json().catch(() => null);
   if (!response.ok) {
-    const detail = body?.detail || `Request failed (${response.status})`;
+    const detail =
+      body?.detail || `Backend request failed (${response.status})`;
     throw new Error(detail);
   }
   return body;
@@ -26,6 +29,7 @@ async function request(path, options = {}) {
 export const api = {
   getCentres: () => request("/centres"),
   getCrops: () => request("/crops"),
+  getFarmer: (farmerId) => request(`/farmers/${farmerId}`),
   getSlots: (centreId, date) =>
     request(
       `/slots${

@@ -17,6 +17,7 @@ export default function FarmerPage({
 }) {
   const [tab, setTab] = useState("home");
   const [centres, setCentres] = useState([]);
+  const [farmer, setFarmer] = useState(null);
   const [crops, setCrops] = useState([]);
   const [selectedCrop, setSelectedCrop] = useState("");
   const [slots, setSlots] = useState([]);
@@ -48,6 +49,13 @@ export default function FarmerPage({
           current || booking?.booking?.crop_id || cropData?.[0]?.id || "",
       );
       setSelectedCentre((current) => current || centreData?.[0]?.id || "");
+      if (config.farmerId) {
+        try {
+          setFarmer(await api.getFarmer(config.farmerId));
+        } catch (profileError) {
+          setError(profileError.message);
+        }
+      }
     } catch (requestError) {
       setError(requestError.message);
     } finally {
@@ -115,7 +123,7 @@ export default function FarmerPage({
       !isUuid(selectedCrop)
     ) {
       setError(
-        "VITE_FARMER_ID must be a real farmer UUID, and you must select a valid crop from the database.",
+        "Your farmer profile is not available in the database. Set VITE_FARMER_ID to an existing farmers.id UUID before booking.",
       );
       return;
     }
@@ -146,6 +154,7 @@ export default function FarmerPage({
         language={language}
         onLanguageChange={onLanguageChange}
         onLogout={onLogout}
+        centreName={centre?.name}
         t={t}
       />
       <main className="mx-auto max-w-290 px-4 py-10 sm:px-7 lg:py-16">
@@ -153,7 +162,9 @@ export default function FarmerPage({
           <div>
             <Eyebrow>{t.farmerPortal}</Eyebrow>
             <h1 className="font-display text-3xl font-bold tracking-tight sm:text-[34px]">
-              {t.greetingFarmer}
+              {farmer?.name
+                ? `${t.greetingFarmer} ${farmer.name}.`
+                : t.greetingFarmer}
             </h1>
             <p className="mt-2 text-sm text-muted">{t.journeyIntro}</p>
           </div>
@@ -218,7 +229,12 @@ export default function FarmerPage({
               />
             )}
             {tab === "queue" && (
-              <Queue t={t} booking={booking} queueEntry={queueEntry} />
+              <Queue
+                t={t}
+                booking={booking}
+                queueEntry={queueEntry}
+                centre={centre}
+              />
             )}
             {tab === "status" && (
               <Status
@@ -504,10 +520,10 @@ function BookingForm({
     </section>
   );
 }
-function Queue({ t, booking, queueEntry }) {
+function Queue({ t, booking, queueEntry, centre }) {
   return (
     <section>
-      <Eyebrow>RAJASTHAN MANDI CENTRE</Eyebrow>
+      <Eyebrow>{centre?.name || ""}</Eyebrow>
       <h2 className="font-display text-2xl font-bold">{t.liveQueue}</h2>
       <Panel className="mt-5">
         <p className="text-sm text-muted">

@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:all": "concurrently -k -n API,WEB -c blue,green \"cd ../backend && uvicorn app.main:app --reload --host 127.0.0.1 --port 8000\" \"npm run dev -- --host 127.0.0.1 --port 5173\"",
     "build": "vite build",
     "preview": "vite preview"
   },
@@ -15,6 +16,7 @@
   "devDependencies": {
     "@tailwindcss/vite": "latest",
     "@vitejs/plugin-react": "latest",
+    "concurrently": "latest",
     "tailwindcss": "latest",
     "vite": "latest"
   }

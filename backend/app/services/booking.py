@@ -12,6 +12,18 @@ def create_booking(
     crop_id: UUID,
     estimated_quantity: float,
 ):
+    farmer = (
+        supabase.table("farmers").select("id").eq("id", str(farmer_id)).execute().data
+    )
+    if not farmer:
+        raise HTTPException(status_code=404, detail="Farmer profile not found")
+
+    crop = (
+        supabase.table("crops").select("id").eq("id", str(crop_id)).execute().data
+    )
+    if not crop:
+        raise HTTPException(status_code=404, detail="Crop not found")
+
     slot = (
         supabase
         .table("slots")

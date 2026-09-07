@@ -69,7 +69,14 @@ export function Brand({ dark = false }) {
   );
 }
 
-export function Header({ admin, language, onLanguageChange, onLogout, t }) {
+export function Header({
+  admin,
+  language,
+  onLanguageChange,
+  onLogout,
+  centreName,
+  t,
+}) {
   return (
     <header
       className={`flex h-19 items-center justify-between border-b border-line px-4 sm:px-7 lg:px-[max(28px,calc((100%-1160px)/2))] ${admin ? "bg-forest text-white" : "bg-white"}`}
@@ -81,7 +88,7 @@ export function Header({ admin, language, onLanguageChange, onLogout, t }) {
             <div className="text-[9px] font-bold tracking-[1.3px] text-emerald-200">
               {t.adminPortal}
             </div>
-            <div className="text-xs font-semibold">Rajasthan Mandi Centre</div>
+            <div className="text-xs font-semibold">{centreName || ""}</div>
           </div>
         )}
         <LanguagePicker language={language} onChange={onLanguageChange} />

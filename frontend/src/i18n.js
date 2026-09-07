@@ -15,7 +15,7 @@ export const languageOptions = [
 
 const english = {
   farmerPortal: "FARMER PORTAL / KISAN SEVA",
-  greetingFarmer: "Good morning, Arjun.",
+  greetingFarmer: "Good morning,",
   journeyIntro: "Your procurement journey, all in one place.",
   adminView: "Admin view",
   liveToday: "LIVE TODAY",
@@ -102,7 +102,7 @@ const translations = {
   hi: {
     ...english,
     farmerPortal: "किसान पोर्टल / किसान सेवा",
-    greetingFarmer: "सुप्रभात, अर्जुन।",
+    greetingFarmer: "सुप्रभात,",
     journeyIntro: "आपकी खरीद यात्रा, एक ही जगह।",
     adminView: "प्रशासन दृश्य",
     liveToday: "आज लाइव",
@@ -183,7 +183,7 @@ const translations = {
   te: {
     ...english,
     farmerPortal: "రైతు పోర్టల్ / కిసాన్ సేవ",
-    greetingFarmer: "శుభోదయం, అర్జున్.",
+    greetingFarmer: "శుభోదయం,",
     journeyIntro: "మీ కొనుగోలు ప్రయాణం మొత్తం ఒకే చోట.",
     adminView: "అడ్మిన్ వీక్షణ",
     liveToday: "ఈ రోజు లైవ్",
