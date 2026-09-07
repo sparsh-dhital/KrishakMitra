@@ -69,7 +69,7 @@ export function Brand({ dark = false }) {
   );
 }
 
-export function Header({ admin, language, onLanguageChange, onSwitch, t }) {
+export function Header({ admin, language, onLanguageChange, onLogout, t }) {
   return (
     <header
       className={`flex h-19 items-center justify-between border-b border-line px-4 sm:px-7 lg:px-[max(28px,calc((100%-1160px)/2))] ${admin ? "bg-forest text-white" : "bg-white"}`}
@@ -85,6 +85,12 @@ export function Header({ admin, language, onLanguageChange, onSwitch, t }) {
           </div>
         )}
         <LanguagePicker language={language} onChange={onLanguageChange} />
+        <button
+          onClick={onLogout}
+          className={`rounded-md border px-3 py-2 text-xs font-semibold ${admin ? "border-emerald-700 text-emerald-100" : "border-line text-muted"}`}
+        >
+          {t.logout}
+        </button>
         <span
           className={`grid h-9 w-9 place-items-center rounded-full text-xs font-bold ${admin ? "bg-orange-200 text-forest" : "bg-emerald-50 text-emerald-700"}`}
         >
@@ -93,6 +99,12 @@ export function Header({ admin, language, onLanguageChange, onSwitch, t }) {
       </div>
       <div className="sm:hidden">
         <LanguagePicker language={language} onChange={onLanguageChange} />
+        <button
+          onClick={onLogout}
+          className="mt-2 rounded-md border border-line px-3 py-2 text-xs font-semibold text-muted"
+        >
+          {t.logout}
+        </button>
       </div>
     </header>
   );
@@ -107,4 +119,3 @@ export function Panel({ children, className = "" }) {
     </div>
   );
 }
-

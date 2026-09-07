@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { api } from "../services/api";
 import { Badge, Header, Panel } from "../components/ui";
 
-export default function AdminPage({ language, onLanguageChange, onFarmer, t }) {
+export default function AdminPage({ language, onLanguageChange, onLogout, t }) {
   const [centre, setCentre] = useState(null);
   const [booking, setBooking] = useState(() =>
     JSON.parse(localStorage.getItem("krishak-mitra-booking") || "null"),
@@ -50,6 +50,7 @@ export default function AdminPage({ language, onLanguageChange, onFarmer, t }) {
         admin
         language={language}
         onLanguageChange={onLanguageChange}
+        onLogout={onLogout}
         t={t}
       />
       <main className="mx-auto max-w-290 px-4 py-10 sm:px-7 lg:py-16">
@@ -63,12 +64,6 @@ export default function AdminPage({ language, onLanguageChange, onFarmer, t }) {
             </h1>
             <p className="mt-2 text-sm text-muted">{t.adminIntro}</p>
           </div>
-          <button
-            onClick={onFarmer}
-            className="hidden rounded-md border border-line bg-white px-4 py-3 text-xs font-semibold text-emerald-700 sm:block"
-          >
-            ← {t.farmerView}
-          </button>
         </div>
         {error && (
           <div className="mt-6 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">

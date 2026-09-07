@@ -9,7 +9,12 @@ const navItems = (t) => [
   ["status", "✓", t.myStatus],
 ];
 
-export default function FarmerPage({ language, onLanguageChange, onAdmin, t }) {
+export default function FarmerPage({
+  language,
+  onLanguageChange,
+  onLogout,
+  t,
+}) {
   const [tab, setTab] = useState("home");
   const [centres, setCentres] = useState([]);
   const [crops, setCrops] = useState([]);
@@ -137,7 +142,12 @@ export default function FarmerPage({ language, onLanguageChange, onAdmin, t }) {
   const centre = centres[0];
   return (
     <div className="min-h-screen bg-mist">
-      <Header language={language} onLanguageChange={onLanguageChange} t={t} />
+      <Header
+        language={language}
+        onLanguageChange={onLanguageChange}
+        onLogout={onLogout}
+        t={t}
+      />
       <main className="mx-auto max-w-290 px-4 py-10 sm:px-7 lg:py-16">
         <div className="flex items-start justify-between gap-5">
           <div>
@@ -147,13 +157,6 @@ export default function FarmerPage({ language, onLanguageChange, onAdmin, t }) {
             </h1>
             <p className="mt-2 text-sm text-muted">{t.journeyIntro}</p>
           </div>
-          <button
-            onClick={onAdmin}
-            className="hidden rounded-md border border-line bg-white px-4 py-3 text-xs font-semibold text-emerald-700 sm:block"
-          >
-            <Icon>▣</Icon>
-            {t.adminView}
-          </button>
         </div>
         {error && (
           <div className="mt-6 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">

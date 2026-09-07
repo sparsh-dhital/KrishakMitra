@@ -94,6 +94,7 @@ const english = {
   estimated: "Estimated",
   slot: "Slot",
   bookingDate: "Booking date",
+  logout: "Log out",
 };
 
 const translations = {
@@ -177,6 +178,7 @@ const translations = {
     estimated: "अनुमानित",
     slot: "स्लॉट",
     bookingDate: "बुकिंग तारीख",
+    logout: "लॉग आउट",
   },
   te: {
     ...english,
@@ -257,6 +259,7 @@ const translations = {
     estimated: "అంచనా",
     slot: "స్లాట్",
     bookingDate: "బుకింగ్ తేదీ",
+    logout: "లాగ్ అవుట్",
   },
 };
 

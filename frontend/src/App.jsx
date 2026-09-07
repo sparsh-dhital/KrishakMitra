@@ -39,14 +39,14 @@ export default function App() {
     <FarmerPage
       language={language}
       onLanguageChange={changeLanguage}
-      onAdmin={logout}
+      onLogout={logout}
       t={t}
     />
   ) : (
     <AdminPage
       language={language}
       onLanguageChange={changeLanguage}
-      onFarmer={logout}
+      onLogout={logout}
       t={t}
     />
   );
