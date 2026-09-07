@@ -4,28 +4,49 @@
 @theme {
   --font-display: "Space Grotesk", ui-sans-serif, sans-serif;
   --font-body: "DM Sans", ui-sans-serif, sans-serif;
-  --color-forest: #173f3a;
-  --color-forest-dark: #123733;
-  --color-coral: #ed7348;
-  --color-mist: #f6f8f4;
-  --color-line: #dce5df;
-  --color-muted: #71807b;
+  
+  --color-forest: #022c22;
+  --color-forest-dark: #064e3b;
+  --color-brand: #16a34a;
+  --color-brand-hover: #15803d;
+  --color-cream: #f8fafc;
+  --color-line: #cbd5e1;
+  --color-muted: #475569;
+}
+
+/* Enable smooth scrolling globally */
+html {
+  scroll-behavior: smooth;
 }
 
 :root {
   font-family: var(--font-body);
   color: var(--color-forest);
-  background: var(--color-mist);
+  background: var(--color-cream);
 }
+
 body {
   margin: 0;
   min-width: 320px;
+  -webkit-font-smoothing: antialiased;
 }
-button,
-input,
-select {
+
+button, input, select {
   font: inherit;
 }
-button {
-  cursor: pointer;
+
+.glass-panel {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: 0 10px 40px -10px rgba(0,0,0,0.1);
+}
+
+.glass-panel-dark {
+  background: rgba(2, 44, 34, 0.90);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
 }

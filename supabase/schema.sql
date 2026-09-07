@@ -28,7 +28,7 @@ CREATE TABLE public.farmers (
     phone TEXT NOT NULL UNIQUE,
     aadhaar_ref TEXT UNIQUE NOT NULL,
     village TEXT NOT NULL,
-    land_details JSONB DEFAULT '{}'::jsonb, -- Store survey numbers, area in acres, etc.
+    land_details JSONB DEFAULT '{}'::jsonb,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -40,7 +40,7 @@ CREATE TABLE public.centres (
     location TEXT NOT NULL,
     district TEXT NOT NULL,
     pincode TEXT NOT NULL,
-    daily_capacity NUMERIC(10,2) NOT NULL, -- in quintals
+    daily_capacity NUMERIC(10,2) NOT NULL,
     remaining_capacity NUMERIC(10,2) NOT NULL,
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMPTZ DEFAULT NOW(),
@@ -52,7 +52,7 @@ CREATE TABLE public.crops (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name TEXT NOT NULL,
     variety TEXT,
-    minimum_support_price NUMERIC(10,2) NOT NULL, -- MSP per quintal
+    minimum_support_price NUMERIC(10,2) NOT NULL,
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -150,7 +150,9 @@ CREATE TABLE public.notifications (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- ENABLE ROW LEVEL SECURITY (RLS) FOR ALL TABLES
+-- ==========================================
+-- ROW LEVEL SECURITY (RLS)
+-- ==========================================
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.farmers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.centres ENABLE ROW LEVEL SECURITY;
@@ -164,7 +166,55 @@ ALTER TABLE public.procurement_records ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.payments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 
--- EXAMPLE PUBLIC READ POLICIES (Adjust as needed)
-CREATE POLICY "Public crops read policy" ON public.crops FOR SELECT USING (true);
-CREATE POLICY "Public centres read policy" ON public.centres FOR SELECT USING (true);
-CREATE POLICY "Public slots read policy" ON public.slots FOR SELECT USING (true);
+-- API Access Policies (Allows FastAPI to read/write without auth tokens for development)
+CREATE POLICY "Public crops read" ON public.crops FOR SELECT USING (true);
+CREATE POLICY "Public centres read" ON public.centres FOR SELECT USING (true);
+CREATE POLICY "Public slots read" ON public.slots FOR SELECT USING (true);
+CREATE POLICY "Public farmers read" ON public.farmers FOR SELECT USING (true);
+CREATE POLICY "Public bookings insert" ON public.bookings FOR INSERT WITH CHECK (true);
+CREATE POLICY "Public bookings read" ON public.bookings FOR SELECT USING (true);
+CREATE POLICY "Public bookings update" ON public.bookings FOR UPDATE USING (true);
+CREATE POLICY "Public tokens insert" ON public.tokens FOR INSERT WITH CHECK (true);
+CREATE POLICY "Public tokens read" ON public.tokens FOR SELECT USING (true);
+CREATE POLICY "Public queue read" ON public.queue_entries FOR SELECT USING (true);
+CREATE POLICY "Public procurement read" ON public.procurement_records FOR SELECT USING (true);
+CREATE POLICY "Public payments read" ON public.payments FOR SELECT USING (true);
+
+-- ==========================================
+-- SEED DATA (Fixes the 404 Error & Empty Dropdowns)
+-- ==========================================
+TRUNCATE TABLE public.slots, public.crops, public.centres, public.farmers, public.users CASCADE;
+
+-- 1. Insert Test User
+INSERT INTO public.users (id, full_name, email, phone, role) 
+VALUES ('u9999999-9999-9999-9999-999999999999', 'Demo Farmer', 'farmer@demo.com', '9876500000', 'farmer');
+
+-- 2. Insert Farmer Profile (Uses the exact UUID your frontend is requesting)
+INSERT INTO public.farmers (id, user_id, name, phone, aadhaar_ref, village, land_details)
+VALUES (
+    '12f3b7f6-5999-45e7-8811-3fd982a25345', 
+    'u9999999-9999-9999-9999-999999999999', 
+    'Demo Farmer', 
+    '9876500000', 
+    '[Aadhaar Redacted]', 
+    'Demo Village',
+    '{}'::jsonb
+);
+
+-- 3. Insert Active Centres
+INSERT INTO public.centres (id, name, location, district, pincode, daily_capacity, remaining_capacity, is_active)
+VALUES 
+('c1111111-1111-1111-1111-111111111111', 'APMC Mandi, Guntur', 'Guntur Yard', 'Guntur', '522002', 500.00, 500.00, true),
+('c2222222-2222-2222-2222-222222222222', 'Krishi Bhavan, Tenali', 'Tenali Main', 'Guntur', '522201', 300.00, 300.00, true);
+
+-- 4. Insert Crops
+INSERT INTO public.crops (id, name, variety, minimum_support_price, is_active)
+VALUES 
+('a1111111-1111-1111-1111-111111111111', 'Paddy', 'Grade A', 2183.00, true),
+('a2222222-2222-2222-2222-222222222222', 'Wheat', 'Standard', 2275.00, true);
+
+-- 5. Insert Available Slots for Today
+INSERT INTO public.slots (id, centre_id, date, start_time, end_time, capacity_quintals, booked_quintals)
+VALUES 
+('s1111111-1111-1111-1111-111111111111', 'c1111111-1111-1111-1111-111111111111', CURRENT_DATE, '09:00:00', '11:00:00', 100.00, 20.00),
+('s2222222-2222-2222-2222-222222222222', 'c1111111-1111-1111-1111-111111111111', CURRENT_DATE, '11:00:00', '13:00:00', 100.00, 95.00);

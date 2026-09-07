@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { LanguagePicker } from "../components/ui";
+import { motion } from "framer-motion";
+import { LanguagePicker, Brand } from "../components/ui";
 import { api } from "../services/api";
 
-export default function LoginPage({ language, onLanguageChange, onLogin }) {
+export default function LoginPage({ language, onLanguageChange, t, onLogin }) {
   const [role, setRole] = useState("farmer");
   const [mobile, setMobile] = useState("");
   const [otp, setOtp] = useState("");
@@ -19,7 +20,6 @@ export default function LoginPage({ language, onLanguageChange, onLogin }) {
     }
     setError("");
     setLoading(true);
-
     try {
       await api.sendOtp(mobile);
       setSent(true);
@@ -34,7 +34,6 @@ export default function LoginPage({ language, onLanguageChange, onLogin }) {
     event.preventDefault();
     setError("");
     setLoading(true);
-
     try {
       const response = await api.verifyOtp({ mobile, otp, role, adminKey });
       onLogin(role, mobile, response.farmer_id);
@@ -46,144 +45,146 @@ export default function LoginPage({ language, onLanguageChange, onLogin }) {
   }
 
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-emerald-950 px-4 py-8">
-      <div className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full border border-emerald-800/60" />
-      <div className="pointer-events-none absolute -bottom-32 -right-16 h-96 w-96 rounded-full border border-emerald-800/60" />
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-slate-900 px-4 py-12 sm:px-6 lg:px-8">
+      <div
+        className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-50 mix-blend-overlay"
+        style={{
+          backgroundImage:
+            "url('https://images.unsplash.com/photo-1625246333195-78d9c38ad449?q=80&w=2070&auto=format&fit=crop')",
+        }}
+      />
 
-      <section className="relative grid w-full max-w-5xl overflow-hidden rounded-2xl bg-white shadow-2xl lg:grid-cols-[.9fr_1.1fr]">
-        <aside className="relative hidden overflow-hidden bg-forest p-10 text-white lg:block">
-          <div className="absolute -right-24 top-16 h-72 w-72 rounded-full border border-emerald-200/20" />
-          <div className="relative z-10 flex h-full flex-col justify-between">
-            <div>
-              <div className="flex items-center gap-2 text-2xl">
-                <span className="grid h-10 w-10 place-items-center rounded-lg bg-coral text-xs">
-                  KM
-                </span>
-                Krishak <span className="text-orange-200">Mitra</span>
-              </div>
-              <p className="mt-20 max-w-xs text-4xl leading-tight">
-                Your harvest deserves a better journey.
-              </p>
-              <p className="mt-5 max-w-sm text-sm leading-7 text-emerald-100">
-                Book your mandi visit, follow your queue, and know exactly what
-                happens next.
-              </p>
-            </div>
-            <div className="flex items-end gap-3 text-emerald-100">
-              <span className="text-5xl">🌾</span>
-              <span className="text-xs leading-5">
-                Fair procurement
-                <br />
-                starts with clarity.
-              </span>
-            </div>
-          </div>
-        </aside>
+      <div className="absolute inset-0 z-0 bg-linear-to-t from-forest via-forest/90 to-forest/40" />
 
-        <div className="p-7 sm:p-12">
-          <div className="flex justify-between">
-            <div>
-              <p className="text-[10px] tracking-[1.5px] text-coral">
-                WELCOME TO KRISHAK MITRA
-              </p>
-              <h1 className="mt-3 text-3xl text-forest">Sign in to continue</h1>
-              <p className="mt-2 text-sm text-muted">
-                Use your mobile number to access your mandi services.
-              </p>
-            </div>
+      <motion.section
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="relative z-10 w-full max-w-md my-auto"
+      >
+        <div className="glass-panel-dark rounded-2xl sm:rounded-3xl p-6 sm:p-10 text-white shadow-2xl">
+          <div className="flex items-center justify-between mb-6 sm:mb-8 gap-2">
+            <Brand dark />
             <LanguagePicker language={language} onChange={onLanguageChange} />
           </div>
 
-          <div className="mt-9 grid grid-cols-2 rounded-lg bg-emerald-50 p-1">
+          <div>
+            <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-white">
+              {t?.signIn || "Sign In"}
+            </h1>
+            <p className="mt-1.5 text-sm sm:text-base text-slate-300">
+              {t?.selectRole || "Select your role to access mandi procurement."}
+            </p>
+          </div>
+
+          <div className="mt-6 sm:mt-8 flex rounded-full bg-slate-800/80 p-1 border border-slate-700">
             <button
+              type="button"
               onClick={() => {
                 setRole("farmer");
                 setError("");
+                setSent(false);
               }}
-              className={`rounded-md p-3 text-sm ${role === "farmer" ? "bg-white text-forest shadow" : "text-muted"}`}
+              className={`flex-1 rounded-full py-2.5 sm:py-3 text-xs sm:text-sm font-bold transition-all ${role === "farmer" ? "bg-brand text-white shadow-md" : "text-slate-400 hover:text-white"}`}
             >
-              🌱 Farmer
+              {t?.farmerRole || "🌱 Farmer"}
             </button>
             <button
+              type="button"
               onClick={() => {
                 setRole("admin");
                 setError("");
+                setSent(false);
               }}
-              className={`rounded-md p-3 text-sm ${role === "admin" ? "bg-white text-forest shadow" : "text-muted"}`}
+              className={`flex-1 rounded-full py-2.5 sm:py-3 text-xs sm:text-sm font-bold transition-all ${role === "admin" ? "bg-white text-forest shadow-md" : "text-slate-400 hover:text-white"}`}
             >
-              ▣ Admin
+              {t?.adminRole || "🛡️ Admin"}
             </button>
           </div>
 
-          <form onSubmit={sent ? handleVerify : handleSendOtp} className="mt-7">
-            <label className="block text-xs text-forest">
-              Mobile number
-              <div className="mt-2 flex">
-                <span className="grid place-items-center rounded-l-md border border-r-0 border-line bg-slate-50 px-3 text-sm text-muted">
-                  +91
-                </span>
-                <input
-                  value={mobile}
-                  onChange={(event) =>
-                    setMobile(
-                      event.target.value.replace(/\D/g, "").slice(0, 10),
-                    )
-                  }
-                  disabled={sent || loading}
-                  placeholder="98765 43210"
-                  className="w-full rounded-r-md border border-line p-3 text-sm outline-coral"
-                  inputMode="numeric"
-                />
+          <form
+            onSubmit={sent ? handleVerify : handleSendOtp}
+            className="mt-6 sm:mt-8"
+          >
+            <div className="space-y-5 sm:space-y-6">
+              <div>
+                <label className="block text-xs sm:text-sm font-bold text-slate-200 mb-2">
+                  {t?.mobileNumber || "Mobile Number"}
+                </label>
+                <div className="flex relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm sm:text-base font-bold text-slate-500">
+                    +91
+                  </span>
+                  <input
+                    value={mobile}
+                    onChange={(e) =>
+                      setMobile(e.target.value.replace(/\D/g, "").slice(0, 10))
+                    }
+                    disabled={sent || loading}
+                    placeholder="98765 43210"
+                    className="w-full rounded-xl bg-white py-3.5 sm:py-4 pl-14 pr-4 text-sm sm:text-base text-forest font-bold placeholder-slate-400 shadow-inner outline-none transition-all focus:ring-2 focus:ring-brand"
+                    inputMode="numeric"
+                  />
+                </div>
               </div>
-            </label>
 
-            {sent && (
-              <label className="mt-5 block text-xs text-forest">
-                One-time password
-                <input
-                  autoFocus
-                  value={otp}
-                  onChange={(event) =>
-                    setOtp(event.target.value.replace(/\D/g, "").slice(0, 6))
-                  }
-                  disabled={loading}
-                  placeholder="Enter 6-digit OTP"
-                  className="mt-2 w-full rounded-md border border-line p-3 text-sm tracking-[.4em] outline-coral"
-                  inputMode="numeric"
-                />
-              </label>
-            )}
+              {sent && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                >
+                  <label className="block text-xs sm:text-sm font-bold text-slate-200 mb-2">
+                    {t?.oneTimePassword || "One-Time Password"}
+                  </label>
+                  <input
+                    autoFocus
+                    value={otp}
+                    onChange={(e) =>
+                      setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))
+                    }
+                    disabled={loading}
+                    placeholder="••••••"
+                    className="w-full rounded-xl bg-white p-3.5 sm:p-4 text-center text-xl sm:text-2xl tracking-[.5em] sm:tracking-[.75em] text-forest font-bold placeholder-slate-400 shadow-inner outline-none transition-all focus:ring-2 focus:ring-brand"
+                    inputMode="numeric"
+                  />
+                </motion.div>
+              )}
 
-            {role === "admin" && sent && (
-              <label className="mt-5 block text-xs text-forest">
-                Admin access key
-                <input
-                  value={adminKey}
-                  onChange={(event) => setAdminKey(event.target.value)}
-                  disabled={loading}
-                  placeholder="Enter admin key"
-                  className="mt-2 w-full rounded-md border border-line p-3 text-sm outline-coral"
-                  type="password"
-                />
-              </label>
-            )}
+              {role === "admin" && sent && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                >
+                  <label className="block text-xs sm:text-sm font-bold text-slate-200 mb-2">
+                    {t?.adminKey || "Admin Key"}
+                  </label>
+                  <input
+                    value={adminKey}
+                    onChange={(e) => setAdminKey(e.target.value)}
+                    disabled={loading}
+                    type="password"
+                    placeholder={t?.enterAccessKey || "Enter access key"}
+                    className="w-full rounded-xl bg-white p-3.5 sm:p-4 text-sm sm:text-base text-forest font-bold placeholder-slate-400 shadow-inner outline-none transition-all focus:ring-2 focus:ring-brand"
+                  />
+                </motion.div>
+              )}
+            </div>
 
             {error && (
-              <p className="mt-4 rounded-md bg-red-50 p-3 text-xs text-red-700">
+              <div className="mt-5 rounded-xl bg-red-100 border border-red-200 p-3.5 text-xs sm:text-sm font-bold text-red-800">
                 {error}
-              </p>
+              </div>
             )}
 
             <button
               disabled={loading}
-              className="mt-6 w-full rounded-md bg-coral p-3.5 text-sm text-white disabled:opacity-60"
+              className="mt-6 sm:mt-8 w-full rounded-xl bg-brand py-3.5 sm:py-4 text-sm sm:text-base font-bold text-white transition-all hover:bg-brand-hover shadow-lg disabled:opacity-65 active:scale-95"
             >
               {loading
-                ? "Processing..."
+                ? t?.processing || "Processing..."
                 : sent
-                  ? "Verify and sign in"
-                  : "Send OTP"}{" "}
-              <span className="ml-3">→</span>
+                  ? t?.verifyAndSignIn || "Verify & Sign In"
+                  : t?.continue || "Continue"}
             </button>
 
             {sent && (
@@ -194,19 +195,14 @@ export default function LoginPage({ language, onLanguageChange, onLogin }) {
                   setOtp("");
                   setError("");
                 }}
-                disabled={loading}
-                className="mt-3 w-full p-2 text-xs text-muted"
+                className="mt-5 w-full text-xs sm:text-sm font-bold text-slate-400 hover:text-white transition-colors"
               >
-                Change mobile number
+                {t?.changeMobileNumber || "Change mobile number"}
               </button>
             )}
           </form>
-
-          <p className="mt-8 text-center text-[11px] leading-5 text-muted">
-            By continuing, you agree to receive an OTP on your mobile number.
-          </p>
         </div>
-      </section>
+      </motion.section>
     </main>
   );
 }
