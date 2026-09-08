@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { 
   ArrowRight, 
@@ -21,17 +22,42 @@ import {
 import Logo from "../components/Logo";
 import LanguagePicker from "../components/LanguagePicker";
 
-export default function LandingPage({ onNavigateLogin, language, onLanguageChange }) {
+export default function LandingPage({ onNavigateLogin, onNavigateContact, language, onLanguageChange }) {
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate initial loading as requested
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#F8F9FA] flex flex-col items-center justify-center font-body text-forest">
+        <Logo variant="full" className="h-24 w-auto mb-8 animate-pulse mix-blend-multiply" />
+        <div className="flex gap-3 mb-6">
+          <div className="w-3.5 h-3.5 bg-brand rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+          <div className="w-3.5 h-3.5 bg-brand rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+          <div className="w-3.5 h-3.5 bg-brand rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+        </div>
+        <h2 className="text-xl md:text-2xl font-medium text-forest/80">Welcome to KrishakMitra</h2>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#F8F9FA] font-body text-forest selection:bg-brand selection:text-white">
       {/* Navbar */}
-      <header className="w-full py-6 px-6 max-w-7xl mx-auto flex items-center justify-between">
-        <Logo variant="full" className="h-10 w-auto" />
+      <header className="w-full py-4 px-6 max-w-7xl mx-auto flex items-center justify-between">
+        <Logo variant="full" className="h-[4.5rem] w-auto mix-blend-multiply" />
         <nav className="hidden md:flex items-center gap-10 text-base font-semibold">
           <a href="#features" className="hover:text-brand transition-colors">Features</a>
           <a href="#how-it-works" className="hover:text-brand transition-colors">How it Works</a>
           <a href="#impact" className="hover:text-brand transition-colors">Impact</a>
           <a href="#testimonials" className="hover:text-brand transition-colors">Testimonials</a>
+          <button onClick={onNavigateContact} className="hover:text-brand transition-colors cursor-pointer">Contact Us</button>
         </nav>
         <div className="flex items-center gap-5">
           <LanguagePicker value={language} onChange={onLanguageChange} />
@@ -42,27 +68,27 @@ export default function LandingPage({ onNavigateLogin, language, onLanguageChang
       </header>
 
       {/* Hero */}
-      <section className="max-w-7xl mx-auto px-6 pt-20 pb-28 grid md:grid-cols-2 gap-16 items-center">
-        <div>
-          <div className="inline-flex items-center text-sm font-bold text-brand bg-brand/10 px-4 py-1.5 rounded-full mb-8">
+      <section className="max-w-7xl mx-auto px-6 py-10 md:py-20 grid md:grid-cols-2 gap-12 md:gap-16 items-center">
+        <div className="flex flex-col justify-center">
+          <div className="inline-flex items-center text-sm font-bold text-brand bg-brand/10 px-4 py-1.5 rounded-full mb-6 self-start">
             <div className="w-2 h-2 rounded-full bg-brand mr-2" /> Next Generation Platform
           </div>
-          <h1 className="font-display text-6xl md:text-[5rem] leading-[1.05] font-extrabold tracking-tight mb-8">
+          <h1 className="font-display text-[3.5rem] md:text-[4.5rem] leading-[1.05] font-extrabold tracking-tight mb-6">
             Smarter Procurement.<br/>
             <span className="text-brand">Stronger Farmers.</span>
           </h1>
-          <p className="text-muted text-xl mb-10 max-w-lg leading-relaxed">
+          <p className="text-muted text-lg md:text-xl mb-8 max-w-lg leading-relaxed">
             Experience seamless coordination between farmers, procurement centres, and government systems. No more queues, just transparent, real-time efficiency.
           </p>
-          <div className="flex flex-col sm:flex-row items-center gap-5 mb-14">
-            <button className="w-full sm:w-auto bg-brand text-white px-10 py-4 rounded-full text-lg font-bold flex items-center justify-center gap-2 hover:bg-brand-hover transition-colors shadow-lg shadow-brand/20">
+          <div className="flex flex-col sm:flex-row items-center gap-4 mb-10">
+            <button className="w-full sm:w-auto bg-brand text-white px-8 py-3.5 rounded-full text-lg font-bold flex items-center justify-center gap-2 hover:bg-brand-hover transition-colors shadow-lg shadow-brand/20">
               Book Your Slot <ArrowRight className="w-5 h-5" />
             </button>
-            <button className="w-full sm:w-auto bg-white text-forest px-10 py-4 rounded-full text-lg font-bold flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors border border-line">
+            <button className="w-full sm:w-auto bg-white text-forest px-8 py-3.5 rounded-full text-lg font-bold flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors border border-line">
               <Play className="w-5 h-5 fill-forest" /> Watch Demo
             </button>
           </div>
-          <div className="flex items-center gap-8">
+          <div className="flex items-center gap-6">
             <div className="flex -space-x-4">
               {[1, 2, 3, 4].map(i => (
                 <div key={i} className="w-12 h-12 rounded-full bg-forest border-2 border-[#F8F9FA] flex items-center justify-center overflow-hidden">
@@ -81,8 +107,8 @@ export default function LandingPage({ onNavigateLogin, language, onLanguageChang
         </div>
 
         {/* Right side mockup */}
-        <div className="relative mt-16 md:mt-0">
-          <div className="bg-forest rounded-[3rem] p-10 md:p-14 aspect-square relative shadow-2xl flex flex-col justify-between max-w-lg mx-auto w-full">
+        <div className="relative mt-12 md:mt-0 flex flex-col justify-center items-center">
+          <div className="bg-forest rounded-[3rem] p-8 md:p-12 relative shadow-2xl flex flex-col justify-between w-full max-w-[500px] min-h-[500px] md:min-h-[600px] aspect-square md:aspect-auto">
             <div className="absolute top-12 left-1/2 -translate-x-1/2 w-[85%] bg-white rounded-3xl p-5 shadow-xl flex items-center gap-4 transform -rotate-1">
               <div className="w-12 h-12 rounded-full bg-green-50 flex items-center justify-center text-brand">
                 <CheckCircle2 className="w-6 h-6" />
@@ -193,7 +219,7 @@ export default function LandingPage({ onNavigateLogin, language, onLanguageChang
           <h2 className="text-4xl md:text-5xl font-display font-extrabold text-white mb-4 tracking-tight">Five Simple Steps</h2>
           <p className="text-white/60 mb-24 text-lg">From booking your slot to receiving your payment.</p>
 
-          <div className="flex flex-col md:flex-row items-center justify-between gap-8 relative">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-6 lg:gap-8 relative">
              {/* Desktop Connecting Line */}
             <div className="hidden md:block absolute top-1/2 left-[10%] right-[10%] h-[2px] bg-white/10 -translate-y-1/2 z-0" />
             
@@ -204,13 +230,13 @@ export default function LandingPage({ onNavigateLogin, language, onLanguageChang
               { num: "4", title: "Quality Check", desc: "Bring produce for fast grading", icon: CheckCircle2 },
               { num: "5", title: "Get Paid", desc: "Money transferred directly", icon: CreditCard }
             ].map((step, idx) => (
-              <div key={idx} className="relative z-10 w-full md:w-1/5 bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-8 flex flex-col items-center hover:bg-white/10 transition-colors cursor-pointer">
-                <div className="w-14 h-14 rounded-full bg-brand flex items-center justify-center text-white font-bold mb-6 shadow-lg shadow-brand/30">
-                  <step.icon className="w-6 h-6" />
+              <div key={idx} className="relative z-10 w-full min-h-[280px] bg-white/5 backdrop-blur-md border border-white/10 rounded-[2rem] p-6 lg:p-10 flex flex-col items-center justify-center hover:bg-white/10 transition-colors cursor-pointer group">
+                <div className="w-16 h-16 rounded-full bg-brand flex items-center justify-center text-white font-bold mb-6 shadow-lg shadow-brand/30 group-hover:scale-110 transition-transform">
+                  <step.icon className="w-7 h-7" />
                 </div>
-                <h3 className="text-white font-bold mb-2 text-lg">{step.title}</h3>
-                <p className="text-white/60 text-xs md:text-sm text-center leading-relaxed">{step.desc}</p>
-                <div className="absolute -top-3.5 bg-forest text-white/50 text-xs font-bold px-3 py-1 rounded-full border border-white/10">
+                <h3 className="text-white font-bold mb-3 text-xl">{step.title}</h3>
+                <p className="text-white/60 text-sm text-center leading-relaxed">{step.desc}</p>
+                <div className="absolute -top-4 bg-forest text-white/50 text-sm font-bold px-4 py-1.5 rounded-full border border-white/10">
                   {step.num}
                 </div>
               </div>
@@ -224,8 +250,8 @@ export default function LandingPage({ onNavigateLogin, language, onLanguageChang
         <div className="max-w-6xl mx-auto px-6">
           <div className="inline-block text-xs font-bold text-brand bg-brand/10 px-4 py-1.5 rounded-full mb-8 uppercase tracking-wider">Impact</div>
           
-          <div className="grid md:grid-cols-2 gap-20 items-center">
-            <div>
+          <div className="grid md:grid-cols-2 gap-12 md:gap-20 items-stretch">
+            <div className="flex flex-col justify-center">
               <h2 className="text-4xl md:text-5xl font-display font-extrabold mb-5 tracking-tight">Transforming Lives</h2>
               <p className="text-muted mb-12 text-lg">Measurable impact across the agricultural ecosystem.</p>
               
@@ -252,7 +278,7 @@ export default function LandingPage({ onNavigateLogin, language, onLanguageChang
                 <p className="text-xs font-bold opacity-90 mt-2 uppercase tracking-wider">Farmers</p>
               </div>
               
-              <div className="bg-white p-10 md:p-14 rounded-[2.5rem] shadow-sm border border-line space-y-10 relative z-0">
+              <div className="bg-white p-8 md:p-14 rounded-[2.5rem] shadow-sm border border-line space-y-10 relative z-0 h-full flex flex-col justify-center">
                 {[
                   { label: "Average Wait Time", val: "15m", pct: "20%" },
                   { label: "Farmer Satisfaction", val: "95%", pct: "95%" },
@@ -291,7 +317,7 @@ export default function LandingPage({ onNavigateLogin, language, onLanguageChang
               <button onClick={onNavigateLogin} className="w-full sm:w-auto bg-brand text-white px-10 py-4 rounded-full text-lg font-bold flex items-center justify-center gap-3 hover:bg-brand-hover transition-colors shadow-lg shadow-brand/20">
                 Get Started Now <ArrowRight className="w-5 h-5" />
               </button>
-              <button className="w-full sm:w-auto bg-transparent text-white px-10 py-4 rounded-full text-lg font-bold flex items-center justify-center gap-3 hover:bg-white/5 transition-colors border border-white/20">
+              <button onClick={onNavigateContact} className="w-full sm:w-auto bg-transparent text-white px-10 py-4 rounded-full text-lg font-bold flex items-center justify-center gap-3 hover:bg-white/5 transition-colors border border-white/20">
                 <User className="w-5 h-5" /> Contact Support
               </button>
             </div>
@@ -303,7 +329,7 @@ export default function LandingPage({ onNavigateLogin, language, onLanguageChang
       <footer className="bg-forest pt-20 pb-10 border-t border-white/10">
         <div className="max-w-6xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-12 mb-20">
           <div className="col-span-2 md:col-span-1">
-            <Logo variant="full" className="h-10 w-auto grayscale brightness-200 mb-8" />
+            <Logo variant="full" className="h-16 w-auto grayscale brightness-200 mb-8 mix-blend-screen" />
             <p className="text-white/60 text-sm leading-relaxed">Empowering Farmers with Technology and Transparency.</p>
           </div>
           
