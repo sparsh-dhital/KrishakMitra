@@ -1,32 +1,14 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { useTranslation } from "react-i18next";
 import QRCode from "react-qr-code";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  Home as HomeIcon,
-  CalendarPlus,
-  ListOrdered,
-  CheckCircle2,
-  ChevronRight,
-  Leaf,
-} from "lucide-react";
-import { api, config, isUuid, toUiSlot } from "../services/api";
-import { Badge, Header, Panel } from "../components/ui";
+import { LayoutDashboard, MapPin, CalendarDays, QrCode, ListOrdered, ShoppingCart, CreditCard, Bell, ChevronRight, Activity, Clock, ArrowRight } from "lucide-react";
+import { api, config, toUiSlot } from "../services/api";
+import { Badge, Card, Button, Input, Select, SidebarLayout, CircularProgress, ProgressTimeline } from "../components/ui";
 
-const navItems = (t) => [
-  ["home", HomeIcon, t.overview],
-  ["book", CalendarPlus, t.bookSlot],
-  ["queue", ListOrdered, t.liveQueue],
-  ["status", CheckCircle2, t.myStatus],
-];
-
-export default function FarmerPage({
-  language,
-  onLanguageChange,
-  onLogout,
-  t,
-}) {
-  const [tab, setTab] = useState("home");
+export default function FarmerPage({ language, onLanguageChange, onLogout }) {
+  const { t } = useTranslation();
+  const [activeTab, setActiveTab] = useState("dashboard");
   const [centres, setCentres] = useState([]);
   const [farmer, setFarmer] = useState(null);
   const [crops, setCrops] = useState([]);
@@ -48,52 +30,38 @@ export default function FarmerPage({
   const [queueEntry, setQueueEntry] = useState(null);
   const [procurement, setProcurement] = useState(null);
   const [payment, setPayment] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-
-  async function loadCentres() {
-    setLoading(true);
-    try {
-      const [centreData, cropData] = await Promise.all([
-        api.getCentres(),
-        api.getCrops(),
-      ]);
-      setCentres(centreData);
-      setCrops(cropData);
-      setSelectedCrop(
-        (current) =>
-          current || booking?.booking?.crop_id || cropData?.[0]?.id || "",
-      );
-      setSelectedCentre((current) => current || centreData?.[0]?.id || "");
-      if (config.farmerId) {
-        setFarmer(await api.getFarmer(config.farmerId).catch(() => null));
-      }
-    } catch (err) {
-      toast.error("Failed to load centre data");
-    } finally {
-      setLoading(false);
-    }
-  }
 
   useEffect(() => {
+    async function loadCentres() {
+      try {
+        const [centreData, cropData] = await Promise.all([
+          api.getCentres(),
+          api.getCrops(),
+        ]);
+        setCentres(centreData);
+        setCrops(cropData);
+        setSelectedCrop((current) => current || booking?.booking?.crop_id || cropData?.[0]?.id || "");
+        setSelectedCentre((current) => current || centreData?.[0]?.id || "");
+        if (config.farmerId) {
+          setFarmer(await api.getFarmer(config.farmerId).catch(() => null));
+        }
+      } catch (err) {
+        toast.error("Failed to load centre data");
+      }
+    }
     loadCentres();
   }, []);
 
   useEffect(() => {
     if (!selectedCentre) return;
     let active = true;
-    api
-      .getSlots(selectedCentre)
-      .then((slotData) => {
-        if (!active) return;
-        const liveSlots = slotData.map(toUiSlot).filter(Boolean);
-        setSlots(liveSlots);
-        setSelectedSlot(liveSlots?.[0]?.id || "");
-      })
-      .catch(() => toast.error("Failed to load slots"));
-    return () => {
-      active = false;
-    };
+    api.getSlots(selectedCentre).then((slotData) => {
+      if (!active) return;
+      const liveSlots = slotData.map(toUiSlot).filter(Boolean);
+      setSlots(liveSlots);
+      setSelectedSlot(liveSlots?.[0]?.id || "");
+    }).catch(() => toast.error("Failed to load slots"));
+    return () => { active = false; };
   }, [selectedCentre]);
 
   useEffect(() => {
@@ -109,18 +77,13 @@ export default function FarmerPage({
         const record = Array.isArray(pRes.value) ? pRes.value[0] : pRes.value;
         setProcurement(record || null);
         if (record?.id)
-          api
-            .getPayment(record.id)
-            .then((d) => setPayment(Array.isArray(d) ? d[0] : d))
-            .catch(() => {});
+          api.getPayment(record.id).then((d) => setPayment(Array.isArray(d) ? d[0] : d)).catch(() => {});
       }
     });
   }, [booking?.booking?.id, booking?.token?.id]);
 
   async function createBooking() {
-    if (!selectedSlot || !selectedCentre || !config.farmerId || !selectedCrop)
-      return;
-    setSaving(true);
+    if (!selectedSlot || !selectedCentre || !config.farmerId || !selectedCrop) return;
     try {
       const result = await api.createBooking({
         farmer_id: config.farmerId,
@@ -132,525 +95,387 @@ export default function FarmerPage({
       setBooking(result);
       localStorage.setItem("krishak-mitra-booking", JSON.stringify(result));
       toast.success("Slot booked successfully!");
-      setTab("status");
+      setActiveTab("token");
     } catch (err) {
       toast.error(err.message);
-    } finally {
-      setSaving(false);
     }
   }
 
+  const navItems = [
+    { id: "dashboard", label: t("overview"), icon: LayoutDashboard },
+    { id: "centres", label: t("centre"), icon: MapPin },
+    { id: "bookings", label: t("bookSlot"), icon: CalendarDays },
+    { id: "token", label: t("yourToken"), icon: QrCode },
+    { id: "queue", label: t("liveQueue"), icon: ListOrdered },
+    { id: "procurement", label: t("procurementJourney"), icon: ShoppingCart },
+    { id: "payment", label: t("paymentStatus"), icon: CreditCard },
+    { id: "notifications", label: t("recentUpdates"), icon: Bell },
+  ];
+
+  const journeySteps = [
+    { title: "Booking", subtitle: booking?.booking?.date || "Pending" },
+    { title: "Arrival", subtitle: queueEntry ? "Completed" : "Pending" },
+    { title: "Quality & Weight", subtitle: procurement ? procurement.procurement_status : "Pending" },
+    { title: "Acceptance", subtitle: procurement?.procurement_status === "ACCEPTED" ? "Completed" : "Pending" },
+    { title: "Payment", subtitle: payment ? payment.payment_status : "Pending" },
+  ];
+
+  let currentStep = -1;
+  if (booking) currentStep = 0;
+  if (queueEntry && queueEntry.status !== "waiting") currentStep = 1;
+  if (procurement) currentStep = 2;
+  if (procurement?.procurement_status === "ACCEPTED") currentStep = 3;
+  if (payment) currentStep = 4;
+
+  const activeCrop = crops.find((c) => c.id === (booking?.booking?.crop_id || selectedCrop));
+
   return (
-    <div className="min-h-screen bg-cream font-body pb-16 sm:pb-20">
-      <Header
-        language={language}
-        onLanguageChange={onLanguageChange}
-        onLogout={onLogout}
-        centreName={centres[0]?.name}
-        t={t}
-      />
+    <SidebarLayout
+      navItems={navItems}
+      activeTab={activeTab}
+      onTabChange={setActiveTab}
+      onLogout={onLogout}
+      language={language}
+      onLanguageChange={onLanguageChange}
+    >
+      {/* ── DASHBOARD ── */}
+      {activeTab === "dashboard" && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          <div className="lg:col-span-2 space-y-6">
+            <div>
+              <h1 className="font-display text-2xl font-bold text-forest">{t("greetingFarmer")} Ramesh Kumar</h1>
+              <p className="text-muted text-sm mt-1">{t("journeyIntro")}</p>
+            </div>
 
-      <section className="relative pt-28 pb-16 sm:pt-32 sm:pb-20 lg:pt-40 lg:pb-32 px-4 sm:px-8 overflow-hidden rounded-b-4xl bg-forest">
-        <div
-          className="absolute inset-0 z-0 bg-cover bg-center opacity-50 sm:opacity-60"
-          style={{
-            backgroundImage:
-              "url('https://images.unsplash.com/photo-1592982537447-6f296d19b788?q=80&w=2070&auto=format&fit=crop')",
-          }}
-        />
-        <div className="absolute inset-0 z-0 bg-linear-to-r from-forest via-forest/95 to-forest/20" />
+            <div className="bg-surface border border-line rounded-3xl p-6 flex flex-col sm:flex-row gap-6 shadow-sm">
+              <div className="flex-1">
+                <h3 className="text-xs font-bold text-muted uppercase tracking-widest mb-4">{t("bookingConfirmed")}</h3>
+                {booking ? (
+                  <>
+                    <div className="flex items-center gap-4 mb-6">
+                      <div className="p-3 bg-white rounded-xl shadow-sm border border-line">
+                        {booking?.token?.token_number && <QRCode value={booking.token.token_number} size={64} />}
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-muted">{t("yourToken")} <span className="text-forest font-extrabold text-xl">#{booking?.token?.token_number || "N/A"}</span></p>
+                        <p className="text-sm font-medium text-forest">{activeCrop?.name} &bull; {booking?.booking?.estimated_quantity || 0} q</p>
+                      </div>
+                    </div>
+                    <div className="space-y-3 border-t border-line pt-4">
+                      <div className="flex items-center gap-3 text-sm text-forest font-medium">
+                        <MapPin className="w-4 h-4 text-brand" /> {centres.find((c) => c.id === booking?.booking?.centre_id)?.name || "Unknown Centre"}
+                      </div>
+                      <div className="flex items-center gap-3 text-sm text-forest font-medium">
+                        <Clock className="w-4 h-4 text-brand" /> {booking?.booking?.date || "TBD"}
+                      </div>
+                    </div>
+                    <Button className="w-full mt-6 gap-2" onClick={() => setActiveTab("token")}>{t("yourToken")} <ChevronRight className="w-4 h-4" /></Button>
+                  </>
+                ) : (
+                  <div className="text-center py-8">
+                    <p className="text-sm text-muted font-medium mb-4">{t("nextStep")}</p>
+                    <Button onClick={() => setActiveTab("bookings")}>{t("bookSlot")}</Button>
+                  </div>
+                )}
+              </div>
 
-        <div className="relative z-10 max-w-7xl mx-auto grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-          <div>
-            <Badge
-              tone="soft"
-              className="mb-4 sm:mb-6 shadow-md text-xs sm:text-sm"
-            >
-              <span className="animate-pulse h-2 w-2 sm:h-2.5 sm:w-2.5 bg-brand rounded-full mr-2"></span>
-              {t.liveToday}
-            </Badge>
-            <h1 className="font-display text-3xl sm:text-4xl lg:text-6xl font-bold text-white leading-tight mb-4 sm:mb-6">
-              {booking?.token?.token_number
-                ? "Your Harvest is Ready for Procurement"
-                : "The Next Generation of Farming is Here"}
-            </h1>
-            <p className="text-slate-200 text-base sm:text-lg max-w-xl mb-6 sm:mb-8 leading-relaxed font-medium">
-              {booking?.token?.token_number
-                ? `${t.keepPhone} ${centres[0]?.name || ""}. Track your live queue status below.`
-                : "Transform your fields with advanced procurement solutions. From real-time crop monitoring to automated slot booking."}
-            </p>
-            <button
-              onClick={() => setTab(booking ? "queue" : "book")}
-              className="bg-brand hover:bg-brand-hover text-white rounded-xl px-6 sm:px-8 py-3.5 sm:py-4 font-bold text-base sm:text-lg transition-all hover:scale-105 shadow-xl flex items-center gap-2"
-            >
-              {booking ? t.viewQueue : t.bookSlot}{" "}
-              <ChevronRight className="w-5 h-5" />
-            </button>
+              <div className="flex-1 border-t sm:border-t-0 sm:border-l border-line pt-6 sm:pt-0 sm:pl-6 flex flex-col items-center justify-center">
+                <h3 className="text-xs font-bold text-muted uppercase tracking-widest mb-4 self-start">{t("capacityUsed")}</h3>
+                <Badge tone="success" className="mb-4 self-start"><span className="w-1.5 h-1.5 bg-green-500 rounded-full mr-2" /> {t("open")}</Badge>
+                <div className="flex items-center justify-between w-full mt-2">
+                  <div className="text-center">
+                    <p className="text-xs text-muted font-bold">{t("liveQueue")}</p>
+                    <p className="text-sm font-bold text-forest">12 {t("farmerRole").replace(/[^a-zA-Zऀ-ॿఀ-౿଀-୿઀-૿ಀ-೿ഀ-ൿ਀-੿஀-௿؀-ۿ଀-୿]/g, "")}</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-xs text-muted font-bold">{t("estimatedArrival")}</p>
+                    <p className="text-sm font-bold text-forest">35-45 min</p>
+                  </div>
+                  <CircularProgress value={81} label="Capacity" />
+                </div>
+              </div>
+            </div>
+
+            <Card>
+              <h3 className="text-xs font-bold text-muted uppercase tracking-widest mb-6">{t("procurementJourney")}</h3>
+              <ProgressTimeline steps={journeySteps} currentStep={currentStep} />
+            </Card>
+
+            <Card>
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xs font-bold text-muted uppercase tracking-widest">{t("centre")}</h3>
+                <span className="text-xs text-brand font-bold">2.4 km</span>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center border border-green-100">
+                  <MapPin className="w-6 h-6 text-brand" />
+                </div>
+                <div>
+                  <p className="font-bold text-forest text-sm">Mangalagiri Procurement Centre</p>
+                  <p className="text-xs text-muted font-medium mt-1">{t("open")}</p>
+                </div>
+              </div>
+              <Button variant="outline" className="w-full mt-6" onClick={() => setActiveTab("centres")}>{t("centre")} <ChevronRight className="w-4 h-4 ml-1" /></Button>
+            </Card>
           </div>
 
-          <div className="hidden md:flex justify-center lg:justify-end">
-            {booking?.token?.token_number ? (
-              <div className="glass-panel rounded-3xl p-6 sm:p-8 text-center shadow-2xl transform lg:rotate-2 hover:rotate-0 transition-transform duration-500 max-w-sm w-full">
-                <h3 className="text-forest font-bold mb-3 uppercase tracking-widest text-xs sm:text-sm">
-                  Digital Token
-                </h3>
-                <div className="bg-white p-3 sm:p-4 rounded-xl shadow-inner mb-4 inline-block border border-slate-200">
-                  <QRCode
-                    value={JSON.stringify({
-                      token: booking.token.token_number,
-                      centreId: centres[0]?.id,
-                    })}
-                    size={150}
-                  />
+          <div className="space-y-6">
+            <Card className="bg-forest text-white border-transparent">
+              <h3 className="text-xs font-bold text-white/50 uppercase tracking-widest mb-4">{t("liveQueue")}</h3>
+              {queueEntry ? (
+                <>
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <p className="text-sm font-medium text-white/70">{t("myStatus")}</p>
+                      <p className="font-display text-4xl font-extrabold">#{queueEntry.queue_position}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-medium text-white/70">{t("estimatedArrival")}</p>
+                      <p className="font-display text-2xl font-bold">~{queueEntry.estimated_wait_time} min</p>
+                    </div>
+                  </div>
+                  <Button className="w-full bg-white text-forest hover:bg-slate-100" onClick={() => setActiveTab("queue")}>{t("viewQueue")} <ChevronRight className="w-4 h-4 ml-1" /></Button>
+                </>
+              ) : (
+                <p className="text-sm font-medium text-white/70 py-4">{t("nextStep")}</p>
+              )}
+            </Card>
+
+            <Card>
+              <h3 className="text-xs font-bold text-muted uppercase tracking-widest mb-4">{t("recentUpdates")}</h3>
+              {booking ? (
+                <div className="flex items-start gap-3">
+                  <div className="w-2 h-2 mt-1.5 rounded-full bg-brand shrink-0" />
+                  <div>
+                    <p className="text-sm font-bold text-forest">{t("bookedSuccess")}</p>
+                    <p className="text-xs text-muted font-medium mt-0.5">{booking?.booking?.date || "TBD"}</p>
+                  </div>
                 </div>
-                <strong className="block font-display text-3xl sm:text-4xl text-forest">
-                  {booking.token.token_number}
-                </strong>
-                <p className="text-slate-500 text-sm sm:text-base font-bold mt-2">
-                  Present at weighbridge
-                </p>
+              ) : (
+                <p className="text-sm text-muted font-medium">{t("nextStep")}</p>
+              )}
+            </Card>
+          </div>
+        </div>
+      )}
+
+      {/* ── CENTRES ── */}
+      {activeTab === "centres" && (
+        <div className="max-w-4xl mx-auto space-y-4">
+          <h1 className="font-display text-2xl font-bold text-forest mb-6">{t("centre")}</h1>
+          {centres.map((c) => (
+            <Card key={c.id} className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center border border-green-100">
+                  <MapPin className="w-5 h-5 text-brand" />
+                </div>
+                <div>
+                  <p className="font-bold text-forest">{c.name}</p>
+                  <p className="text-xs text-muted font-medium mt-1">{c.district} &bull; Capacity: {c.daily_capacity} q/day</p>
+                </div>
+              </div>
+              <Badge tone="success">{t("open")}</Badge>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {/* ── BOOKINGS ── */}
+      {activeTab === "bookings" && (
+        <div className="max-w-4xl mx-auto">
+          <Card className="p-0 overflow-hidden">
+            <div className="p-6 border-b border-line bg-slate-50/50 flex items-center gap-4 overflow-x-auto">
+              {["Centre", "Date", "Slot", "Quantity", "Confirm"].map((step, idx) => (
+                <div key={idx} className={`flex items-center gap-2 whitespace-nowrap text-sm font-bold ${idx === 2 ? "text-brand" : "text-muted"}`}>
+                  <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs text-white ${idx === 2 ? "bg-brand" : "bg-slate-300"}`}>{idx + 1}</span>
+                  {step}
+                </div>
+              ))}
+            </div>
+            <div className="p-8 space-y-8">
+              <div>
+                <h2 className="font-display text-2xl font-bold text-forest mb-2">Choose a Time Slot</h2>
+                <div className="flex items-center gap-3 mb-6 p-4 bg-green-50 rounded-xl border border-green-100">
+                  <MapPin className="w-5 h-5 text-brand" />
+                  <div>
+                    <p className="font-bold text-forest text-sm">Mangalagiri Procurement Centre</p>
+                    <p className="text-xs text-brand font-medium">Operating normally</p>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-forest mb-4">{t("crop")}</label>
+                <Select value={selectedCrop} onChange={(e) => setSelectedCrop(e.target.value)}>
+                  {crops.map((c) => <option value={c.id} key={c.id}>{c.name}</option>)}
+                </Select>
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-forest mb-4">{t("quantity")}</label>
+                <Input type="number" min="1" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-forest mb-4">{t("availableSlots")}</label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {slots.map((slot) => {
+                    const isAvailable = slot.tone === "green";
+                    return (
+                      <button key={slot.id} onClick={() => isAvailable && setSelectedSlot(slot.id)} disabled={!isAvailable}
+                        className={`flex items-center justify-between p-4 rounded-xl border-2 transition-all text-left ${
+                          selectedSlot === slot.id ? "border-brand bg-green-50 ring-2 ring-brand/10"
+                            : isAvailable ? "border-line bg-surface hover:border-brand/30" : "border-slate-100 bg-slate-50 opacity-60 cursor-not-allowed"
+                        }`}>
+                        <div>
+                          <p className="font-bold text-forest text-sm">{slot.time}</p>
+                          <p className="text-xs text-muted font-medium mt-1">{slot.remaining} q available</p>
+                        </div>
+                        <Badge tone={isAvailable ? "success" : "default"}>{isAvailable ? "Available" : "Full"}</Badge>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+              <div className="flex justify-between items-center pt-6 border-t border-line">
+                <Button variant="ghost" onClick={() => setActiveTab("dashboard")}>{t("overview")}</Button>
+                <Button onClick={createBooking} disabled={!selectedSlot || !selectedCrop}>{t("confirmBooking")} <ArrowRight className="w-4 h-4 ml-2" /></Button>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* ── TOKEN ── */}
+      {activeTab === "token" && (
+        <div className="max-w-md mx-auto">
+          <h1 className="font-display text-2xl font-bold text-forest mb-6">Your Digital Token</h1>
+          <Card className="flex flex-col items-center gap-6 text-center">
+            {booking?.token?.token_number ? (
+              <>
+                <div className="p-6 bg-white rounded-2xl border border-line shadow-sm">
+                  <QRCode value={booking.token.token_number} size={180} />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-muted uppercase tracking-widest mb-1">Token Number</p>
+                  <p className="font-display text-4xl font-extrabold text-forest">#{booking.token.token_number}</p>
+                </div>
+                <p className="text-sm text-muted">Show this QR code at the procurement centre gate</p>
+                <Badge tone="success" className="text-sm px-4 py-2">Valid for {booking?.booking?.date || "TBD"}</Badge>
+              </>
+            ) : (
+              <>
+                <p className="text-muted font-medium py-8">No token yet. Book a slot first.</p>
+                <Button onClick={() => setActiveTab("bookings")}>Book a Slot</Button>
+              </>
+            )}
+          </Card>
+        </div>
+      )}
+
+      {/* ── QUEUE ── */}
+      {activeTab === "queue" && (
+        <div className="max-w-2xl mx-auto">
+          <h1 className="font-display text-2xl font-bold text-forest mb-6">Live Queue Status</h1>
+          {queueEntry ? (
+            <Card className="bg-forest text-white border-transparent text-center">
+              <p className="text-xs font-bold text-white/50 uppercase tracking-widest mb-2">Your Position</p>
+              <p className="font-display text-7xl font-extrabold mb-4">#{queueEntry.queue_position}</p>
+              <p className="text-white/70 font-medium text-lg">Estimated wait: ~{queueEntry.estimated_wait_time} minutes</p>
+              <p className="text-white/40 text-sm mt-4">Currently serving: #08</p>
+            </Card>
+          ) : (
+            <Card className="text-center py-10">
+              <p className="text-muted font-medium mb-4">You are not in the queue yet.</p>
+              <Button onClick={() => setActiveTab("bookings")}>Book a Slot</Button>
+            </Card>
+          )}
+        </div>
+      )}
+
+      {/* ── PROCUREMENT ── */}
+      {activeTab === "procurement" && (
+        <div className="max-w-2xl mx-auto space-y-4">
+          <h1 className="font-display text-2xl font-bold text-forest mb-6">Procurement Details</h1>
+          {procurement ? (
+            <Card>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-bold text-muted">Status</span>
+                  <Badge tone="warning">{procurement.procurement_status}</Badge>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-bold text-muted">Actual Quantity</span>
+                  <span className="text-sm font-bold text-forest">{procurement.actual_quantity} q</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-bold text-muted">Quality Grade</span>
+                  <span className="text-sm font-bold text-forest">{procurement.quality_grade}</span>
+                </div>
+              </div>
+            </Card>
+          ) : (
+            <Card className="text-center py-10">
+              <p className="text-muted font-medium">No procurement record yet.</p>
+            </Card>
+          )}
+        </div>
+      )}
+
+      {/* ── PAYMENT ── */}
+      {activeTab === "payment" && (
+        <div className="max-w-2xl mx-auto">
+          <h1 className="font-display text-2xl font-bold text-forest mb-6">Payment Status</h1>
+          {payment ? (
+            <Card>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-bold text-muted">Amount</span>
+                  <span className="text-lg font-extrabold text-forest">&#8377;{payment.amount?.toLocaleString("en-IN")}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-bold text-muted">Status</span>
+                  <Badge tone="warning">{payment.payment_status}</Badge>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-bold text-muted">Ref</span>
+                  <span className="text-sm font-mono text-muted">{payment.transaction_ref}</span>
+                </div>
+              </div>
+            </Card>
+          ) : (
+            <Card className="text-center py-10">
+              <p className="text-muted font-medium">Payment details will appear after procurement is accepted.</p>
+            </Card>
+          )}
+        </div>
+      )}
+
+      {/* ── NOTIFICATIONS ── */}
+      {activeTab === "notifications" && (
+        <div className="max-w-2xl mx-auto">
+          <h1 className="font-display text-2xl font-bold text-forest mb-6">Notifications</h1>
+          <Card>
+            {booking ? (
+              <div className="space-y-4">
+                <div className="flex items-start gap-3 p-4 bg-green-50 rounded-xl border border-green-100">
+                  <span className="w-2 h-2 mt-1.5 rounded-full bg-brand shrink-0" />
+                  <div>
+                    <p className="text-sm font-bold text-forest">Slot Booked Successfully</p>
+                    <p className="text-xs text-muted mt-0.5">Your slot at Mangalagiri Centre on {booking?.booking?.date} is confirmed.</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 p-4 bg-blue-50 rounded-xl border border-blue-100">
+                  <span className="w-2 h-2 mt-1.5 rounded-full bg-blue-500 shrink-0" />
+                  <div>
+                    <p className="text-sm font-bold text-forest">Centre Update</p>
+                    <p className="text-xs text-muted mt-0.5">The centre is operating normally. Expected wait time: 35-45 min.</p>
+                  </div>
+                </div>
               </div>
             ) : (
-              <div className="glass-panel rounded-3xl p-6 sm:p-8 shadow-2xl max-w-sm w-full">
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="w-12 h-12 sm:w-14 sm:h-14 bg-brand/20 rounded-2xl flex items-center justify-center text-brand shrink-0">
-                    <Leaf size={24} />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-lg sm:text-xl text-forest">
-                      Smart Procurement
-                    </h3>
-                    <p className="text-xs sm:text-sm font-semibold text-slate-500">
-                      Monitor slots in real-time
-                    </p>
-                  </div>
-                </div>
-                <div className="space-y-4 sm:space-y-5">
-                  <div className="h-2.5 sm:h-3 w-full bg-slate-100 rounded-full overflow-hidden shadow-inner">
-                    <div className="h-full bg-brand w-3/4"></div>
-                  </div>
-                  <div className="h-2.5 sm:h-3 w-full bg-slate-100 rounded-full overflow-hidden shadow-inner">
-                    <div className="h-full bg-amber-400 w-1/2"></div>
-                  </div>
-                </div>
-              </div>
+              <p className="text-muted font-medium text-center py-8">No notifications yet.</p>
             )}
-          </div>
+          </Card>
         </div>
-      </section>
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-8 -mt-6 sm:-mt-8 relative z-20">
-        <nav className="flex justify-center mb-8 sm:mb-12 overflow-x-auto py-2">
-          <div className="bg-white p-1.5 sm:p-2 rounded-2xl shadow-lg border border-slate-200 inline-flex max-w-full">
-            {navItems(t).map(([id, Icon, label]) => (
-              <button
-                key={id}
-                onClick={() => setTab(id)}
-                className={`flex items-center gap-1.5 sm:gap-2 rounded-xl px-4 sm:px-6 py-3 sm:py-4 text-xs sm:text-base font-bold transition-all whitespace-nowrap ${tab === id ? "bg-forest text-white shadow-md" : "text-slate-500 hover:text-forest hover:bg-slate-50"}`}
-              >
-                <Icon className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />{" "}
-                <span>{label}</span>
-              </button>
-            ))}
-          </div>
-        </nav>
-
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={tab}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.3 }}
-          >
-            {tab === "home" && (
-              <Home
-                t={t}
-                booking={booking}
-                queueEntry={queueEntry}
-                procurement={procurement}
-                payment={payment}
-                crop={crops.find((c) => c.id === selectedCrop)}
-                onBook={() => setTab("book")}
-              />
-            )}
-            {tab === "book" && (
-              <BookingForm
-                t={t}
-                centres={centres}
-                selectedCentre={selectedCentre}
-                setSelectedCentre={setSelectedCentre}
-                crops={crops}
-                selectedCrop={selectedCrop}
-                setSelectedCrop={setSelectedCrop}
-                slots={slots}
-                selectedSlot={selectedSlot}
-                setSelectedSlot={setSelectedSlot}
-                quantity={quantity}
-                setQuantity={setQuantity}
-                saving={saving}
-                booking={booking}
-                onBook={createBooking}
-              />
-            )}
-            {tab === "queue" && (
-              <Queue
-                t={t}
-                booking={booking}
-                queueEntry={queueEntry}
-                centre={centres[0]}
-              />
-            )}
-            {tab === "status" && (
-              <Status
-                t={t}
-                booking={booking}
-                procurement={procurement}
-                payment={payment}
-              />
-            )}
-          </motion.div>
-        </AnimatePresence>
-      </main>
-    </div>
-  );
-}
-
-function Metric({ label, value, detail, highlight }) {
-  return (
-    <Panel className="relative overflow-hidden group border border-slate-200">
-      {highlight && (
-        <div className="absolute top-0 left-0 w-full h-1.5 bg-brand" />
       )}
-      <p className="text-xs sm:text-sm font-bold tracking-widest text-slate-500 uppercase mb-3 sm:mb-4">
-        {label}
-      </p>
-      <h3 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-forest mb-1.5 sm:mb-2 truncate">
-        {value}
-      </h3>
-      <p className="text-sm sm:text-base font-medium text-slate-600">
-        {detail}
-      </p>
-    </Panel>
-  );
-}
-
-function Home({ t, booking, queueEntry, procurement, payment, crop, onBook }) {
-  return (
-    <div className="space-y-6 sm:space-y-8">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <h2 className="font-display text-2xl sm:text-3xl font-bold text-forest">
-          {t.overview}
-        </h2>
-        {!booking && (
-          <button
-            onClick={onBook}
-            className="text-brand text-base sm:text-lg font-bold flex items-center gap-1 hover:underline self-start sm:self-auto"
-          >
-            {t.newSlot} <ChevronRight className="w-5 h-5" />
-          </button>
-        )}
-      </div>
-
-      <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-3">
-        <Metric
-          highlight
-          label={t.estimatedArrival}
-          value={queueEntry?.estimated_turn || "--"}
-          detail={
-            queueEntry
-              ? `Position ${queueEntry.queue_position}`
-              : "Calculated from live queue"
-          }
-        />
-        <Metric
-          label={t.cropQuantity}
-          value={booking ? crop?.name || "Booked" : "--"}
-          detail={
-            booking
-              ? `${booking.booking.estimated_quantity} ${t.quintals}`
-              : "No booking yet"
-          }
-        />
-        <Metric
-          label={t.paymentStatus}
-          value={booking ? payment?.payment_status || t.pending : "Not started"}
-          detail={
-            booking
-              ? procurement?.procurement_status || t.updatedAfter
-              : "Book a slot to track payment"
-          }
-        />
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-2 mt-4">
-        <Panel className="bg-forest text-white shadow-xl">
-          <h2 className="font-display text-2xl sm:text-3xl font-bold mb-4 sm:mb-6">
-            {t.procurementJourney}
-          </h2>
-          {booking ? (
-            <div className="space-y-6 sm:space-y-8 relative before:absolute before:inset-0 before:ml-4 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-1 before:bg-white/10">
-              <div className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
-                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-brand shadow-lg shrink-0 text-white">
-                  <CheckCircle2 className="w-6 h-6" />
-                </div>
-                <div className="w-[calc(100%-4rem)] md:w-[calc(50%-3rem)] p-4 sm:p-5 rounded-2xl bg-white/10 backdrop-blur border border-white/20 ml-5 md:ml-0">
-                  <h4 className="font-bold text-base sm:text-lg">
-                    {t.bookingConfirmed}
-                  </h4>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div>
-              <p className="text-white/80 text-base sm:text-lg mb-6 sm:mb-8 leading-relaxed">
-                Choose a crop, quantity, and available time to receive your
-                mandi token.
-              </p>
-              <button
-                onClick={onBook}
-                className="bg-white text-forest rounded-xl px-6 sm:px-8 py-3.5 sm:py-4 text-sm sm:text-base font-bold hover:bg-slate-100 transition-colors shadow-md"
-              >
-                Start Booking →
-              </button>
-            </div>
-          )}
-        </Panel>
-        <Panel>
-          <h2 className="font-display text-2xl sm:text-3xl font-bold text-forest mb-4 sm:mb-6">
-            {t.recentUpdates}
-          </h2>
-          <div className="flex h-40 sm:h-48 items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 p-4 text-center">
-            <p className="text-base sm:text-lg font-bold text-slate-400">
-              No recent updates.
-            </p>
-          </div>
-        </Panel>
-      </div>
-    </div>
-  );
-}
-
-function BookingForm({
-  t,
-  centres,
-  selectedCentre,
-  setSelectedCentre,
-  crops,
-  selectedCrop,
-  setSelectedCrop,
-  slots,
-  selectedSlot,
-  setSelectedSlot,
-  quantity,
-  setQuantity,
-  saving,
-  booking,
-  onBook,
-}) {
-  return (
-    <div className="grid gap-6 lg:gap-8 lg:grid-cols-[1fr_.6fr]">
-      <Panel className="p-6 sm:p-10">
-        <p className="text-xs sm:text-sm font-bold tracking-widest text-brand uppercase mb-2 sm:mb-3">
-          {t.bookStep}
-        </p>
-        <h2 className="font-display text-3xl sm:text-4xl font-bold text-forest mb-3 sm:mb-4">
-          {t.bookTitle}
-        </h2>
-        <p className="text-slate-500 text-base sm:text-lg mb-8 sm:mb-10">
-          {t.bookIntro}
-        </p>
-
-        <div className="space-y-6 sm:space-y-8">
-          <label className="block">
-            <span className="text-sm sm:text-base font-bold text-forest mb-2 sm:mb-3 block">
-              {t.centre}
-            </span>
-            <select
-              value={selectedCentre}
-              onChange={(e) => setSelectedCentre(e.target.value)}
-              className="w-full rounded-2xl border-2 border-slate-200 bg-white p-3.5 sm:p-4 text-sm sm:text-base font-bold text-forest shadow-sm outline-none focus:border-brand focus:ring-4 focus:ring-brand/10 transition-all appearance-none cursor-pointer"
-            >
-              {centres.length === 0 && (
-                <option value="">No active centres found</option>
-              )}
-              {centres.map((item) => (
-                <option value={item.id} key={item.id}>
-                  {item.name}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-            <label className="block">
-              <span className="text-sm sm:text-base font-bold text-forest mb-2 sm:mb-3 block">
-                {t.crop}
-              </span>
-              <select
-                value={selectedCrop}
-                onChange={(e) => setSelectedCrop(e.target.value)}
-                className="w-full rounded-2xl border-2 border-slate-200 bg-white p-3.5 sm:p-4 text-sm sm:text-base font-bold text-forest shadow-sm outline-none focus:border-brand focus:ring-4 focus:ring-brand/10 transition-all appearance-none cursor-pointer"
-              >
-                {crops.length === 0 && (
-                  <option value="">No active crops</option>
-                )}
-                {crops.map((c) => (
-                  <option value={c.id} key={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="block">
-              <span className="text-sm sm:text-base font-bold text-forest mb-2 sm:mb-3 block">
-                {t.quantity}
-              </span>
-              <input
-                value={quantity}
-                onChange={(e) => setQuantity(e.target.value)}
-                type="number"
-                min="1"
-                className="w-full rounded-2xl border-2 border-slate-200 bg-white p-3.5 sm:p-4 text-sm sm:text-base font-bold text-forest shadow-sm outline-none focus:border-brand focus:ring-4 focus:ring-brand/10 transition-all"
-              />
-            </label>
-          </div>
-
-          <div className="pt-4 sm:pt-6 border-t border-slate-100">
-            <h3 className="text-base sm:text-lg font-bold text-forest mb-4 sm:mb-6">
-              {t.availableSlots}
-            </h3>
-            <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2">
-              {slots.length === 0 && (
-                <p className="text-sm sm:text-base font-bold text-slate-400">
-                  No slots available.
-                </p>
-              )}
-              {slots.map((slot) => (
-                <button
-                  key={slot.id}
-                  onClick={() => setSelectedSlot(slot.id)}
-                  className={`flex flex-col rounded-2xl border-2 p-4 sm:p-5 text-left transition-all ${selectedSlot === slot.id ? "border-brand bg-green-50 shadow-md" : "border-slate-200 bg-white hover:border-brand/50 hover:shadow-sm"}`}
-                >
-                  <strong className="text-base sm:text-lg text-forest mb-1">
-                    {slot.date}
-                  </strong>
-                  <span className="text-xs sm:text-sm font-bold text-slate-500 mb-2 sm:mb-3">
-                    {slot.time}
-                  </span>
-                  <Badge tone={slot.tone}>{slot.remaining} q left</Badge>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <button
-            disabled={
-              saving || !selectedCentre || !selectedSlot || !selectedCrop
-            }
-            onClick={onBook}
-            className="mt-6 sm:mt-8 w-full rounded-xl bg-brand py-4 sm:py-5 text-base sm:text-lg font-bold text-white transition-all hover:bg-brand-hover shadow-lg disabled:opacity-50"
-          >
-            {saving
-              ? "Processing..."
-              : booking
-                ? t.bookedSuccess
-                : "Confirm Booking"}
-          </button>
-        </div>
-      </Panel>
-
-      <div className="rounded-2xl sm:rounded-3xl bg-forest text-white p-6 sm:p-10 flex flex-col justify-center relative overflow-hidden shadow-xl">
-        <div className="absolute top-0 right-0 p-8 opacity-10">
-          <Leaf size={140} />
-        </div>
-        <strong className="font-display text-5xl sm:text-6xl text-brand mb-6 sm:mb-8">
-          02
-        </strong>
-        <h3 className="font-display text-2xl sm:text-3xl font-bold mb-4 sm:mb-6">
-          {t.bookingHelpTitle}
-        </h3>
-        <p className="text-white/80 text-base sm:text-lg leading-relaxed font-medium">
-          {t.bookingHelp}
-        </p>
-      </div>
-    </div>
-  );
-}
-
-function Queue({ t, booking, queueEntry, centre }) {
-  return (
-    <Panel className="max-w-3xl mx-auto text-center py-12 sm:py-20 px-4">
-      <ListOrdered className="w-16 h-16 sm:w-20 sm:h-20 text-brand mx-auto mb-6 sm:mb-8" />
-      <h2 className="font-display text-3xl sm:text-4xl font-bold text-forest mb-3 sm:mb-4">
-        {t.liveQueue}
-      </h2>
-      <p className="text-base sm:text-lg font-bold text-slate-500 mb-8 sm:mb-10">
-        {centre?.name}
-      </p>
-
-      {booking?.token ? (
-        <div className="inline-block bg-slate-50 border-2 border-slate-200 rounded-2xl sm:rounded-3xl p-6 sm:p-10 shadow-sm w-full max-w-md">
-          <p className="text-xs sm:text-sm font-bold text-slate-500 uppercase tracking-widest mb-3 sm:mb-4">
-            {t.yourToken}
-          </p>
-          <strong className="font-display text-4xl sm:text-5xl text-forest block mb-6 sm:mb-8">
-            {booking.token.token_number}
-          </strong>
-          {queueEntry && (
-            <div className="flex flex-wrap gap-3 sm:gap-4 justify-center">
-              <Badge tone="soft">
-                <span className="text-xs sm:text-sm">
-                  Position: {queueEntry.queue_position}
-                </span>
-              </Badge>
-              <Badge tone="live">
-                <span className="text-xs sm:text-sm">{queueEntry.status}</span>
-              </Badge>
-            </div>
-          )}
-        </div>
-      ) : (
-        <p className="text-lg sm:text-xl font-bold text-slate-400">
-          Create a booking to view your queue entry.
-        </p>
-      )}
-    </Panel>
-  );
-}
-
-function Status({ t, booking, procurement, payment }) {
-  return (
-    <Panel className="max-w-3xl mx-auto py-12 sm:py-16 px-4">
-      <div className="text-center mb-8 sm:mb-12">
-        <CheckCircle2 className="w-16 h-16 sm:w-20 sm:h-20 text-brand mx-auto mb-6 sm:mb-8" />
-        <h2 className="font-display text-3xl sm:text-4xl font-bold text-forest">
-          {t.statusTitle}
-        </h2>
-      </div>
-
-      <div className="space-y-4 sm:space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 sm:p-6 rounded-2xl bg-slate-50 border-2 border-slate-200 shadow-sm">
-          <span className="text-base sm:text-lg font-bold text-forest">
-            Procurement Status
-          </span>
-          <Badge tone={procurement ? "live" : "neutral"}>
-            <span className="text-xs sm:text-sm">
-              {procurement?.procurement_status || "PENDING"}
-            </span>
-          </Badge>
-        </div>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 sm:p-6 rounded-2xl bg-slate-50 border-2 border-slate-200 shadow-sm">
-          <span className="text-base sm:text-lg font-bold text-forest">
-            Payment Status
-          </span>
-          <Badge tone={payment ? "live" : "neutral"}>
-            <span className="text-xs sm:text-sm">
-              {payment?.payment_status || "PENDING"}
-            </span>
-          </Badge>
-        </div>
-      </div>
-    </Panel>
+    </SidebarLayout>
   );
 }

@@ -1,129 +1,256 @@
-import { Globe, LogOut } from "lucide-react";
+import { forwardRef } from "react";
+import { clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
+import { LogOut, Check } from "lucide-react";
+import { motion } from "framer-motion";
+import Logo from "./Logo";
+import LanguagePicker from "./LanguagePicker";
 
-export function Icon({ children }) {
-  return (
-    <span aria-hidden="true" className="mr-2 flex items-center">
-      {children}
-    </span>
-  );
+export function cn(...inputs) {
+  return twMerge(clsx(inputs));
 }
 
-export function Badge({ children, tone = "neutral" }) {
-  const tones = {
-    live: "bg-green-100 text-green-800 border border-green-300",
-    soft: "bg-white text-forest border border-slate-200",
-    amber: "bg-amber-100 text-amber-800 border border-amber-300",
-    neutral: "bg-slate-100 text-slate-600 border border-slate-200",
-  };
+export const Button = forwardRef(({ className, variant = "primary", size = "default", children, ...props }, ref) => {
+  return (
+    <button
+      ref={ref}
+      className={cn(
+        "inline-flex items-center justify-center rounded-full font-bold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 active:scale-95 disabled:pointer-events-none disabled:opacity-50",
+        {
+          "bg-brand text-white hover:bg-brand-hover": variant === "primary",
+          "bg-white text-forest border border-line hover:border-brand/30 hover:bg-slate-50": variant === "outline",
+          "bg-forest text-white hover:bg-forest-dark": variant === "dark",
+          "bg-transparent text-muted hover:text-forest hover:bg-slate-100": variant === "ghost",
+          "h-8 px-4 text-xs": size === "sm",
+          "h-12 px-6 text-sm": size === "default",
+          "h-14 px-8 text-base": size === "lg",
+          "h-12 w-12 p-0": size === "icon",
+        },
+        className
+      )}
+      {...props}
+    >
+      {children}
+    </button>
+  );
+});
+Button.displayName = "Button";
+
+export const Input = forwardRef(({ className, ...props }, ref) => {
+  return (
+    <input
+      ref={ref}
+      className={cn(
+        "flex h-12 w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm text-forest transition-all placeholder:text-slate-400 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand disabled:cursor-not-allowed disabled:opacity-50",
+        className
+      )}
+      {...props}
+    />
+  );
+});
+Input.displayName = "Input";
+
+export const Select = forwardRef(({ className, children, ...props }, ref) => {
+  return (
+    <select
+      ref={ref}
+      className={cn(
+        "flex h-12 w-full cursor-pointer appearance-none rounded-xl border border-line bg-surface px-4 py-3 text-sm font-medium text-forest transition-all focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand disabled:cursor-not-allowed disabled:opacity-50",
+        className
+      )}
+      {...props}
+    >
+      {children}
+    </select>
+  );
+});
+Select.displayName = "Select";
+
+export const Badge = forwardRef(({ className, tone = "default", children, ...props }, ref) => {
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold tracking-wide shadow-sm ${tones[tone]}`}
+      ref={ref}
+      className={cn(
+        "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold",
+        {
+          "bg-slate-100 text-slate-700": tone === "default",
+          "bg-[#E8F5E9] text-[#2E7D32]": tone === "success" || tone === "green",
+          "bg-brand text-white": tone === "brand",
+          "bg-[#FFF3E0] text-[#EF6C00]": tone === "warning" || tone === "amber",
+          "bg-red-50 text-red-600": tone === "error",
+          "bg-forest text-white": tone === "dark",
+        },
+        className
+      )}
+      {...props}
     >
       {children}
     </span>
   );
-}
+});
+Badge.displayName = "Badge";
 
-export function LanguagePicker({ language, onChange }) {
-  return (
-    <div className="relative flex items-center">
-      <Globe className="absolute left-3 h-4 w-4 text-slate-500 pointer-events-none hidden sm:block" />
-      <select
-        value={language}
-        onChange={(event) => onChange(event.target.value)}
-        className="appearance-none rounded-full border border-slate-300 bg-white py-2 sm:py-2.5 pl-3 sm:pl-9 pr-8 text-xs sm:text-sm font-bold text-slate-800 shadow-sm outline-none transition-all hover:border-brand focus:border-brand focus:ring-2 focus:ring-brand/20 cursor-pointer"
-      >
-        {[
-          ["en", "English"],
-          ["hi", "हिन्दी"],
-          ["te", "తెలుగు"],
-          ["mr", "मराठी"],
-          ["bn", "বাংলা"],
-        ].map(([code, label]) => (
-          <option
-            value={code}
-            key={code}
-            className="text-slate-900 font-medium"
-          >
-            {label}
-          </option>
-        ))}
-      </select>
-    </div>
-  );
-}
-
-export function Brand({ dark = false }) {
+export const Card = forwardRef(({ className, ...props }, ref) => {
   return (
     <div
-      className={`flex items-center gap-2 font-display text-base sm:text-xl font-bold tracking-tight ${dark ? "text-white" : "text-forest"}`}
-    >
-      <span className="grid h-8 w-8 sm:h-9 sm:w-9 place-items-center rounded-xl bg-brand text-xs sm:text-sm text-white shadow-md font-bold shrink-0">
-        KM
-      </span>
-      <span className="truncate">
-        Krishak<span className="text-brand">Mitra</span>
-      </span>
-    </div>
+      ref={ref}
+      className={cn("bg-surface border border-line rounded-3xl p-6 transition-all duration-300", className)}
+      {...props}
+    />
   );
-}
+});
+Card.displayName = "Card";
 
-export function Header({
-  admin,
-  language,
-  onLanguageChange,
-  onLogout,
-  centreName,
-  t,
-}) {
+export function CircularProgress({ value, label, subLabel }) {
+  const radius = 36;
+  const circumference = 2 * Math.PI * radius;
+  const strokeDashoffset = circumference - (value / 100) * circumference;
+
   return (
-    <header className="fixed top-3 sm:top-4 left-1/2 z-50 w-[96%] sm:w-[95%] max-w-7xl -translate-x-1/2">
-      <div
-        className={`flex h-16 sm:h-18 items-center justify-between rounded-full px-4 sm:px-8 shadow-xl transition-all border ${
-          admin
-            ? "bg-forest text-white border-emerald-900 shadow-emerald-950/20"
-            : "bg-white/95 backdrop-blur-md text-slate-900 border-slate-200/80"
-        }`}
-      >
-        <Brand dark={admin} />
-
-        <div className="hidden md:flex flex-1 items-center justify-center px-4">
-          <span
-            className={`text-xs sm:text-sm font-extrabold tracking-wider uppercase px-4 py-1.5 rounded-full truncate max-w-xs ${
-              admin
-                ? "bg-white/10 text-emerald-100 border border-white/10"
-                : "bg-slate-100 text-slate-700"
-            }`}
-          >
-            {centreName || (admin ? t.adminPortal : t.farmerPortal)}
-          </span>
-        </div>
-
-        <div className="flex items-center gap-2 sm:gap-4">
-          <LanguagePicker language={language} onChange={onLanguageChange} />
-          <button
-            onClick={onLogout}
-            className={`flex items-center gap-2 rounded-full px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-bold transition-all hover:scale-105 active:scale-95 shadow-sm ${
-              admin
-                ? "bg-white text-forest hover:bg-emerald-50"
-                : "bg-forest text-white hover:bg-emerald-900"
-            }`}
-          >
-            <span className="hidden xs:inline sm:inline">{t.logout}</span>
-            <LogOut className="h-4 w-4 shrink-0" />
-          </button>
+    <div className="flex flex-col items-center justify-center">
+      <div className="relative w-24 h-24 flex items-center justify-center">
+        <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r={radius} stroke="currentColor" strokeWidth="6" fill="transparent" className="text-slate-100" />
+          <circle 
+            cx="50" cy="50" r={radius} stroke="currentColor" strokeWidth="6" fill="transparent"
+            strokeDasharray={circumference}
+            strokeDashoffset={strokeDashoffset}
+            className="text-brand transition-all duration-1000 ease-out"
+          />
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <span className="font-display font-bold text-xl text-forest">{value}%</span>
+          <span className="text-[10px] text-muted font-bold uppercase">{label}</span>
         </div>
       </div>
-    </header>
+      {subLabel && <p className="text-xs font-bold text-muted mt-2">{subLabel}</p>}
+    </div>
   );
 }
 
-export function Panel({ children, className = "" }) {
+export function ProgressTimeline({ steps, currentStep }) {
   return (
-    <div
-      className={`rounded-2xl sm:rounded-3xl bg-white p-5 sm:p-8 shadow-lg border border-slate-200 ${className}`}
-    >
-      {children}
+    <div className="w-full flex items-center justify-between relative mt-4 mb-2">
+      <div className="absolute left-4 right-4 top-4 h-0.5 bg-slate-100 -z-10" />
+      <div 
+        className="absolute left-4 top-4 h-0.5 bg-brand -z-10 transition-all duration-500" 
+        style={{ width: `calc(${(currentStep / (steps.length - 1)) * 100}% - 2rem)` }}
+      />
+      {steps.map((step, idx) => {
+        const isCompleted = idx <= currentStep;
+        return (
+          <div key={idx} className="flex flex-col items-center gap-2">
+            <div className={cn("w-8 h-8 rounded-full flex items-center justify-center transition-colors border-4 border-surface", isCompleted ? "bg-brand text-white" : "bg-slate-200 text-slate-400")}>
+              {isCompleted ? <Check className="w-4 h-4" /> : <span className="w-2 h-2 rounded-full bg-current" />}
+            </div>
+            <div className="text-center">
+              <span className="block text-xs font-bold text-forest">{step.title}</span>
+              <span className="block text-[10px] text-muted">{step.subtitle || (isCompleted ? "Completed" : "Pending")}</span>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+export function SidebarLayout({ children, activeTab, onTabChange, navItems, onLogout, language, onLanguageChange }) {
+  return (
+    <div className="flex min-h-screen bg-cream">
+      {/* Desktop Sidebar */}
+      <aside className="hidden lg:flex w-[260px] bg-forest flex-col fixed inset-y-0 left-0 z-50">
+        {/* Sidebar logo — full logo in white pill so it reads on dark green */}
+        <div className="px-5 py-4 flex flex-col items-center border-b border-white/5">
+          <div className="bg-white rounded-2xl px-4 py-2 shadow-md">
+            <Logo variant="full" className="h-12 w-auto" />
+          </div>
+        </div>
+        
+        <div className="p-6 pb-2 border-b border-white/5 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white font-bold">SM</div>
+            <div>
+              <p className="text-xs text-brand font-bold uppercase tracking-widest">Good Morning,</p>
+              <p className="text-sm text-white font-bold">Ramesh Kumar</p>
+            </div>
+          </div>
+        </div>
+
+        <nav className="flex-1 p-4 space-y-1">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = activeTab === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => onTabChange(item.id)}
+                className={cn(
+                  "flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-bold transition-all",
+                  isActive ? "bg-brand/20 text-white" : "text-slate-400 hover:text-white hover:bg-white/5"
+                )}
+              >
+                <Icon className={cn("w-5 h-5", isActive ? "text-brand" : "")} />
+                {item.label}
+              </button>
+            );
+          })}
+        </nav>
+
+        <div className="p-4 border-t border-white/5">
+          <button onClick={onLogout} className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-bold text-slate-400 hover:text-white hover:bg-white/5 transition-all">
+            <LogOut className="w-5 h-5" /> Logout
+          </button>
+        </div>
+      </aside>
+
+      {/* Main Content Area */}
+      <main className="flex-1 lg:pl-[260px] pb-20 lg:pb-0">
+        {/* Top Header */}
+        <header className="h-16 border-b border-line bg-surface flex items-center px-6 sm:px-8 sticky top-0 z-40">
+          {/* Mobile: show emblem (hidden on desktop since sidebar shows full logo) */}
+          <div className="flex items-center gap-2 lg:hidden">
+            <Logo variant="emblem" className="w-9 h-9" />
+          </div>
+
+          {/* Controls — always pinned to the right */}
+          <div className="ml-auto flex items-center gap-3">
+            <LanguagePicker value={language} onChange={onLanguageChange} />
+
+            <button
+              onClick={onLogout}
+              className="flex items-center gap-2 h-9 px-4 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 text-sm font-bold transition-all border border-red-100"
+            >
+              <LogOut className="w-4 h-4" />
+              <span className="hidden sm:inline">Logout</span>
+            </button>
+          </div>
+        </header>
+        
+        <div className="p-4 sm:p-8">
+          {children}
+        </div>
+      </main>
+
+      {/* Mobile Bottom Nav */}
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-surface border-t border-line z-50 flex items-center justify-around p-2 pb-safe">
+        {navItems.slice(0, 4).map((item) => {
+            const Icon = item.icon;
+            const isActive = activeTab === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => onTabChange(item.id)}
+                className={cn(
+                  "flex flex-col items-center gap-1 p-2 min-w-[64px] rounded-xl transition-all",
+                  isActive ? "text-brand" : "text-muted"
+                )}
+              >
+                <Icon className={cn("w-6 h-6", isActive ? "text-brand" : "")} />
+                <span className="text-[10px] font-bold">{item.label}</span>
+              </button>
+            );
+          })}
+      </nav>
     </div>
   );
 }

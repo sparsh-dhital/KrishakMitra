@@ -1,0 +1,17 @@
+{
+  "name": "KrishakMitra",
+  "short_name": "KrishakMitra",
+  "description": "Smarter Procurement. Stronger Farmers.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F5F9F6",
+  "theme_color": "#0A2A1B",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

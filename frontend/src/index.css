@@ -1,52 +1,73 @@
-@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap");
 @import "tailwindcss";
 
 @theme {
-  --font-display: "Space Grotesk", ui-sans-serif, sans-serif;
-  --font-body: "DM Sans", ui-sans-serif, sans-serif;
-  
-  --color-forest: #022c22;
-  --color-forest-dark: #064e3b;
-  --color-brand: #16a34a;
-  --color-brand-hover: #15803d;
-  --color-cream: #f8fafc;
-  --color-line: #cbd5e1;
-  --color-muted: #475569;
+  --font-display: "Plus Jakarta Sans", ui-sans-serif, sans-serif;
+  --font-body: "Inter", ui-sans-serif, sans-serif;
+
+  --color-forest: #0A2A1B;
+  --color-forest-dark: #071D12;
+  --color-brand: #187948;
+  --color-brand-hover: #126038;
+  --color-cream: #F5F9F6;
+  --color-surface: #ffffff;
+  --color-line: #E2EBE5;
+  --color-muted: #4B6358;
 }
 
-/* Enable smooth scrolling globally */
-html {
-  scroll-behavior: smooth;
+/* Custom Utilities for lenis smooth scroll */
+html.lenis, html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
 }
 
 :root {
   font-family: var(--font-body);
   color: var(--color-forest);
   background: var(--color-cream);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
   margin: 0;
   min-width: 320px;
-  -webkit-font-smoothing: antialiased;
 }
 
-button, input, select {
-  font: inherit;
+::selection {
+  background: var(--color-brand);
+  color: white;
 }
 
-.glass-panel {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(226, 232, 240, 0.8);
-  box-shadow: 0 10px 40px -10px rgba(0,0,0,0.1);
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent; 
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1; 
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8; 
 }
 
-.glass-panel-dark {
-  background: rgba(2, 44, 34, 0.90);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+/* Base Card from Reference */
+.card {
+  @apply bg-surface border border-line rounded-3xl p-6 shadow-sm transition-all duration-300;
 }

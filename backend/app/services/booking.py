@@ -81,11 +81,24 @@ def create_booking(
             {
                 "booking_id": booking["id"],
                 "token_number": token_number,
+                "qr_data": f'{{"token": "{token_number}", "booking_id": "{booking["id"]}"}}',
             }
         )
         .execute()
         .data
     )
+
+    if token:
+        try:
+            queue_res = supabase.table("queue_entries").select("id").execute()
+            pos = len(queue_res.data) + 1 if queue_res.data else 1
+            supabase.table("queue_entries").insert({
+                "token_id": token[0]["id"],
+                "queue_position": pos,
+                "status": "waiting"
+            }).execute()
+        except Exception as e:
+            print("Failed to init queue:", e)
 
     return {
         "booking": booking,
