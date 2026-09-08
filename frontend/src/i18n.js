@@ -82,6 +82,63 @@ const base = {
   adminPortal:        "OPERATIONS CONSOLE",
 };
 
+const adminTranslations = {
+  en: {
+    alerts: "Alerts", reports: "Reports", totalBookings: "Total Bookings", inQueue: "In Queue",
+    viewAll: "View All", farmerName: "Farmer Name", token: "Token", quantityShort: "Qty", status: "Status",
+    notAvailable: "N/A", kilograms: "kg", noFarmersInQueue: "No farmers in queue.", manageActiveToken: "Manage Active Token",
+    stage: "Stage", updateToken: "Update Token", centreStatus: "Centre Status", operatingNormally: "Operating Normally",
+    queue: "Queue", farmers: "farmers", estimatedWait: "Est. Wait", minutes: "min", capacity: "Capacity",
+    currentOperations: "Current Operations", qualityAndWeight: "Quality & Weight", procurement: "Procurement", payment: "Payment",
+    statusUpdated: "Updated to", statusUpdateFailed: "Status update failed", statusBooked: "Booked", statusCheckedIn: "Checked In",
+    statusWaiting: "Waiting", statusWeighing: "Weighing", statusQualityCheck: "Quality Check", statusAccepted: "Accepted", statusPaid: "Paid",
+  },
+  hi: {
+    alerts: "सूचनाएँ", reports: "रिपोर्ट", totalBookings: "कुल बुकिंग", inQueue: "कतार में", viewAll: "सभी देखें", farmerName: "किसान का नाम", token: "टोकन", quantityShort: "मात्रा", status: "स्थिति",
+    notAvailable: "उपलब्ध नहीं", kilograms: "किलोग्राम", noFarmersInQueue: "कतार में कोई किसान नहीं है।", manageActiveToken: "सक्रिय टोकन प्रबंधित करें", stage: "चरण", updateToken: "टोकन अपडेट करें", centreStatus: "केंद्र की स्थिति", operatingNormally: "सामान्य रूप से चल रहा है", queue: "कतार", farmers: "किसान", estimatedWait: "अनुमानित प्रतीक्षा", minutes: "मिनट", capacity: "क्षमता", currentOperations: "वर्तमान संचालन", qualityAndWeight: "गुणवत्ता और वजन", procurement: "खरीद", payment: "भुगतान", statusUpdated: "अपडेट किया गया", statusUpdateFailed: "स्थिति अपडेट विफल", statusBooked: "बुक किया गया", statusCheckedIn: "चेक-इन किया गया", statusWaiting: "प्रतीक्षारत", statusWeighing: "तौला जा रहा है", statusQualityCheck: "गुणवत्ता जाँच", statusAccepted: "स्वीकृत", statusPaid: "भुगतान किया गया",
+  },
+  te: {
+    alerts: "హెచ్చరికలు", reports: "నివేదికలు", totalBookings: "మొత్తం బుకింగ్‌లు", inQueue: "క్యూలో", viewAll: "అన్నీ చూడండి", farmerName: "రైతు పేరు", token: "టోకెన్", quantityShort: "పరిమాణం", status: "స్థితి",
+    notAvailable: "అందుబాటులో లేదు", kilograms: "కిలోలు", noFarmersInQueue: "క్యూలో రైతులు లేరు.", manageActiveToken: "సక్రియ టోకెన్ నిర్వహణ", stage: "దశ", updateToken: "టోకెన్ నవీకరించండి", centreStatus: "కేంద్ర స్థితి", operatingNormally: "సాధారణంగా పనిచేస్తోంది", queue: "క్యూ", farmers: "రైతులు", estimatedWait: "అంచనా వేచి ఉండే సమయం", minutes: "నిమిషాలు", capacity: "సామర్థ్యం", currentOperations: "ప్రస్తుత కార్యకలాపాలు", qualityAndWeight: "నాణ్యత మరియు బరువు", procurement: "సేకరణ", payment: "చెల్లింపు", statusUpdated: "నవీకరించబడింది", statusUpdateFailed: "స్థితి నవీకరణ విఫలమైంది", statusBooked: "బుక్ చేయబడింది", statusCheckedIn: "చెక్-ఇన్ అయింది", statusWaiting: "వేచి ఉంది", statusWeighing: "బరువు తూస్తున్నారు", statusQualityCheck: "నాణ్యత తనిఖీ", statusAccepted: "ఆమోదించబడింది", statusPaid: "చెల్లించబడింది",
+  },
+  bn: {
+    alerts: "সতর্কতা", reports: "রিপোর্ট", totalBookings: "মোট বুকিং", inQueue: "সারিতে", viewAll: "সব দেখুন", farmerName: "কৃষকের নাম", token: "টোকেন", quantityShort: "পরিমাণ", status: "অবস্থা",
+    notAvailable: "পাওয়া যায়নি", kilograms: "কেজি", noFarmersInQueue: "সারিতে কোনো কৃষক নেই।", manageActiveToken: "সক্রিয় টোকেন পরিচালনা", stage: "ধাপ", updateToken: "টোকেন আপডেট করুন", centreStatus: "কেন্দ্রের অবস্থা", operatingNormally: "স্বাভাবিকভাবে চলছে", queue: "সারি", farmers: "কৃষক", estimatedWait: "আনুমানিক অপেক্ষা", minutes: "মিনিট", capacity: "ক্ষমতা", currentOperations: "বর্তমান কার্যক্রম", qualityAndWeight: "গুণমান ও ওজন", procurement: "সংগ্রহ", payment: "পেমেন্ট", statusUpdated: "আপডেট হয়েছে", statusUpdateFailed: "অবস্থা আপডেট ব্যর্থ", statusBooked: "বুক করা হয়েছে", statusCheckedIn: "চেক-ইন হয়েছে", statusWaiting: "অপেক্ষমাণ", statusWeighing: "ওজন করা হচ্ছে", statusQualityCheck: "গুণমান পরীক্ষা", statusAccepted: "গৃহীত", statusPaid: "পেমেন্ট হয়েছে",
+  },
+  mr: {
+    alerts: "सूचना", reports: "अहवाल", totalBookings: "एकूण बुकिंग", inQueue: "रांगेत", viewAll: "सर्व पहा", farmerName: "शेतकऱ्याचे नाव", token: "टोकन", quantityShort: "प्रमाण", status: "स्थिती",
+    notAvailable: "उपलब्ध नाही", kilograms: "किलो", noFarmersInQueue: "रांगेत कोणतेही शेतकरी नाहीत.", manageActiveToken: "सक्रिय टोकन व्यवस्थापित करा", stage: "टप्पा", updateToken: "टोकन अद्यतनित करा", centreStatus: "केंद्राची स्थिती", operatingNormally: "सामान्यपणे सुरू आहे", queue: "रांग", farmers: "शेतकरी", estimatedWait: "अंदाजे प्रतीक्षा", minutes: "मिनिटे", capacity: "क्षमता", currentOperations: "सध्याचे ऑपरेशन्स", qualityAndWeight: "गुणवत्ता आणि वजन", procurement: "खरेदी", payment: "पेमेंट", statusUpdated: "अद्यतनित केले", statusUpdateFailed: "स्थिती अद्यतन अयशस्वी", statusBooked: "बुक केले", statusCheckedIn: "चेक-इन केले", statusWaiting: "प्रतीक्षेत", statusWeighing: "वजन केले जात आहे", statusQualityCheck: "गुणवत्ता तपासणी", statusAccepted: "स्वीकृत", statusPaid: "पेमेंट केले",
+  },
+  ta: {
+    alerts: "எச்சரிக்கைகள்", reports: "அறிக்கைகள்", totalBookings: "மொத்த முன்பதிவுகள்", inQueue: "வரிசையில்", viewAll: "அனைத்தையும் காண்க", farmerName: "விவசாயி பெயர்", token: "டோக்கன்", quantityShort: "அளவு", status: "நிலை",
+    notAvailable: "கிடைக்கவில்லை", kilograms: "கிலோ", noFarmersInQueue: "வரிசையில் விவசாயிகள் இல்லை.", manageActiveToken: "செயலில் உள்ள டோக்கனை நிர்வகிக்கவும்", stage: "நிலை", updateToken: "டோக்கனை புதுப்பிக்கவும்", centreStatus: "மைய நிலை", operatingNormally: "சாதாரணமாக இயங்குகிறது", queue: "வரிசை", farmers: "விவசாயிகள்", estimatedWait: "மதிப்பிடப்பட்ட காத்திருப்பு", minutes: "நிமி", capacity: "திறன்", currentOperations: "தற்போதைய செயல்பாடுகள்", qualityAndWeight: "தரம் மற்றும் எடை", procurement: "கொள்முதல்", payment: "கட்டணம்", statusUpdated: "புதுப்பிக்கப்பட்டது", statusUpdateFailed: "நிலை புதுப்பிப்பு தோல்வியடைந்தது", statusBooked: "முன்பதிவு செய்யப்பட்டது", statusCheckedIn: "செக்-இன் செய்யப்பட்டது", statusWaiting: "காத்திருக்கிறது", statusWeighing: "எடை போடப்படுகிறது", statusQualityCheck: "தரச் சோதனை", statusAccepted: "ஏற்கப்பட்டது", statusPaid: "கட்டணம் செலுத்தப்பட்டது",
+  },
+  gu: {
+    alerts: "ચેતવણીઓ", reports: "રિપોર્ટ્સ", totalBookings: "કુલ બુકિંગ", inQueue: "કતારમાં", viewAll: "બધું જુઓ", farmerName: "ખેડૂતનું નામ", token: "ટોકન", quantityShort: "જથ્થો", status: "સ્થિતિ",
+    notAvailable: "ઉપલબ્ધ નથી", kilograms: "કિલો", noFarmersInQueue: "કતારમાં કોઈ ખેડૂત નથી.", manageActiveToken: "સક્રિય ટોકન મેનેજ કરો", stage: "તબક્કો", updateToken: "ટોકન અપડેટ કરો", centreStatus: "કેન્દ્રની સ્થિતિ", operatingNormally: "સામાન્ય રીતે કાર્યરત", queue: "કતાર", farmers: "ખેડૂતો", estimatedWait: "અંદાજિત રાહ", minutes: "મિનિટ", capacity: "ક્ષમતા", currentOperations: "વર્તમાન કામગીરી", qualityAndWeight: "ગુણવત્તા અને વજન", procurement: "ખરીદ", payment: "ચૂકવણી", statusUpdated: "અપડેટ થયું", statusUpdateFailed: "સ્થિતિ અપડેટ નિષ્ફળ", statusBooked: "બુક થયું", statusCheckedIn: "ચેક-ઇન થયું", statusWaiting: "રાહ જોઈ રહ્યું છે", statusWeighing: "વજન થઈ રહ્યું છે", statusQualityCheck: "ગુણવત્તા તપાસ", statusAccepted: "સ્વીકાર્યું", statusPaid: "ચૂકવણી થઈ",
+  },
+  kn: {
+    alerts: "ಎಚ್ಚರಿಕೆಗಳು", reports: "ವರದಿಗಳು", totalBookings: "ಒಟ್ಟು ಬುಕಿಂಗ್‌ಗಳು", inQueue: "ಸರತಿಯಲ್ಲಿ", viewAll: "ಎಲ್ಲವನ್ನೂ ನೋಡಿ", farmerName: "ರೈತನ ಹೆಸರು", token: "ಟೋಕನ್", quantityShort: "ಪ್ರಮಾಣ", status: "ಸ್ಥಿತಿ",
+    notAvailable: "ಲಭ್ಯವಿಲ್ಲ", kilograms: "ಕೆಜಿ", noFarmersInQueue: "ಸರತಿಯಲ್ಲಿ ರೈತರಿಲ್ಲ.", manageActiveToken: "ಸಕ್ರಿಯ ಟೋಕನ್ ನಿರ್ವಹಿಸಿ", stage: "ಹಂತ", updateToken: "ಟೋಕನ್ ನವೀಕರಿಸಿ", centreStatus: "ಕೇಂದ್ರ ಸ್ಥಿತಿ", operatingNormally: "ಸಾಮಾನ್ಯವಾಗಿ ಕಾರ್ಯನಿರ್ವಹಿಸುತ್ತಿದೆ", queue: "ಸರತಿ", farmers: "ರೈತರು", estimatedWait: "ಅಂದಾಜು ಕಾಯುವಿಕೆ", minutes: "ನಿಮಿಷ", capacity: "ಸಾಮರ್ಥ್ಯ", currentOperations: "ಪ್ರಸ್ತುತ ಕಾರ್ಯಾಚರಣೆಗಳು", qualityAndWeight: "ಗುಣಮಟ್ಟ ಮತ್ತು ತೂಕ", procurement: "ಸಂಗ್ರಹಣೆ", payment: "ಪಾವತಿ", statusUpdated: "ನವೀಕರಿಸಲಾಗಿದೆ", statusUpdateFailed: "ಸ್ಥಿತಿ ನವೀಕರಣ ವಿಫಲವಾಗಿದೆ", statusBooked: "ಬುಕ್ ಮಾಡಲಾಗಿದೆ", statusCheckedIn: "ಚೆಕ್-ಇನ್ ಮಾಡಲಾಗಿದೆ", statusWaiting: "ಕಾಯುತ್ತಿದೆ", statusWeighing: "ತೂಕ ಮಾಡಲಾಗುತ್ತಿದೆ", statusQualityCheck: "ಗುಣಮಟ್ಟ ಪರಿಶೀಲನೆ", statusAccepted: "ಸ್ವೀಕರಿಸಲಾಗಿದೆ", statusPaid: "ಪಾವತಿಸಲಾಗಿದೆ",
+  },
+  ml: {
+    alerts: "അറിയിപ്പുകൾ", reports: "റിപ്പോർട്ടുകൾ", totalBookings: "ആകെ ബുക്കിംഗുകൾ", inQueue: "ക്യൂവിൽ", viewAll: "എല്ലാം കാണുക", farmerName: "കർഷകന്റെ പേര്", token: "ടോക്കൺ", quantityShort: "അളവ്", status: "നില",
+    notAvailable: "ലഭ്യമല്ല", kilograms: "കിലോ", noFarmersInQueue: "ക്യൂവിൽ കർഷകരില്ല.", manageActiveToken: "സജീവ ടോക്കൺ നിയന്ത്രിക്കുക", stage: "ഘട്ടം", updateToken: "ടോക്കൺ അപ്‌ഡേറ്റ് ചെയ്യുക", centreStatus: "കേന്ദ്ര നില", operatingNormally: "സാധാരണയായി പ്രവർത്തിക്കുന്നു", queue: "ക്യൂ", farmers: "കർഷകർ", estimatedWait: "കണക്കാക്കിയ കാത്തിരിപ്പ്", minutes: "മിനിറ്റ്", capacity: "ശേഷി", currentOperations: "നിലവിലെ പ്രവർത്തനങ്ങൾ", qualityAndWeight: "ഗുണനിലവാരവും ഭാരവും", procurement: "സംഭരണം", payment: "പേയ്‌മെന്റ്", statusUpdated: "അപ്‌ഡേറ്റ് ചെയ്തു", statusUpdateFailed: "നില അപ്‌ഡേറ്റ് പരാജയപ്പെട്ടു", statusBooked: "ബുക്ക് ചെയ്തു", statusCheckedIn: "ചെക്ക്-ഇൻ ചെയ്തു", statusWaiting: "കാത്തിരിക്കുന്നു", statusWeighing: "തൂക്കം എടുക്കുന്നു", statusQualityCheck: "ഗുണനിലവാര പരിശോധന", statusAccepted: "അംഗീകരിച്ചു", statusPaid: "പേയ്‌മെന്റ് ചെയ്തു",
+  },
+  pa: {
+    alerts: "ਚੇਤਾਵਨੀਆਂ", reports: "ਰਿਪੋਰਟਾਂ", totalBookings: "ਕੁੱਲ ਬੁਕਿੰਗਾਂ", inQueue: "ਕਤਾਰ ਵਿੱਚ", viewAll: "ਸਭ ਦੇਖੋ", farmerName: "ਕਿਸਾਨ ਦਾ ਨਾਮ", token: "ਟੋਕਨ", quantityShort: "ਮਾਤਰਾ", status: "ਸਥਿਤੀ",
+    notAvailable: "ਉਪਲਬਧ ਨਹੀਂ", kilograms: "ਕਿਲੋ", noFarmersInQueue: "ਕਤਾਰ ਵਿੱਚ ਕੋਈ ਕਿਸਾਨ ਨਹੀਂ।", manageActiveToken: "ਸਰਗਰਮ ਟੋਕਨ ਸੰਭਾਲੋ", stage: "ਪੜਾਅ", updateToken: "ਟੋਕਨ ਅਪਡੇਟ ਕਰੋ", centreStatus: "ਕੇਂਦਰ ਦੀ ਸਥਿਤੀ", operatingNormally: "ਆਮ ਤੌਰ 'ਤੇ ਚੱਲ ਰਿਹਾ ਹੈ", queue: "ਕਤਾਰ", farmers: "ਕਿਸਾਨ", estimatedWait: "ਅਨੁਮਾਨਿਤ ਉਡੀਕ", minutes: "ਮਿੰਟ", capacity: "ਸਮਰੱਥਾ", currentOperations: "ਮੌਜੂਦਾ ਕਾਰਵਾਈਆਂ", qualityAndWeight: "ਗੁਣਵੱਤਾ ਅਤੇ ਵਜ਼ਨ", procurement: "ਖਰੀਦ", payment: "ਭੁਗਤਾਨ", statusUpdated: "ਅਪਡੇਟ ਕੀਤਾ ਗਿਆ", statusUpdateFailed: "ਸਥਿਤੀ ਅਪਡੇਟ ਅਸਫਲ", statusBooked: "ਬੁੱਕ ਹੋਇਆ", statusCheckedIn: "ਚੈੱਕ-ਇਨ ਹੋਇਆ", statusWaiting: "ਉਡੀਕ ਵਿੱਚ", statusWeighing: "ਵਜ਼ਨ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ", statusQualityCheck: "ਗੁਣਵੱਤਾ ਜਾਂਚ", statusAccepted: "ਮਨਜ਼ੂਰ", statusPaid: "ਭੁਗਤਾਨ ਹੋਇਆ",
+  },
+  or: {
+    alerts: "ସତର୍କତା", reports: "ରିପୋର୍ଟ", totalBookings: "ମୋଟ ବୁକିଂ", inQueue: "ଧାଡ଼ିରେ", viewAll: "ସମସ୍ତ ଦେଖନ୍ତୁ", farmerName: "ଚାଷୀଙ୍କ ନାମ", token: "ଟୋକେନ", quantityShort: "ପରିମାଣ", status: "ସ୍ଥିତି",
+    notAvailable: "ଉପଲବ୍ଧ ନାହିଁ", kilograms: "କିଲୋ", noFarmersInQueue: "ଧାଡ଼ିରେ କୌଣସି ଚାଷୀ ନାହାନ୍ତି।", manageActiveToken: "ସକ୍ରିୟ ଟୋକେନ ପରିଚାଳନା", stage: "ପର୍ଯ୍ୟାୟ", updateToken: "ଟୋକେନ ଅଦ୍ୟତନ", centreStatus: "କେନ୍ଦ୍ର ସ୍ଥିତି", operatingNormally: "ସାଧାରଣ ଭାବେ ଚାଲୁଛି", queue: "ଧାଡ଼ି", farmers: "ଚାଷୀ", estimatedWait: "ଆନୁମାନିକ ଅପେକ୍ଷା", minutes: "ମିନିଟ", capacity: "କ୍ଷମତା", currentOperations: "ବର୍ତ୍ତମାନ କାର୍ଯ୍ୟ", qualityAndWeight: "ଗୁଣବତ୍ତା ଓ ଓଜନ", procurement: "କ୍ରୟ", payment: "ଦେୟ", statusUpdated: "ଅଦ୍ୟତନ ହେଲା", statusUpdateFailed: "ସ୍ଥିତି ଅଦ୍ୟତନ ବିଫଳ", statusBooked: "ବୁକ ହୋଇଛି", statusCheckedIn: "ଚେକ୍-ଇନ ହୋଇଛି", statusWaiting: "ଅପେକ୍ଷାରତ", statusWeighing: "ଓଜନ ହେଉଛି", statusQualityCheck: "ଗୁଣବତ୍ତା ଯାଞ୍ଚ", statusAccepted: "ଗ୍ରହଣ କରାଯାଇଛି", statusPaid: "ଦେୟ ହୋଇଛି",
+  },
+  ur: {
+    alerts: "انتباہات", reports: "رپورٹس", totalBookings: "کل بکنگز", inQueue: "قطار میں", viewAll: "سب دیکھیں", farmerName: "کسان کا نام", token: "ٹوکن", quantityShort: "مقدار", status: "حالت",
+    notAvailable: "دستیاب نہیں", kilograms: "کلوگرام", noFarmersInQueue: "قطار میں کوئی کسان نہیں۔", manageActiveToken: "فعال ٹوکن کا انتظام کریں", stage: "مرحلہ", updateToken: "ٹوکن اپڈیٹ کریں", centreStatus: "مرکز کی حالت", operatingNormally: "معمول کے مطابق کام کر رہا ہے", queue: "قطار", farmers: "کسان", estimatedWait: "متوقع انتظار", minutes: "منٹ", capacity: "گنجائش", currentOperations: "موجودہ آپریشنز", qualityAndWeight: "معیار اور وزن", procurement: "خریداری", payment: "ادائیگی", statusUpdated: "اپڈیٹ کیا گیا", statusUpdateFailed: "حالت اپڈیٹ ناکام", statusBooked: "بک کیا گیا", statusCheckedIn: "چیک اِن کیا گیا", statusWaiting: "انتظار میں", statusWeighing: "وزن کیا جا رہا ہے", statusQualityCheck: "معیار کی جانچ", statusAccepted: "قبول کیا گیا", statusPaid: "ادائیگی کی گئی",
+  },
+};
+
 const resources = {
   en: { translation: base },
   hi: {
@@ -812,23 +869,12 @@ const resources = {
   },
 };
 
-const landingTranslations = {
-  en: { navHome: "Home", navHow: "How it Works", navFeatures: "Features", navImpact: "Impact", navContact: "Contact", heroTitle: "Smarter Procurement. Stronger Farmers.", heroIntro: "Real-time coordination between farmers, procurement centres and government systems for a transparent and efficient agricultural ecosystem.", bookSlotCta: "Book a Slot", watchDemo: "Watch Demo", problemTitle: "The Problem", solutionTitle: "Our Solution — KrishakMitra", learnMore: "Learn More" },
-  hi: { navHome: "होम", navHow: "यह कैसे काम करता है", navFeatures: "सुविधाएं", navImpact: "प्रभाव", navContact: "संपर्क", heroTitle: "स्मार्ट खरीद। मजबूत किसान।", heroIntro: "पारदर्शी और कुशल कृषि व्यवस्था के लिए किसानों, खरीद केंद्रों और सरकारी प्रणालियों के बीच रियल-टाइम समन्वय।", bookSlotCta: "स्लॉट बुक करें", watchDemo: "डेमो देखें", problemTitle: "समस्या", solutionTitle: "हमारा समाधान — कृषकमित्र", learnMore: "और जानें" },
-  te: { navHome: "హోమ్", navHow: "ఇది ఎలా పనిచేస్తుంది", navFeatures: "ఫీచర్లు", navImpact: "ప్రభావం", navContact: "సంప్రదించండి", heroTitle: "స్మార్ట్ సేకరణ. బలమైన రైతులు.", heroIntro: "పారదర్శకమైన మరియు సమర్థవంతమైన వ్యవసాయ వ్యవస్థ కోసం రైతులు, కొనుగోలు కేంద్రాలు మరియు ప్రభుత్వ వ్యవస్థల మధ్య రియల్-టైమ్ సమన్వయం.", bookSlotCta: "స్లాట్ బుక్ చేయండి", watchDemo: "డెమో చూడండి", problemTitle: "సమస్య", solutionTitle: "మా పరిష్కారం — కృషక్‌మిత్ర", learnMore: "మరింత తెలుసుకోండి" },
-  bn: { navHome: "হোম", navHow: "কীভাবে কাজ করে", navFeatures: "বৈশিষ্ট্য", navImpact: "প্রভাব", navContact: "যোগাযোগ", heroTitle: "স্মার্ট সংগ্রহ। শক্তিশালী কৃষক।", heroIntro: "স্বচ্ছ ও দক্ষ কৃষি ব্যবস্থার জন্য কৃষক, সংগ্রহ কেন্দ্র এবং সরকারি ব্যবস্থার মধ্যে রিয়েল-টাইম সমন্বয়।", bookSlotCta: "স্লট বুক করুন", watchDemo: "ডেমো দেখুন", problemTitle: "সমস্যা", solutionTitle: "আমাদের সমাধান — কৃষকমিত্র", learnMore: "আরও জানুন" },
-  mr: { navHome: "होम", navHow: "हे कसे कार्य करते", navFeatures: "वैशिष्ट्ये", navImpact: "परिणाम", navContact: "संपर्क", heroTitle: "स्मार्ट खरेदी. मजबूत शेतकरी.", heroIntro: "पारदर्शक आणि कार्यक्षम कृषी व्यवस्थेसाठी शेतकरी, खरेदी केंद्रे आणि सरकारी यंत्रणांमध्ये रिअल-टाइम समन्वय.", bookSlotCta: "स्लॉट बुक करा", watchDemo: "डेमो पहा", problemTitle: "समस्या", solutionTitle: "आमचा उपाय — कृषकमित्र", learnMore: "अधिक जाणून घ्या" },
-  ta: { navHome: "முகப்பு", navHow: "எப்படி செயல்படுகிறது", navFeatures: "அம்சங்கள்", navImpact: "தாக்கம்", navContact: "தொடர்பு", heroTitle: "சிறந்த கொள்முதல். வலிமையான விவசாயிகள்.", heroIntro: "வெளிப்படையான மற்றும் திறமையான வேளாண் அமைப்புக்காக விவசாயிகள், கொள்முதல் மையங்கள் மற்றும் அரசு அமைப்புகளுக்கு இடையிலான நேரடி ஒருங்கிணைப்பு.", bookSlotCta: "ஸ்லாட்டை பதிவு செய்க", watchDemo: "டெமோ பார்க்க", problemTitle: "சிக்கல்", solutionTitle: "எங்கள் தீர்வு — கிருஷக்மித்ரா", learnMore: "மேலும் அறிக" },
-  gu: { navHome: "હોમ", navHow: "તે કેવી રીતે કામ કરે છે", navFeatures: "સુવિધાઓ", navImpact: "અસર", navContact: "સંપર્ક", heroTitle: "સ્માર્ટ ખરીદી. મજબૂત ખેડૂતો.", heroIntro: "પારદર્શક અને કાર્યક્ષમ કૃષિ વ્યવસ્થા માટે ખેડૂતો, ખરીદી કેન્દ્રો અને સરકારી પ્રણાલીઓ વચ્ચે રિયલ-ટાઇમ સંકલન.", bookSlotCta: "સ્લોટ બુક કરો", watchDemo: "ડેમો જુઓ", problemTitle: "સમસ્યા", solutionTitle: "અમારો ઉકેલ — કૃષકમિત્ર", learnMore: "વધુ જાણો" },
-  kn: { navHome: "ಮುಖಪುಟ", navHow: "ಇದು ಹೇಗೆ ಕೆಲಸ ಮಾಡುತ್ತದೆ", navFeatures: "ವೈಶಿಷ್ಟ್ಯಗಳು", navImpact: "ಪರಿಣಾಮ", navContact: "ಸಂಪರ್ಕ", heroTitle: "ಸ್ಮಾರ್ಟ್ ಖರೀದಿ. ಬಲಿಷ್ಠ ರೈತರು.", heroIntro: "ಪಾರದರ್ಶಕ ಮತ್ತು ಪರಿಣಾಮಕಾರಿ ಕೃಷಿ ವ್ಯವಸ್ಥೆಗಾಗಿ ರೈತರು, ಖರೀದಿ ಕೇಂದ್ರಗಳು ಮತ್ತು ಸರ್ಕಾರಿ ವ್ಯವಸ್ಥೆಗಳ ನಡುವೆ ನೈಜ-ಸಮಯದ ಸಮನ್ವಯ.", bookSlotCta: "ಸ್ಲಾಟ್ ಬುಕ್ ಮಾಡಿ", watchDemo: "ಡೆಮೋ ನೋಡಿ", problemTitle: "ಸಮಸ್ಯೆ", solutionTitle: "ನಮ್ಮ ಪರಿಹಾರ — ಕೃಷಕ್ ಮಿತ್ರ", learnMore: "ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ" },
-  ml: { navHome: "ഹോം", navHow: "എങ്ങനെ പ്രവർത്തിക്കുന്നു", navFeatures: "സവിശേഷതകൾ", navImpact: "സ്വാധീനം", navContact: "ബന്ധപ്പെടുക", heroTitle: "സ്മാർട്ട് സംഭരണം. ശക്തരായ കർഷകർ.", heroIntro: "സുതാര്യവും കാര്യക്ഷമവുമായ കാർഷിക സംവിധാനത്തിനായി കർഷകർ, സംഭരണ കേന്ദ്രങ്ങൾ, സർക്കാർ സംവിധാനങ്ങൾ എന്നിവ തമ്മിലുള്ള തത്സമയ ഏകോപനം.", bookSlotCta: "സ്ലോട്ട് ബുക്ക് ചെയ്യുക", watchDemo: "ഡെമോ കാണുക", problemTitle: "പ്രശ്നം", solutionTitle: "ഞങ്ങളുടെ പരിഹാരം — കൃഷക് മിത്ര", learnMore: "കൂടുതൽ അറിയുക" },
-  pa: { navHome: "ਹੋਮ", navHow: "ਇਹ ਕਿਵੇਂ ਕੰਮ ਕਰਦਾ ਹੈ", navFeatures: "ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ", navImpact: "ਪ੍ਰਭਾਵ", navContact: "ਸੰਪਰਕ", heroTitle: "ਸਮਾਰਟ ਖਰੀਦ। ਮਜ਼ਬੂਤ ਕਿਸਾਨ।", heroIntro: "ਪਾਰਦਰਸ਼ੀ ਅਤੇ ਕੁਸ਼ਲ ਖੇਤੀਬਾੜੀ ਪ੍ਰਣਾਲੀ ਲਈ ਕਿਸਾਨਾਂ, ਖਰੀਦ ਕੇਂਦਰਾਂ ਅਤੇ ਸਰਕਾਰੀ ਪ੍ਰਣਾਲੀਆਂ ਵਿਚਕਾਰ ਰੀਅਲ-ਟਾਈਮ ਤਾਲਮੇਲ।", bookSlotCta: "ਸਲਾਟ ਬੁੱਕ ਕਰੋ", watchDemo: "ਡੈਮੋ ਦੇਖੋ", problemTitle: "ਸਮੱਸਿਆ", solutionTitle: "ਸਾਡਾ ਹੱਲ — ਕ੍ਰਿਸ਼ਕਮਿੱਤਰ", learnMore: "ਹੋਰ ਜਾਣੋ" },
-  or: { navHome: "ହୋମ", navHow: "ଏହା କିପରି କାମ କରେ", navFeatures: "ବୈଶିଷ୍ଟ୍ୟ", navImpact: "ପ୍ରଭାବ", navContact: "ଯୋଗାଯୋଗ", heroTitle: "ସ୍ମାର୍ଟ କ୍ରୟ। ଶକ୍ତିଶାଳୀ ଚାଷୀ।", heroIntro: "ସ୍ୱଚ୍ଛ ଏବଂ ଦକ୍ଷ କୃଷି ବ୍ୟବସ୍ଥା ପାଇଁ ଚାଷୀ, କ୍ରୟ କେନ୍ଦ୍ର ଏବଂ ସରକାରୀ ବ୍ୟବସ୍ଥା ମଧ୍ୟରେ ରିଅଲ-ଟାଇମ ସମନ୍ୱୟ।", bookSlotCta: "ସ୍ଲଟ ବୁକ କରନ୍ତୁ", watchDemo: "ଡେମୋ ଦେଖନ୍ତୁ", problemTitle: "ସମସ୍ୟା", solutionTitle: "ଆମ ସମାଧାନ — କୃଷକମିତ୍ର", learnMore: "ଅଧିକ ଜାଣନ୍ତୁ" },
-  ur: { navHome: "ہوم", navHow: "یہ کیسے کام کرتا ہے", navFeatures: "خصوصیات", navImpact: "اثر", navContact: "رابطہ", heroTitle: "اسمارٹ خریداری۔ مضبوط کسان۔", heroIntro: "شفاف اور مؤثر زرعی نظام کے لیے کسانوں، خریداری مراکز اور سرکاری نظام کے درمیان حقیقی وقت کا رابطہ۔", bookSlotCta: "سلاٹ بک کریں", watchDemo: "ڈیمو دیکھیں", problemTitle: "مسئلہ", solutionTitle: "ہمارا حل — کرشک متر", learnMore: "مزید جانیں" },
-};
-
-Object.entries(landingTranslations).forEach(([code, translation]) => {
-  if (resources[code]?.translation) resources[code].translation = { ...resources[code].translation, ...translation };
+Object.keys(resources).forEach((code) => {
+  resources[code].translation = {
+    ...base,
+    ...resources[code].translation,
+    ...adminTranslations[code],
+  };
 });
 
 i18n.use(initReactI18next).init({

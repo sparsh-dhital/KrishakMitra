@@ -33,6 +33,7 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, farme
   const [procurement, setProcurement] = useState(null);
   const [payment, setPayment] = useState(null);
   const [bidNotifications, setBidNotifications] = useState([]);
+  const [notificationCount, setNotificationCount] = useState(0);
   const [auctionTab, setAuctionTab] = useState("listings");
   const [auctions, setAuctions] = useState([]);
   const [auctionQuantity, setAuctionQuantity] = useState(1);
@@ -50,8 +51,8 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, farme
         setCrops(cropData);
         setSelectedCrop((current) => current || booking?.booking?.crop_id || cropData?.[0]?.id || "");
         setSelectedCentre((current) => current || centreData?.[0]?.id || "");
-        if (config.farmerId) {
-          setFarmer(await api.getFarmer(config.farmerId).catch(() => null));
+        if (farmerId || config.farmerId) {
+          setFarmer(await api.getFarmer(farmerId || config.farmerId).catch(() => null));
         }
       } catch (err) {
         toast.error("Failed to load centre data");
@@ -91,6 +92,11 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, farme
   }, [booking?.booking?.id, booking?.token?.id]);
 
   useEffect(() => {
+    if (!farmerId) return;
+    getFarmerBidNotifications(farmerId).then((notifications) => setNotificationCount(notifications.length)).catch(() => {});
+  }, [farmerId]);
+
+  useEffect(() => {
     if (activeTab !== "bidding" || !farmerId) return;
     getFarmerAuctions(farmerId).then(setAuctions).catch((error) => toast.error(error?.message || "Unable to load your listings."));
   }, [activeTab]);
@@ -99,16 +105,19 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, farme
     if (activeTab !== "notifications") return;
     let active = true;
     getFarmerBidNotifications(farmerId).then((notifications) => {
-      if (active) setBidNotifications(notifications);
+      if (active) {
+        setBidNotifications(notifications);
+        setNotificationCount(notifications.length);
+      }
     });
     return () => { active = false; };
   }, [activeTab, farmerId]);
 
   async function createBooking() {
-    if (!selectedSlot || !selectedCentre || !config.farmerId || !selectedCrop) return;
+    if (!selectedSlot || !selectedCentre || !(farmerId || config.farmerId) || !selectedCrop) return;
     try {
       const result = await api.createBooking({
-        farmer_id: config.farmerId,
+        farmer_id: farmerId || config.farmerId,
         centre_id: selectedCentre,
         slot_id: selectedSlot,
         crop_id: selectedCrop,
@@ -148,7 +157,7 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, farme
     { id: "queue", label: t("liveQueue"), icon: ListOrdered },
     { id: "procurement", label: t("procurementJourney"), icon: ShoppingCart },
     { id: "payment", label: t("paymentStatus"), icon: CreditCard },
-    { id: "notifications", label: t("recentUpdates"), icon: Bell },
+    { id: "notifications", label: notificationCount ? `Updates (${notificationCount})` : t("recentUpdates"), icon: Bell },
     { id: "bidding", label: "Private Market Bidding", icon: Gavel },
   ];
 
@@ -185,6 +194,19 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, farme
             <div>
               <h1 className="font-display text-2xl font-bold text-forest">{t("greetingFarmer")} Ramesh Kumar</h1>
               <p className="text-muted text-sm mt-1">{t("journeyIntro")}</p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <button onClick={() => setActiveTab("bookings")} className="text-left rounded-2xl border border-line bg-surface p-4 hover:border-brand/40 hover:shadow-sm transition-all">
+                <p className="text-xs font-bold uppercase tracking-widest text-muted">APMC workflow</p>
+                <p className="font-bold text-forest mt-1">Book a mandi slot</p>
+                <p className="text-xs text-muted mt-1">Choose a centre, time, and quantity.</p>
+              </button>
+              <button onClick={() => setActiveTab("bidding")} className="text-left rounded-2xl border border-brand/30 bg-green-50/70 p-4 hover:border-brand hover:shadow-sm transition-all">
+                <p className="text-xs font-bold uppercase tracking-widest text-brand">Private market</p>
+                <p className="font-bold text-forest mt-1">Sell to direct buyers</p>
+                <p className="text-xs text-muted mt-1">Post your crop and receive competing bids.</p>
+              </button>
             </div>
 
             <div className="bg-surface border border-line rounded-3xl p-6 flex flex-col sm:flex-row gap-6 shadow-sm">
@@ -511,7 +533,7 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, farme
               </form>
             </Card>
           ) : (
-            auctions.length ? <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">{auctions.map((auction) => <AuctionCard key={auction?.id} auction={auction} role="farmer" onUpdated={(auctionId) => setAuctions((current) => current.map((item) => item?.id === auctionId ? { ...item, status: "awarded" } : item))} />)}</div> : <Card className="text-center py-10"><p className="text-muted font-medium">You have no private market listings yet.</p><Button className="mt-4" onClick={() => setAuctionTab("create")}>Post your first crop</Button></Card>
+            auctions.length ? <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">{auctions.map((auction) => <AuctionCard key={auction?.id} auction={auction} role="farmer" onUpdated={(auctionId) => setAuctions((current) => current.map((item) => item?.id === auctionId ? { ...item, status: "awarded" } : item))} onRemoved={(auctionId) => setAuctions((current) => current.filter((item) => item?.id !== auctionId))} />)}</div> : <Card className="text-center py-10"><p className="text-muted font-medium">You have no private market listings yet.</p><Button className="mt-4" onClick={() => setAuctionTab("create")}>Post your first crop</Button></Card>
           )}
         </div>
       )}

@@ -8,6 +8,7 @@ import AdminPage from "./pages/AdminPage";
 import LoginPage from "./pages/LoginPage";
 import LandingPage from "./pages/LandingPage";
 import BuyerPage from "./pages/BuyerPage";
+import ContactPage from "./pages/ContactPage";
 
 function SmoothScroll({ children }) {
   useEffect(() => {
@@ -79,14 +80,9 @@ export default function App() {
     localStorage.setItem("krishak-mitra-session", JSON.stringify(next));
   };
 
-  // If user already has a session and clicks "Go to Dashboard" on landing page
+  // Always let the user choose a dashboard explicitly from the landing page.
   const handleNavigateLogin = () => {
-    if (session) {
-      // Already logged in — go straight to their dashboard
-      setView(session.role === "admin" ? "admin" : session.role === "buyer" ? "buyer" : "farmer");
-    } else {
-      setView("login");
-    }
+    setView("login");
   };
 
   return (
@@ -111,9 +107,18 @@ export default function App() {
       {view === "landing" && (
         <LandingPage
           onNavigateLogin={handleNavigateLogin}
+          onNavigateContact={() => setView("contact")}
           hasSession={!!session}
           language={language}
           onLanguageChange={changeLanguage}
+        />
+      )}
+
+      {view === "contact" && (
+        <ContactPage
+          language={language}
+          onLanguageChange={changeLanguage}
+          onBack={() => setView("landing")}
         />
       )}
 

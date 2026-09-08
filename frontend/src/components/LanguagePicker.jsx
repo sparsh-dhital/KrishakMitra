@@ -38,12 +38,12 @@ export default function LanguagePicker({ value, onChange, className = "" }) {
         onClick={() => setOpen((o) => !o)}
         aria-haspopup="listbox"
         aria-expanded={open}
-        className="flex items-center gap-1.5 h-9 px-3 rounded-xl border border-line bg-surface hover:bg-slate-50 text-sm font-bold text-forest transition-all focus:outline-none focus:ring-2 focus:ring-brand/30"
+        className="flex items-center gap-2 h-11 md:h-12 px-5 rounded-full border border-line bg-white hover:bg-gray-50 text-sm md:text-base font-bold text-forest shadow-sm hover:shadow transition-all focus:outline-none focus:ring-2 focus:ring-brand/30"
       >
-        <Languages className="w-4 h-4 text-brand shrink-0" />
+        <Languages className="w-5 h-5 text-brand shrink-0" />
         <span className="hidden sm:inline">{current.native}</span>
         <ChevronDown
-          className={`w-3 h-3 text-muted transition-transform ${open ? "rotate-180" : ""}`}
+          className={`w-4 h-4 text-muted transition-transform ${open ? "rotate-180" : ""}`}
         />
       </button>
 
@@ -51,9 +51,9 @@ export default function LanguagePicker({ value, onChange, className = "" }) {
       {open && (
         <div
           role="listbox"
-          className="absolute right-0 mt-2 w-56 bg-white border border-line rounded-2xl shadow-xl z-[200] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150"
+          className="absolute right-0 mt-3 w-56 bg-white border border-line rounded-2xl shadow-xl z-[200] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150"
         >
-          <div className="p-2 max-h-80 overflow-y-auto">
+          <div className="p-2 max-h-80 overflow-y-auto" data-lenis-prevent="true">
             {languageOptions.map((lang) => {
               const isActive = lang.code === value;
               return (
