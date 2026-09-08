@@ -48,10 +48,10 @@ export default function LandingPage({ onNavigateLogin, onNavigateContact, langua
   }
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA] font-body text-forest selection:bg-brand selection:text-white">
+    <div className="min-h-screen bg-[#F8F9FA] font-body text-forest selection:bg-brand selection:text-white overflow-x-hidden">
       {/* Navbar */}
       <header className="w-full py-4 px-6 max-w-7xl mx-auto flex items-center justify-between">
-        <Logo variant="full" className="h-[4.5rem] w-auto mix-blend-multiply" />
+        <Logo variant="full" className="h-12 md:h-[4.5rem] w-auto mix-blend-multiply" />
         <nav className="hidden md:flex items-center gap-10 text-base font-semibold">
           <a href="#features" className="hover:text-brand transition-colors">Features</a>
           <a href="#how-it-works" className="hover:text-brand transition-colors">How it Works</a>
@@ -59,7 +59,7 @@ export default function LandingPage({ onNavigateLogin, onNavigateContact, langua
           <a href="#testimonials" className="hover:text-brand transition-colors">Testimonials</a>
           <button onClick={onNavigateContact} className="hover:text-brand transition-colors cursor-pointer">Contact Us</button>
         </nav>
-        <div className="flex items-center gap-5">
+        <div className="flex items-center gap-2 md:gap-5">
           <LanguagePicker value={language} onChange={onLanguageChange} />
           <button onClick={onNavigateLogin} className="bg-forest text-white px-8 py-3 rounded-full text-base font-medium hover:bg-forest-dark transition-colors">
             Login
@@ -73,7 +73,7 @@ export default function LandingPage({ onNavigateLogin, onNavigateContact, langua
           <div className="inline-flex items-center text-sm font-bold text-brand bg-brand/10 px-4 py-1.5 rounded-full mb-6 self-start">
             <div className="w-2 h-2 rounded-full bg-brand mr-2" /> Next Generation Platform
           </div>
-          <h1 className="font-display text-[3.5rem] md:text-[4.5rem] leading-[1.05] font-extrabold tracking-tight mb-6">
+          <h1 className="font-display text-4xl md:text-[4rem] leading-[1.15] md:leading-[1.1] font-extrabold tracking-tight mb-6">
             Smarter Procurement.<br/>
             <span className="text-brand">Stronger Farmers.</span>
           </h1>
@@ -84,7 +84,7 @@ export default function LandingPage({ onNavigateLogin, onNavigateContact, langua
             <button className="w-full sm:w-auto bg-brand text-white px-8 py-3.5 rounded-full text-lg font-bold flex items-center justify-center gap-2 hover:bg-brand-hover transition-colors shadow-lg shadow-brand/20">
               Book Your Slot <ArrowRight className="w-5 h-5" />
             </button>
-            <button className="w-full sm:w-auto bg-white text-forest px-8 py-3.5 rounded-full text-lg font-bold flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors border border-line">
+            <button className="w-full sm:w-auto bg-white text-forest px-8 py-3.5 rounded-full text-lg font-bold flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors border border-line shadow-sm hover:shadow">
               <Play className="w-5 h-5 fill-forest" /> Watch Demo
             </button>
           </div>
@@ -108,34 +108,34 @@ export default function LandingPage({ onNavigateLogin, onNavigateContact, langua
 
         {/* Right side mockup */}
         <div className="relative mt-12 md:mt-0 flex flex-col justify-center items-center">
-          <div className="bg-forest rounded-[3rem] p-8 md:p-12 relative shadow-2xl flex flex-col justify-between w-full max-w-[500px] min-h-[500px] md:min-h-[600px] aspect-square md:aspect-auto">
-            <div className="absolute top-12 left-1/2 -translate-x-1/2 w-[85%] bg-white rounded-3xl p-5 shadow-xl flex items-center gap-4 transform -rotate-1">
-              <div className="w-12 h-12 rounded-full bg-green-50 flex items-center justify-center text-brand">
-                <CheckCircle2 className="w-6 h-6" />
+          <div className="bg-forest rounded-[3rem] p-6 md:p-12 relative shadow-2xl flex flex-col justify-between w-full max-w-[500px] min-h-[420px] sm:min-h-[500px] md:min-h-[600px] aspect-square md:aspect-auto">
+            <div className="absolute top-6 md:top-12 left-1/2 -translate-x-1/2 w-[90%] md:w-[85%] bg-white rounded-3xl p-4 md:p-5 shadow-xl flex items-center gap-4 transform -rotate-1">
+              <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-green-50 flex items-center justify-center text-brand shrink-0">
+                <CheckCircle2 className="w-5 h-5 md:w-6 md:h-6" />
               </div>
               <div>
-                <p className="text-base font-bold text-forest leading-tight">Slot Confirmed</p>
-                <p className="text-sm text-muted mt-1">Time: <span className="font-bold">Today, 10:30 AM</span></p>
+                <p className="text-sm md:text-base font-bold text-forest leading-tight">Slot Confirmed</p>
+                <p className="text-xs md:text-sm text-muted mt-1">Time: <span className="font-bold">Today, 10:30 AM</span></p>
               </div>
             </div>
 
-            <div className="absolute top-[35%] -left-8 md:-left-16 w-[80%] md:w-[70%] bg-white rounded-3xl p-5 shadow-xl flex items-center gap-5">
-               <div className="w-12 h-12 rounded-full bg-forest text-white flex items-center justify-center">
-                <Clock className="w-6 h-6" />
+            <div className="absolute top-[35%] left-1/2 -translate-x-1/2 md:-translate-x-0 md:left-auto md:-left-16 w-[90%] md:w-[70%] bg-white rounded-3xl p-4 md:p-5 shadow-xl flex items-center gap-4 md:gap-5">
+               <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-forest text-white flex items-center justify-center shrink-0">
+                <Clock className="w-5 h-5 md:w-6 md:h-6" />
               </div>
               <div>
-                <p className="text-sm text-muted leading-tight">Current Wait Time</p>
-                <p className="text-xl font-extrabold text-forest mt-1">12 min</p>
+                <p className="text-xs md:text-sm text-muted leading-tight">Current Wait Time</p>
+                <p className="text-lg md:text-xl font-extrabold text-forest mt-1">12 min</p>
               </div>
             </div>
             
-            <div className="absolute top-[55%] -right-6 md:-right-12 w-[80%] md:w-[75%] bg-white rounded-3xl p-5 shadow-xl flex items-center gap-4">
+            <div className="absolute top-[55%] left-1/2 -translate-x-1/2 md:-translate-x-0 md:left-auto md:-right-12 w-[90%] md:w-[75%] bg-white rounded-3xl p-4 md:p-5 shadow-xl flex items-center gap-4">
               <div className="flex-1">
                 <div className="flex items-center justify-between">
-                  <p className="text-sm text-muted leading-tight">Payment Disbursed</p>
-                  <span className="text-brand text-xs font-bold px-2 py-1 bg-brand/10 rounded uppercase">Verified</span>
+                  <p className="text-xs md:text-sm text-muted leading-tight">Payment Disbursed</p>
+                  <span className="text-brand text-[10px] md:text-xs font-bold px-2 py-1 bg-brand/10 rounded uppercase">Verified</span>
                 </div>
-                <p className="text-2xl font-extrabold text-forest mt-2">₹45,200</p>
+                <p className="text-xl md:text-2xl font-extrabold text-forest mt-2">₹45,200</p>
               </div>
             </div>
 
@@ -159,22 +159,22 @@ export default function LandingPage({ onNavigateLogin, onNavigateContact, langua
 
       {/* Metrics */}
       <section className="border-y border-line bg-white">
-        <div className="max-w-7xl mx-auto px-6 py-16 grid grid-cols-2 md:grid-cols-4 gap-10 text-center divide-x-0 md:divide-x divide-line/50">
+        <div className="max-w-7xl mx-auto px-6 py-12 md:py-16 grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-10 text-center divide-x-0 md:divide-x divide-line/50">
           <div>
-            <h3 className="text-4xl md:text-5xl font-display font-extrabold mb-3">10,000+</h3>
-            <p className="text-base font-medium text-muted">Farmers Onboarded</p>
+            <h3 className="text-3xl md:text-5xl font-display font-extrabold mb-2 md:mb-3">10,000+</h3>
+            <p className="text-sm md:text-base font-medium text-muted">Farmers Onboarded</p>
           </div>
           <div>
-            <h3 className="text-4xl md:text-5xl font-display font-extrabold mb-3">50+</h3>
-            <p className="text-base font-medium text-muted">Procurement Centres</p>
+            <h3 className="text-3xl md:text-5xl font-display font-extrabold mb-2 md:mb-3">50+</h3>
+            <p className="text-sm md:text-base font-medium text-muted">Procurement Centres</p>
           </div>
           <div>
-            <h3 className="text-4xl md:text-5xl font-display font-extrabold mb-3">95%</h3>
-            <p className="text-base font-medium text-muted">Fast-Tracked Sales</p>
+            <h3 className="text-3xl md:text-5xl font-display font-extrabold mb-2 md:mb-3">95%</h3>
+            <p className="text-sm md:text-base font-medium text-muted">Fast-Tracked Sales</p>
           </div>
           <div>
-            <h3 className="text-4xl md:text-5xl font-display font-extrabold mb-3">₹100Cr+</h3>
-            <p className="text-base font-medium text-muted">Payments Processed</p>
+            <h3 className="text-3xl md:text-5xl font-display font-extrabold mb-2 md:mb-3">₹100Cr+</h3>
+            <p className="text-sm md:text-base font-medium text-muted">Payments Processed</p>
           </div>
         </div>
       </section>
@@ -198,7 +198,7 @@ export default function LandingPage({ onNavigateLogin, onNavigateContact, langua
               { icon: Activity, title: "Smart Analytics", desc: "Government and centers get real-time data for better decision making." }
             ].map((f, i) => (
               <div key={i} className="bg-white p-10 rounded-[2rem] border border-line shadow-sm hover:shadow-md transition-shadow">
-                <div className="w-14 h-14 rounded-2xl bg-[#F8F9FA] border border-line flex items-center justify-center mb-8 text-brand">
+                <div className="w-14 h-14 rounded-2xl bg-green-50 border border-brand/10 flex items-center justify-center mb-8 text-brand">
                   <f.icon className="w-7 h-7" />
                 </div>
                 <h3 className="text-2xl font-bold mb-3">{f.title}</h3>
@@ -272,13 +272,13 @@ export default function LandingPage({ onNavigateLogin, onNavigateContact, langua
               </div>
             </div>
 
-            <div className="relative">
-              <div className="absolute -top-8 -right-8 bg-brand text-white text-center px-6 py-4 rounded-3xl shadow-xl z-10 transform rotate-3">
-                <p className="font-extrabold text-3xl leading-none">10K+</p>
-                <p className="text-xs font-bold opacity-90 mt-2 uppercase tracking-wider">Farmers</p>
+            <div className="relative mt-8 md:mt-0">
+              <div className="absolute -top-6 right-2 md:-top-8 md:-right-8 bg-brand text-white text-center px-4 py-3 md:px-6 md:py-4 rounded-3xl shadow-xl z-10 transform rotate-3">
+                <p className="font-extrabold text-2xl md:text-3xl leading-none">10K+</p>
+                <p className="text-[10px] md:text-xs font-bold opacity-90 mt-1 md:mt-2 uppercase tracking-wider">Farmers</p>
               </div>
               
-              <div className="bg-white p-8 md:p-14 rounded-[2.5rem] shadow-sm border border-line space-y-10 relative z-0 h-full flex flex-col justify-center">
+              <div className="bg-white p-8 md:p-12 rounded-[2.5rem] shadow-xl border border-line flex flex-col justify-evenly h-full relative z-0">
                 {[
                   { label: "Average Wait Time", val: "15m", pct: "20%" },
                   { label: "Farmer Satisfaction", val: "95%", pct: "95%" },
@@ -301,8 +301,8 @@ export default function LandingPage({ onNavigateLogin, onNavigateContact, langua
       </section>
 
       {/* CTA */}
-      <section className="py-28 px-6 bg-[#F8F9FA]">
-        <div className="max-w-5xl mx-auto bg-forest rounded-[3rem] p-16 md:p-24 text-center relative overflow-hidden">
+      <section className="py-20 md:py-28 px-6 bg-[#F8F9FA]">
+        <div className="max-w-5xl mx-auto bg-forest rounded-[3rem] p-10 md:p-24 text-center relative overflow-hidden">
            {/* Background grid pattern */}
           <div className="absolute inset-0 opacity-[0.05]" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '24px 24px' }} />
           
