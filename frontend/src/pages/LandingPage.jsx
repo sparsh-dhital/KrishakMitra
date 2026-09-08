@@ -3,8 +3,10 @@ import { ArrowRight, Leaf, CheckCircle2, Clock, Activity, CreditCard } from "luc
 import { Button, Badge } from "../components/ui";
 import Logo from "../components/Logo";
 import LanguagePicker from "../components/LanguagePicker";
+import { useTranslation } from "react-i18next";
 
 export default function LandingPage({ onNavigateLogin, language, onLanguageChange }) {
+  const { t } = useTranslation();
   const fadeUp = {
     hidden: { opacity: 0, y: 20 },
     show: { opacity: 1, y: 0, transition: { type: "spring", bounce: 0.4 } }
@@ -24,11 +26,11 @@ export default function LandingPage({ onNavigateLogin, language, onLanguageChang
           <Logo variant="full" className="h-14 w-auto mix-blend-multiply" />
           
           <nav className="hidden md:flex items-center gap-8 font-bold text-sm text-forest">
-            <a href="#" onClick={(e) => e.preventDefault()} className="hover:text-brand transition-colors">Home</a>
-            <a href="#" onClick={(e) => e.preventDefault()} className="hover:text-brand transition-colors">How it Works</a>
-            <a href="#" onClick={(e) => e.preventDefault()} className="hover:text-brand transition-colors">Features</a>
-            <a href="#" onClick={(e) => e.preventDefault()} className="hover:text-brand transition-colors">Impact</a>
-            <a href="#" onClick={(e) => e.preventDefault()} className="hover:text-brand transition-colors">Contact</a>
+            <a href="#home" className="hover:text-brand transition-colors">{t("navHome")}</a>
+            <a href="#how-it-works" className="hover:text-brand transition-colors">{t("navHow")}</a>
+            <a href="#features" className="hover:text-brand transition-colors">{t("navFeatures")}</a>
+            <a href="#impact" className="hover:text-brand transition-colors">{t("navImpact")}</a>
+            <a href="#contact" className="hover:text-brand transition-colors">{t("navContact")}</a>
           </nav>
           
           <div className="flex items-center gap-3">
@@ -39,17 +41,17 @@ export default function LandingPage({ onNavigateLogin, language, onLanguageChang
       </header>
 
       {/* Hero Section */}
-      <section className="pt-40 pb-20 px-6 max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
+      <section id="home" className="pt-40 pb-20 px-6 max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
         <motion.div variants={stagger} initial="hidden" animate="show">
           <motion.h1 variants={fadeUp} className="font-display text-5xl sm:text-6xl lg:text-7xl font-extrabold text-forest leading-[1.1] tracking-tight mb-6">
-            Smarter Procurement. Stronger Farmers.
+            {t("heroTitle")}
           </motion.h1>
           <motion.p variants={fadeUp} className="text-lg sm:text-xl text-muted font-medium mb-10 max-w-xl">
-            Real-time coordination between farmers, procurement centres and government systems for a transparent and efficient agricultural ecosystem.
+            {t("heroIntro")}
           </motion.p>
           <motion.div variants={fadeUp} className="flex flex-col sm:flex-row items-center gap-4">
-            <Button size="lg" onClick={onNavigateLogin} className="w-full sm:w-auto gap-2 text-base">Book a Slot <ArrowRight className="w-5 h-5" /></Button>
-            <Button variant="outline" size="lg" onClick={onNavigateLogin} className="w-full sm:w-auto gap-2 bg-transparent border-forest/20 text-forest text-base">Watch Demo</Button>
+            <Button size="lg" onClick={onNavigateLogin} className="w-full sm:w-auto gap-2 text-base">{t("bookSlotCta")} <ArrowRight className="w-5 h-5" /></Button>
+            <Button variant="outline" size="lg" onClick={() => document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" })} className="w-full sm:w-auto gap-2 bg-transparent border-forest/20 text-forest text-base">{t("watchDemo")}</Button>
           </motion.div>
         </motion.div>
         
@@ -81,10 +83,10 @@ export default function LandingPage({ onNavigateLogin, language, onLanguageChang
       </section>
 
       {/* The Problem Section */}
-      <section className="py-20 px-6 max-w-7xl mx-auto">
+      <section id="features" className="py-20 px-6 max-w-7xl mx-auto">
         <div className="bg-white rounded-[3rem] p-12 lg:p-20 border border-line shadow-sm grid lg:grid-cols-2 gap-16">
           <div>
-            <h2 className="font-display text-4xl font-extrabold text-forest mb-6">The Problem</h2>
+            <h2 id="how-it-works" className="font-display text-4xl font-extrabold text-forest mb-6">{t("problemTitle")}</h2>
             <p className="text-lg text-muted font-medium">Farmers face long waiting times, lack of information regarding procurement schedules, and uncertainty about procurement status.</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -101,14 +103,14 @@ export default function LandingPage({ onNavigateLogin, language, onLanguageChang
       </section>
 
       {/* Our Solution Section */}
-      <section className="py-24 px-6 bg-forest text-white">
-         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
+      <section id="impact" className="py-24 px-6 bg-forest text-white">
+         <div id="contact" className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
             <div>
-              <h2 className="font-display text-4xl font-extrabold mb-6">Our Solution — KrishakMitra</h2>
+              <h2 className="font-display text-4xl font-extrabold mb-6">{t("solutionTitle")}</h2>
               <p className="text-lg text-white/80 font-medium mb-10 max-w-lg leading-relaxed">
                 A coordination and visibility layer over the existing procurement workflow. Helping farmers and officers make better decisions, reduce waiting time and ensure smooth, transparent procurement.
               </p>
-              <Button onClick={onNavigateLogin} className="bg-brand text-white hover:bg-brand-hover gap-2">Learn More <ArrowRight className="w-4 h-4" /></Button>
+              <Button onClick={onNavigateLogin} className="bg-brand text-white hover:bg-brand-hover gap-2">{t("learnMore")} <ArrowRight className="w-4 h-4" /></Button>
             </div>
             {/* Visual placeholder for solution */}
             <div className="h-96 rounded-[3rem] bg-white/5 border border-white/10 p-8 flex items-center justify-center relative overflow-hidden">

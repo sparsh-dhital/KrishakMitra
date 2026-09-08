@@ -154,7 +154,7 @@ export function ProgressTimeline({ steps, currentStep }) {
   );
 }
 
-export function SidebarLayout({ children, activeTab, onTabChange, navItems, onLogout, language, onLanguageChange }) {
+export function SidebarLayout({ children, activeTab, onTabChange, navItems, onLogout, language, onLanguageChange, displayName = "Ramesh Kumar", roleLabel = "Good Morning," }) {
   return (
     <div className="flex min-h-screen bg-cream">
       {/* Desktop Sidebar */}
@@ -170,8 +170,8 @@ export function SidebarLayout({ children, activeTab, onTabChange, navItems, onLo
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white font-bold">SM</div>
             <div>
-              <p className="text-xs text-brand font-bold uppercase tracking-widest">Good Morning,</p>
-              <p className="text-sm text-white font-bold">Ramesh Kumar</p>
+              <p className="text-xs text-brand font-bold uppercase tracking-widest">{roleLabel}</p>
+              <p className="text-sm text-white font-bold">{displayName}</p>
             </div>
           </div>
         </div>
@@ -182,7 +182,7 @@ export function SidebarLayout({ children, activeTab, onTabChange, navItems, onLo
             const isActive = activeTab === item.id;
             return (
               <button
-                key={item.id}
+                key={`desktop-${item.id}`}
                 onClick={() => onTabChange(item.id)}
                 className={cn(
                   "flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-bold transition-all",
@@ -232,13 +232,13 @@ export function SidebarLayout({ children, activeTab, onTabChange, navItems, onLo
       </main>
 
       {/* Mobile Bottom Nav */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-surface border-t border-line z-50 flex items-center justify-around p-2 pb-safe">
-        {navItems.slice(0, 4).map((item) => {
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-surface border-t border-line z-50 flex items-center justify-start gap-1 overflow-x-auto p-2 pb-safe">
+        {[...navItems.slice(0, 4), ...navItems.filter((item) => (item.id === "bidding" || item.id === "marketplace") && !navItems.slice(0, 4).some((visibleItem) => visibleItem.id === item.id))].map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
             return (
               <button
-                key={item.id}
+                key={`mobile-${item.id}`}
                 onClick={() => onTabChange(item.id)}
                 className={cn(
                   "flex flex-col items-center gap-1 p-2 min-w-[64px] rounded-xl transition-all",

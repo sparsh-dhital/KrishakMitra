@@ -1,9 +1,29 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
-import { LayoutDashboard, Users, Activity, FileText, Bell, DatabaseZap, ShieldAlert, CheckCircle2 } from "lucide-react";
+import { LayoutDashboard, Users, Activity, FileText, Bell, DatabaseZap, ShieldAlert, CheckCircle2, Gavel } from "lucide-react";
 import { api } from "../services/api";
 import { SidebarLayout, Card, Badge, Button, Select } from "../components/ui";
+import BuyerMarketplace from "./BuyerMarketplace";
+
+function AdminSection({ activeTab, onBack }) {
+  const sections = {
+    bookings: { title: "Today's Bookings", text: "Review farmer slot reservations and confirm arrivals.", action: "Refresh bookings" },
+    queue: { title: "Active Queue", text: "Monitor farmers currently waiting at the procurement centre.", action: "Refresh queue" },
+    procurement: { title: "Procurement Journey", text: "Track quality checks, weighing, acceptance, and settlement progress.", action: "View journey" },
+    payments: { title: "Payment Status", text: "Review accepted procurements and payment processing status.", action: "Refresh payments" },
+    alerts: { title: "Alerts", text: "No unresolved operational alerts for this centre.", action: "Check again" },
+    reports: { title: "Reports", text: "Generate a summary of bookings, queue activity, procurement, and payments.", action: "Generate report" },
+  };
+  const section = sections[activeTab] || sections.bookings;
+  return (
+    <div className="max-w-4xl mx-auto space-y-6">
+      <div><p className="text-xs font-bold uppercase tracking-widest text-brand mb-2">Officer workspace</p><h1 className="font-display text-2xl font-bold text-forest">{section.title}</h1><p className="text-sm text-muted mt-1">{section.text}</p></div>
+      <Card><div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"><div><h2 className="font-bold text-forest">{section.title}</h2><p className="text-sm text-muted mt-1">This operational view is ready for the next workflow action.</p></div><Badge tone="success">Operational</Badge></div><Button className="mt-6" onClick={() => toast.success(`${section.action} complete`)}>{section.action}</Button></Card>
+      <Button variant="outline" onClick={onBack}>Back to dashboard</Button>
+    </div>
+  );
+}
 
 export default function AdminPage({ language, onLanguageChange, onLogout }) {
   const { t } = useTranslation();
@@ -63,6 +83,7 @@ export default function AdminPage({ language, onLanguageChange, onLogout }) {
     { id: "payments", label: t("paymentStatus") || "Payments", icon: DatabaseZap },
     { id: "alerts", label: "Alerts", icon: ShieldAlert },
     { id: "reports", label: "Reports", icon: Bell },
+    { id: "marketplace", label: "Private Marketplace", icon: Gavel },
   ];
 
   return (
@@ -74,6 +95,7 @@ export default function AdminPage({ language, onLanguageChange, onLogout }) {
       language={language}
       onLanguageChange={onLanguageChange}
     >
+      {activeTab === "marketplace" ? <BuyerMarketplace role="admin" buyerId="demo-admin" /> : activeTab !== "dashboard" ? <AdminSection activeTab={activeTab} onBack={() => setActiveTab("dashboard")} /> : (
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 max-w-[1400px] mx-auto">
         {/* Main Content Area */}
         <div className="lg:col-span-8 space-y-6">
@@ -223,6 +245,7 @@ export default function AdminPage({ language, onLanguageChange, onLogout }) {
           </Card>
         </div>
       </div>
+      )}
     </SidebarLayout>
   );
 }

@@ -7,10 +7,10 @@ from supabase import Client, create_client
 load_dotenv(Path(__file__).resolve().parents[2] / ".env")
 
 url = os.getenv("SUPABASE_URL")
-key = os.getenv("SUPABASE_KEY")
+key = os.getenv("SUPABASE_KEY") or os.getenv("SUPABASE_ANON_KEY")
 
 if not url or not key:
-    missing = [name for name, value in (("SUPABASE_URL", url), ("SUPABASE_KEY", key)) if not value]
+    missing = [name for name, value in (("SUPABASE_URL", url), ("SUPABASE_KEY or SUPABASE_ANON_KEY", key)) if not value]
     raise RuntimeError(
         "Missing Supabase environment variable(s): "
         + ", ".join(missing)

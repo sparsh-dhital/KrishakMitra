@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:network": "vite --host 0.0.0.0 --port 5173",
     "dev:all": "concurrently -k -n API,WEB -c blue,green \"cd ../backend && uvicorn app.main:app --reload --host 127.0.0.1 --port 8000\" \"npm run dev -- --host 127.0.0.1 --port 5173\"",
     "build": "vite build",
     "preview": "vite preview"
@@ -20,6 +21,7 @@
     "react-hot-toast": "^2.6.0",
     "react-i18next": "^17.0.13",
     "react-qr-code": "^2.2.0",
+    "@supabase/supabase-js": "^2.57.0",
     "tailwind-merge": "^3.6.0"
   },
   "devDependencies": {
