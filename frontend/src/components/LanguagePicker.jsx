@@ -51,7 +51,7 @@ export default function LanguagePicker({ value, onChange, className = "" }) {
       {open && (
         <div
           role="listbox"
-          className="absolute right-0 mt-3 w-56 bg-white border border-line rounded-2xl shadow-xl z-[200] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150"
+          className="absolute right-0 mt-2 w-[min(14rem,calc(100vw-1.5rem))] bg-white border border-line rounded-2xl shadow-xl z-[200] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150"
         >
           <div className="p-2 max-h-80 overflow-y-auto" data-lenis-prevent="true">
             {languageOptions.map((lang) => {

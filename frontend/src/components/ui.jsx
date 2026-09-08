@@ -1,8 +1,8 @@
-import { forwardRef } from "react";
+import { forwardRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { LogOut, Check } from "lucide-react";
+import { LogOut, Check, MoreHorizontal } from "lucide-react";
 import { motion } from "framer-motion";
 import Logo from "./Logo";
 import LanguagePicker from "./LanguagePicker";
@@ -131,7 +131,7 @@ export function CircularProgress({ value, label, subLabel }) {
 
 export function ProgressTimeline({ steps, currentStep }) {
   return (
-    <div className="w-full flex items-center justify-between relative mt-4 mb-2">
+    <div className="w-full grid grid-cols-5 gap-1 sm:flex sm:items-center sm:justify-between relative mt-4 mb-2">
       <div className="absolute left-4 right-4 top-4 h-0.5 bg-slate-100 -z-10" />
       <div 
         className="absolute left-4 top-4 h-0.5 bg-brand -z-10 transition-all duration-500" 
@@ -140,13 +140,13 @@ export function ProgressTimeline({ steps, currentStep }) {
       {steps.map((step, idx) => {
         const isCompleted = idx <= currentStep;
         return (
-          <div key={idx} className="flex flex-col items-center gap-2">
+          <div key={idx} className="min-w-0 flex flex-col items-center gap-2">
             <div className={cn("w-8 h-8 rounded-full flex items-center justify-center transition-colors border-4 border-surface", isCompleted ? "bg-brand text-white" : "bg-slate-200 text-slate-400")}>
               {isCompleted ? <Check className="w-4 h-4" /> : <span className="w-2 h-2 rounded-full bg-current" />}
             </div>
             <div className="text-center">
-              <span className="block text-xs font-bold text-forest">{step.title}</span>
-              <span className="block text-[10px] text-muted">{step.subtitle || (isCompleted ? "Completed" : "Pending")}</span>
+              <span className="block max-w-full break-words text-xs font-bold text-forest">{step.title}</span>
+              <span className="block max-w-full break-words text-[10px] text-muted">{step.subtitle || (isCompleted ? "Completed" : "Pending")}</span>
             </div>
           </div>
         );
@@ -157,9 +157,17 @@ export function ProgressTimeline({ steps, currentStep }) {
 
 export function SidebarLayout({ children, activeTab, onTabChange, navItems, onLogout, language, onLanguageChange }) {
   const { t } = useTranslation();
+  const [moreOpen, setMoreOpen] = useState(false);
+  const primaryNavItems = navItems.slice(0, 4);
+  const secondaryNavItems = navItems.slice(4);
+
+  function selectMobileTab(tabId) {
+    onTabChange(tabId);
+    setMoreOpen(false);
+  }
 
   return (
-    <div className="flex min-h-screen bg-cream">
+    <div className="flex min-h-screen min-w-0 overflow-x-hidden bg-cream">
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex w-[260px] bg-forest flex-col fixed inset-y-0 left-0 z-50">
         {/* Sidebar logo — full logo in white pill so it reads on dark green */}
@@ -207,16 +215,16 @@ export function SidebarLayout({ children, activeTab, onTabChange, navItems, onLo
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 lg:pl-[260px] pb-20 lg:pb-0">
+      <main className="min-w-0 flex-1 pb-20 lg:pl-[260px] lg:pb-0">
         {/* Top Header */}
-        <header className="h-16 border-b border-line bg-surface flex items-center px-6 sm:px-8 sticky top-0 z-40">
+        <header className="h-16 border-b border-line bg-surface flex items-center px-4 sm:px-6 lg:px-8 sticky top-0 z-40">
           {/* Mobile: show emblem (hidden on desktop since sidebar shows full logo) */}
           <div className="flex items-center gap-2 lg:hidden">
             <Logo variant="emblem" className="w-9 h-9" />
           </div>
 
           {/* Controls — always pinned to the right */}
-          <div className="ml-auto flex items-center gap-3">
+          <div className="ml-auto flex min-w-0 items-center gap-2 sm:gap-3">
             <LanguagePicker value={language} onChange={onLanguageChange} />
 
             <button
@@ -229,30 +237,81 @@ export function SidebarLayout({ children, activeTab, onTabChange, navItems, onLo
           </div>
         </header>
         
-        <div className="p-4 sm:p-8">
+        <div className="min-w-0 p-4 sm:p-6 lg:p-8">
           {children}
         </div>
       </main>
 
       {/* Mobile Bottom Nav */}
+      {moreOpen && secondaryNavItems.length > 0 && (
+        <div className="lg:hidden fixed inset-x-3 bottom-[4.75rem] z-50 max-h-[min(70vh,28rem)] overflow-y-auto rounded-2xl border border-line bg-surface p-2 shadow-xl">
+          <div className="flex items-center justify-between px-3 py-2">
+            <span className="text-sm font-bold text-forest">More</span>
+            <button
+              type="button"
+              onClick={() => setMoreOpen(false)}
+              className="rounded-lg px-2 py-1 text-xs font-bold text-muted hover:bg-slate-50"
+              aria-label="Close menu"
+            >
+              <span aria-hidden="true">×</span>
+            </button>
+          </div>
+          <div className="grid grid-cols-1 gap-1 sm:grid-cols-2">
+            {secondaryNavItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = activeTab === item.id;
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => selectMobileTab(item.id)}
+                  className={cn(
+                    "flex min-w-0 items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-bold transition-all",
+                    isActive ? "bg-green-50 text-brand" : "text-forest hover:bg-slate-50"
+                  )}
+                >
+                  <Icon className="h-5 w-5 shrink-0" />
+                  <span className="break-words">{item.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-surface border-t border-line z-50 flex items-center justify-around p-2 pb-safe">
-        {navItems.slice(0, 4).map((item) => {
+        {primaryNavItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
             return (
               <button
                 key={item.id}
-                onClick={() => onTabChange(item.id)}
+                onClick={() => selectMobileTab(item.id)}
+                type="button"
                 className={cn(
-                  "flex flex-col items-center gap-1 p-2 min-w-[64px] rounded-xl transition-all",
+                  "flex min-w-0 flex-1 flex-col items-center gap-1 p-2 rounded-xl transition-all",
                   isActive ? "text-brand" : "text-muted"
                 )}
               >
                 <Icon className={cn("w-6 h-6", isActive ? "text-brand" : "")} />
-                <span className="text-[10px] font-bold">{item.label}</span>
+                <span className="max-w-full break-words text-center text-[10px] leading-tight font-bold">{item.label}</span>
               </button>
             );
           })}
+        {secondaryNavItems.length > 0 && (
+          <button
+            type="button"
+            onClick={() => setMoreOpen((open) => !open)}
+            aria-expanded={moreOpen}
+            className={cn(
+              "flex min-w-0 flex-1 flex-col items-center gap-1 rounded-xl p-2 transition-all",
+              moreOpen || secondaryNavItems.some((item) => item.id === activeTab) ? "text-brand" : "text-muted"
+            )}
+          >
+            <MoreHorizontal className="h-6 w-6" />
+            <span className="max-w-full break-words text-center text-[10px] leading-tight font-bold">More</span>
+          </button>
+        )}
       </nav>
     </div>
   );

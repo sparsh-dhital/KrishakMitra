@@ -36,18 +36,18 @@ export default function LoginPage({ onBack, onLogin, t, language, onLanguageChan
   };
 
   return (
-    <div className="min-h-screen bg-cream flex items-center justify-center p-6 selection:bg-brand selection:text-white">
+    <div className="min-h-screen bg-cream flex items-center justify-center p-4 sm:p-6 selection:bg-brand selection:text-white">
       {/* Language picker floating top-right */}
-      <div className="fixed top-4 right-4 z-50">
+      <div className="fixed top-3 right-3 z-50 sm:top-4 sm:right-4">
         <LanguagePicker value={language} onChange={onLanguageChange} />
       </div>
 
-      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="w-full max-w-md">
+      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="w-full min-w-0 max-w-md">
         <Button variant="ghost" className="mb-6 gap-2" onClick={onBack}>
           <ArrowLeft className="w-4 h-4" /> Back to Home
         </Button>
         
-        <Card className="shadow-xl shadow-brand/5 border-line p-8 sm:p-10">
+        <Card className="shadow-xl shadow-brand/5 border-line p-5 sm:p-10">
           <div className="flex flex-col items-center mb-6">
             {/* mix-blend-multiply removes white PNG bg on the white card */}
             <Logo variant="full" className="h-24 w-auto mix-blend-multiply" />
