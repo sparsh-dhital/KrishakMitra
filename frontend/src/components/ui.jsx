@@ -1,4 +1,5 @@
 import { forwardRef } from "react";
+import { useTranslation } from "react-i18next";
 import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { LogOut, Check } from "lucide-react";
@@ -155,6 +156,8 @@ export function ProgressTimeline({ steps, currentStep }) {
 }
 
 export function SidebarLayout({ children, activeTab, onTabChange, navItems, onLogout, language, onLanguageChange }) {
+  const { t } = useTranslation();
+
   return (
     <div className="flex min-h-screen bg-cream">
       {/* Desktop Sidebar */}
@@ -170,7 +173,7 @@ export function SidebarLayout({ children, activeTab, onTabChange, navItems, onLo
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white font-bold">SM</div>
             <div>
-              <p className="text-xs text-brand font-bold uppercase tracking-widest">Good Morning,</p>
+              <p className="text-xs text-brand font-bold uppercase tracking-widest">{t("greetingFarmer")}</p>
               <p className="text-sm text-white font-bold">Ramesh Kumar</p>
             </div>
           </div>
@@ -198,7 +201,7 @@ export function SidebarLayout({ children, activeTab, onTabChange, navItems, onLo
 
         <div className="p-4 border-t border-white/5">
           <button onClick={onLogout} className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-bold text-slate-400 hover:text-white hover:bg-white/5 transition-all">
-            <LogOut className="w-5 h-5" /> Logout
+            <LogOut className="w-5 h-5" /> {t("logout")}
           </button>
         </div>
       </aside>
@@ -221,7 +224,7 @@ export function SidebarLayout({ children, activeTab, onTabChange, navItems, onLo
               className="flex items-center gap-2 h-9 px-4 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 text-sm font-bold transition-all border border-red-100"
             >
               <LogOut className="w-4 h-4" />
-              <span className="hidden sm:inline">Logout</span>
+              <span className="hidden sm:inline">{t("logout")}</span>
             </button>
           </div>
         </header>
