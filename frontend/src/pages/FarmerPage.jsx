@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import QRCode from "react-qr-code";
-import { LayoutDashboard, MapPin, CalendarDays, QrCode, ListOrdered, ShoppingCart, CreditCard, Bell, ChevronRight, Activity, Clock, ArrowRight } from "lucide-react";
+import { LayoutDashboard, MapPin, CalendarDays, QrCode, ListOrdered, ShoppingCart, CreditCard, Bell, ChevronRight, Activity, Clock, ArrowRight, Gavel } from "lucide-react";
 import { api, config, toUiSlot } from "../services/api";
 import { Badge, Card, Button, Input, Select, SidebarLayout, CircularProgress, ProgressTimeline } from "../components/ui";
+import AuctionCard from "../components/AuctionCard";
+import { createAuctionDirectly, getFarmerAuctions, getFarmerBidNotifications } from "../services/biddingService";
 
-export default function FarmerPage({ language, onLanguageChange, onLogout }) {
+export default function FarmerPage({ language, onLanguageChange, onLogout, farmerId }) {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("dashboard");
   const [centres, setCentres] = useState([]);
@@ -32,6 +34,14 @@ export default function FarmerPage({ language, onLanguageChange, onLogout }) {
   const [procurement, setProcurement] = useState(null);
   const [payment, setPayment] = useState(null);
 
+  // Bidding states
+  const [bidNotifications, setBidNotifications] = useState([]);
+  const [auctionTab, setAuctionTab] = useState("listings");
+  const [auctions, setAuctions] = useState([]);
+  const [auctionQuantity, setAuctionQuantity] = useState(1);
+  const [auctionBasePrice, setAuctionBasePrice] = useState("");
+  const [auctionSaving, setAuctionSaving] = useState(false);
+
   useEffect(() => {
     async function loadCentres() {
       try {
@@ -51,8 +61,8 @@ export default function FarmerPage({ language, onLanguageChange, onLogout }) {
 
         setSelectedCrop((current) => current || booking?.booking?.crop_id || cropData?.[0]?.id || "");
         setSelectedCentre((current) => current || centreData?.[0]?.id || "");
-        if (config.farmerId) {
-          setFarmer(await api.getFarmer(config.farmerId).catch(() => null));
+        if (farmerId) {
+          setFarmer(await api.getFarmer(farmerId).catch(() => null));
         }
       } catch (err) {
         toast.error("Failed to load centre data");
@@ -60,6 +70,23 @@ export default function FarmerPage({ language, onLanguageChange, onLogout }) {
     }
     loadCentres();
   }, []);
+
+  useEffect(() => {
+    if (activeTab !== "notifications" || !farmerId) return;
+    api.getNotifications(farmerId).then(setNotifications).catch(() => {});
+    
+    // Bid notifications
+    let active = true;
+    getFarmerBidNotifications(farmerId).then((notifications) => {
+      if (active) setBidNotifications(notifications);
+    });
+    return () => { active = false; };
+  }, [activeTab, farmerId]);
+
+  useEffect(() => {
+    if (activeTab !== "bidding" || !farmerId) return;
+    getFarmerAuctions(farmerId).then(setAuctions).catch((error) => toast.error(error?.message || "Unable to load your listings."));
+  }, [activeTab, farmerId]);
 
   useEffect(() => {
     if (!selectedCentre) return;
@@ -92,10 +119,10 @@ export default function FarmerPage({ language, onLanguageChange, onLogout }) {
   }, [booking?.booking?.id, booking?.token?.id]);
 
   async function createBooking() {
-    if (!selectedSlot || !selectedCentre || !config.farmerId || !selectedCrop) return;
+    if (!selectedSlot || !selectedCentre || !farmerId || !selectedCrop) return;
     try {
       const result = await api.createBooking({
-        farmer_id: config.farmerId,
+        farmer_id: farmerId,
         centre_id: selectedCentre,
         slot_id: selectedSlot,
         crop_id: selectedCrop,
@@ -107,6 +134,24 @@ export default function FarmerPage({ language, onLanguageChange, onLogout }) {
       setActiveTab("token");
     } catch (err) {
       toast.error(err.message);
+      setBooking(null);
+    }
+  }
+
+  async function createAuction(event) {
+    event.preventDefault();
+    setAuctionSaving(true);
+    try {
+      const selectedCropRecord = crops.find((crop) => crop?.id === selectedCrop);
+      const listing = await createAuctionDirectly({ farmerId: farmerId, cropId: selectedCrop, cropName: selectedCropRecord?.name, quantity: auctionQuantity, basePrice: auctionBasePrice });
+      setAuctions((current) => [listing, ...current]);
+      setAuctionBasePrice("");
+      toast.success("Private market listing created.");
+      setAuctionTab("listings");
+    } catch (error) {
+      toast.error(error?.message || "Unable to create listing.");
+    } finally {
+      setAuctionSaving(false);
     }
   }
 
@@ -119,6 +164,7 @@ export default function FarmerPage({ language, onLanguageChange, onLogout }) {
     { id: "procurement", label: t("procurementJourney"), icon: ShoppingCart },
     { id: "payment", label: t("paymentStatus"), icon: CreditCard },
     { id: "notifications", label: t("recentUpdates"), icon: Bell },
+    { id: "bidding", label: t("liveBidding") || "Live Bidding", icon: Gavel },
   ];
 
   const journeySteps = [
@@ -475,12 +521,49 @@ export default function FarmerPage({ language, onLanguageChange, onLogout }) {
         </div>
       )}
 
+      {/* -- PRIVATE MARKET BIDDING -- */}
+      {activeTab === "bidding" && (
+        <div className="max-w-6xl mx-auto space-y-6">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-widest text-brand mb-2">Private market</p>
+            <h1 className="font-display text-2xl font-bold text-forest">Sell directly to buyers</h1>
+            <p className="text-sm text-muted mt-1">Create a listing alongside your existing APMC mandi bookings.</p>
+          </div>
+          <div className="flex gap-2 border-b border-line">
+            <button className={`px-4 py-3 text-sm font-bold border-b-2 ${auctionTab === "listings" ? "border-brand text-brand" : "border-transparent text-muted"}`} onClick={() => setAuctionTab("listings")}>My listings</button>
+            <button className={`px-4 py-3 text-sm font-bold border-b-2 ${auctionTab === "create" ? "border-brand text-brand" : "border-transparent text-muted"}`} onClick={() => setAuctionTab("create")}>Post a crop</button>
+          </div>
+          {auctionTab === "create" ? (
+            <Card className="max-w-2xl">
+              <h2 className="font-display text-xl font-bold text-forest mb-6">New private listing</h2>
+              <form onSubmit={createAuction} className="space-y-5">
+                <div><label className="block text-sm font-bold text-forest mb-2">Crop</label><Select value={selectedCrop} onChange={(event) => setSelectedCrop(event.target.value)} required>{crops.map((crop) => <option key={crop?.id} value={crop?.id}>{crop?.name || "Unnamed crop"}</option>)}</Select></div>
+                <div><label className="block text-sm font-bold text-forest mb-2">Quantity (quintals)</label><Input type="number" min="0.01" step="0.01" value={auctionQuantity} onChange={(event) => setAuctionQuantity(event.target.value)} required /></div>
+                <div><label className="block text-sm font-bold text-forest mb-2">Base price per quintal</label><Input type="number" min="0.01" step="0.01" value={auctionBasePrice} onChange={(event) => setAuctionBasePrice(event.target.value)} placeholder="Enter minimum acceptable price" required /></div>
+                <Button type="submit" disabled={auctionSaving || !selectedCrop}>{auctionSaving ? "Publishing..." : "Publish private listing"}</Button>
+              </form>
+            </Card>
+          ) : (
+            auctions.length ? <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">{auctions.map((auction) => <AuctionCard key={auction?.id} auction={auction} role="farmer" onUpdated={(auctionId) => setAuctions((current) => current.map((item) => item?.id === auctionId ? { ...item, status: "awarded" } : item))} />)}</div> : <Card className="text-center py-10"><p className="text-muted font-medium">You have no private market listings yet.</p><Button className="mt-4" onClick={() => setAuctionTab("create")}>Post your first crop</Button></Card>
+          )}
+        </div>
+      )}
+
       {/* ── NOTIFICATIONS ── */}
       {activeTab === "notifications" && (
         <div className="min-w-0 max-w-2xl mx-auto">
           <h1 className="font-display text-2xl font-bold text-forest mb-6">Notifications</h1>
           <Card>
-            {notifications.length > 0 ? (
+            {bidNotifications.length > 0 ? (
+              <div className="space-y-4 mb-4">
+                {bidNotifications.map((notification) => (
+                  <div key={notification?.id} className="flex items-start gap-3 p-4 bg-amber-50 rounded-xl border border-amber-100">
+                    <span className="w-2 h-2 mt-1.5 rounded-full bg-amber-500 shrink-0" />
+                    <div><p className="text-sm font-bold text-forest">{notification?.title || "New bid"}</p><p className="text-xs text-muted mt-0.5">{notification?.message}</p></div>
+                  </div>
+                ))}
+              </div>
+            ) : notifications.length > 0 ? (
               <div className="space-y-4">
                 {notifications.map(n => (
                   <div key={n.id} className="flex items-start gap-3 p-4 bg-green-50 rounded-xl border border-green-100">

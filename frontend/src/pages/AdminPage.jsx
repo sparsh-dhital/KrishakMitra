@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
-import { LayoutDashboard, Users, Activity, FileText, Bell, DatabaseZap, ShieldAlert, CheckCircle2 } from "lucide-react";
+import { LayoutDashboard, Users, Activity, FileText, Bell, DatabaseZap, ShieldAlert, CheckCircle2, Gavel } from "lucide-react";
 import { api } from "../services/api";
 import { SidebarLayout, Card, Badge, Button, Select, Input } from "../components/ui";
 import { Plus, Trash2, Edit2 } from "lucide-react";
+import BuyerMarketplace from "./BuyerMarketplace";
 
 function CentresTab() {
   const [centres, setCentres] = useState([]);
@@ -333,6 +334,7 @@ export default function AdminPage({ language, onLanguageChange, onLogout }) {
     { id: "payments", label: t("paymentStatus"), icon: DatabaseZap },
     { id: "alerts", label: t("alerts"), icon: ShieldAlert },
     { id: "reports", label: t("reports"), icon: Bell },
+    { id: "marketplace", label: t("marketplace") || "Private Marketplace", icon: Gavel },
   ];
 
   return (
@@ -497,8 +499,9 @@ export default function AdminPage({ language, onLanguageChange, onLogout }) {
       )}
 
       {activeTab === "centres" && <CentresTab />}
+      {activeTab === "marketplace" && <BuyerMarketplace userType="admin" />}
 
-      {activeTab !== "dashboard" && activeTab !== "centres" && (
+      {activeTab !== "dashboard" && activeTab !== "centres" && activeTab !== "marketplace" && (
         <div className="flex flex-col items-center justify-center py-32 text-center">
           <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 mb-6">
             <LayoutDashboard className="w-10 h-10" />

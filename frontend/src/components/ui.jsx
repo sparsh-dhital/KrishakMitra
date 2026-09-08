@@ -155,8 +155,9 @@ export function ProgressTimeline({ steps, currentStep }) {
   );
 }
 
-export function SidebarLayout({ children, activeTab, onTabChange, navItems, onLogout, language, onLanguageChange }) {
+export function SidebarLayout({ children, activeTab, onTabChange, navItems, onLogout, language, onLanguageChange, displayName = "Ramesh Kumar", roleLabel }) {
   const { t } = useTranslation();
+  const defaultRoleLabel = roleLabel || t("greetingFarmer");
   const [moreOpen, setMoreOpen] = useState(false);
   const primaryNavItems = navItems.slice(0, 4);
   const secondaryNavItems = navItems.slice(4);
@@ -181,8 +182,8 @@ export function SidebarLayout({ children, activeTab, onTabChange, navItems, onLo
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white font-bold">SM</div>
             <div>
-              <p className="text-xs text-brand font-bold">{t("greetingFarmer")}</p>
-              <p className="text-sm text-white font-bold">Ramesh Kumar</p>
+              <p className="text-xs text-brand font-bold">{defaultRoleLabel}</p>
+              <p className="text-sm text-white font-bold">{displayName}</p>
             </div>
           </div>
         </div>

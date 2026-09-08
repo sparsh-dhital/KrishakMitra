@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, ShieldCheck } from "lucide-react";
+import { ArrowLeft, ShieldCheck, Building2 } from "lucide-react";
 import { Button, Input, Card } from "../components/ui";
 import Logo from "../components/Logo";
 import LanguagePicker from "../components/LanguagePicker";
@@ -27,12 +27,12 @@ export default function LoginPage({ onBack, onLogin, t, language, onLanguageChan
     if (otp.length < 6) return;
     setIsLoading(true);
     setTimeout(() => {
-      onLogin(role, mobile, role === "farmer" ? "12f3b7f6-5999-45e7-8811-3fd982a25345" : null);
+      onLogin(role, mobile, role === "farmer" ? "12f3b7f6-5999-45e7-8811-3fd982a25345" : null, role === "buyer" ? `buyer-${mobile}` : null);
     }, 800);
   };
 
   const handleDemoLogin = () => {
-    onLogin(role, "9876543210", role === "farmer" ? "12f3b7f6-5999-45e7-8811-3fd982a25345" : null);
+    onLogin(role, "9876543210", role === "farmer" ? "12f3b7f6-5999-45e7-8811-3fd982a25345" : null, role === "buyer" ? "demo-buyer" : null);
   };
 
   return (
@@ -71,6 +71,14 @@ export default function LoginPage({ onBack, onLogin, t, language, onLanguageChan
             >
               Officer (Admin)
             </button>
+            <button
+              onClick={() => { setRole("buyer"); setStep(1); }}
+              className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${
+                role === "buyer" ? "bg-white text-forest shadow-sm" : "text-muted hover:text-forest"
+              }`}
+            >
+              Buyer / Institution
+            </button>
           </div>
 
           <AnimatePresence mode="wait">
@@ -101,8 +109,8 @@ export default function LoginPage({ onBack, onLogin, t, language, onLanguageChan
           </AnimatePresence>
 
           <div className="mt-8 pt-6 border-t border-line">
-             <Button variant="outline" className="w-full gap-2 border-dashed border-2 h-12" onClick={handleDemoLogin}>
-                <ShieldCheck className="w-5 h-5 text-brand" /> Bypass for Demo
+            <Button variant="outline" className="w-full gap-2 border-dashed border-2 h-12" onClick={handleDemoLogin}>
+              {role === "buyer" ? <Building2 className="w-5 h-5 text-brand" /> : <ShieldCheck className="w-5 h-5 text-brand" />} Bypass for Demo
              </Button>
           </div>
         </Card>

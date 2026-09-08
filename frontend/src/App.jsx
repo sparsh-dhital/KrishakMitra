@@ -7,7 +7,7 @@ import FarmerPage from "./pages/FarmerPage";
 import AdminPage from "./pages/AdminPage";
 import LoginPage from "./pages/LoginPage";
 import LandingPage from "./pages/LandingPage";
-import ContactPage from "./pages/ContactPage";
+import BuyerPage from "./pages/BuyerPage";
 
 function SmoothScroll({ children }) {
   useEffect(() => {
@@ -36,9 +36,16 @@ function SmoothScroll({ children }) {
   return <>{children}</>;
 }
 
-// Views: "landing" | "login" | "farmer" | "admin"
+// Views: "landing" | "login" | "farmer" | "admin" | "buyer"
 export default function App() {
   const { t, i18n } = useTranslation();
+  const [language, setLanguage] = useState(() => i18n.resolvedLanguage || i18n.language || "en");
+
+  useEffect(() => {
+    const handleLanguageChanged = (nextLanguage) => setLanguage(nextLanguage || "en");
+    i18n.on("languageChanged", handleLanguageChanged);
+    return () => i18n.off("languageChanged", handleLanguageChanged);
+  }, [i18n]);
 
   // Always start at the landing page regardless of any saved session
   const [view, setView] = useState("landing");
@@ -53,6 +60,7 @@ export default function App() {
   });
 
   const changeLanguage = (nextLanguage) => {
+    if (!nextLanguage || nextLanguage === language) return;
     i18n.changeLanguage(nextLanguage);
     localStorage.setItem("krishak-mitra-language", nextLanguage);
   };
@@ -64,10 +72,10 @@ export default function App() {
     localStorage.removeItem("krishak-mitra-booking");
   };
 
-  const handleLogin = (role, mobile, farmerId) => {
-    const next = { role, mobile, farmerId };
+  const handleLogin = (role, mobile, farmerId, buyerId) => {
+    const next = { role, mobile, farmerId, buyerId };
     setSession(next);
-    setView(role === "admin" ? "admin" : "farmer");
+    setView(role === "admin" ? "admin" : role === "buyer" ? "buyer" : "farmer");
     localStorage.setItem("krishak-mitra-session", JSON.stringify(next));
   };
 
@@ -75,7 +83,7 @@ export default function App() {
   const handleNavigateLogin = () => {
     if (session) {
       // Already logged in — go straight to their dashboard
-      setView(session.role === "admin" ? "admin" : "farmer");
+      setView(session.role === "admin" ? "admin" : session.role === "buyer" ? "buyer" : "farmer");
     } else {
       setView("login");
     }
@@ -103,24 +111,17 @@ export default function App() {
       {view === "landing" && (
         <LandingPage
           onNavigateLogin={handleNavigateLogin}
-          onNavigateContact={() => setView("contact")}
           hasSession={!!session}
-          language={i18n.language}
+          language={language}
           onLanguageChange={changeLanguage}
         />
       )}
 
-      {view === "contact" && (
-        <ContactPage
-          language={i18n.language}
-          onLanguageChange={changeLanguage}
-          onBack={() => setView("landing")}
-        />
-      )}
+
 
       {view === "login" && (
         <LoginPage
-          language={i18n.language}
+          language={language}
           onLanguageChange={changeLanguage}
           t={t}
           onBack={() => setView("landing")}
@@ -130,19 +131,29 @@ export default function App() {
 
       {view === "farmer" && (
         <FarmerPage
-          language={i18n.language}
+          language={language}
+          onLanguageChange={changeLanguage}
+          onLogout={logout}
+          t={t}
+          farmerId={session?.farmerId}
+        />
+      )}
+
+      {view === "admin" && (
+        <AdminPage
+          language={language}
           onLanguageChange={changeLanguage}
           onLogout={logout}
           t={t}
         />
       )}
 
-      {view === "admin" && (
-        <AdminPage
-          language={i18n.language}
+      {view === "buyer" && (
+        <BuyerPage
+          language={language}
           onLanguageChange={changeLanguage}
           onLogout={logout}
-          t={t}
+          buyerId={session?.buyerId || "demo-buyer"}
         />
       )}
     </SmoothScroll>
