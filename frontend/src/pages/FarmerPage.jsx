@@ -140,23 +140,23 @@ export default function FarmerPage({ language, onLanguageChange, onLogout }) {
     >
       {/* ── DASHBOARD ── */}
       {activeTab === "dashboard" && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-          <div className="lg:col-span-2 space-y-6">
+        <div className="grid min-w-0 grid-cols-1 gap-6 lg:grid-cols-3 max-w-6xl mx-auto">
+          <div className="min-w-0 space-y-6 lg:col-span-2">
             <div>
               <h1 className="font-display text-2xl font-bold text-forest">{t("greetingFarmer")} Ramesh Kumar</h1>
               <p className="text-muted text-sm mt-1">{t("journeyIntro")}</p>
             </div>
 
-            <div className="bg-surface border border-line rounded-3xl p-6 flex flex-col sm:flex-row gap-6 shadow-sm">
-              <div className="flex-1">
-                <h3 className="text-xs font-bold text-muted uppercase tracking-widest mb-4">{t("bookingConfirmed")}</h3>
+            <div className="bg-surface border border-line rounded-3xl p-4 sm:p-6 flex flex-col gap-6 shadow-sm sm:flex-row">
+              <div className="min-w-0 flex-1">
+                <h3 className="text-xs font-bold text-muted uppercase tracking-widest mb-4">{booking ? t("bookingConfirmed") : t("nextStep")}</h3>
                 {booking ? (
                   <>
                     <div className="flex items-center gap-4 mb-6">
                       <div className="p-3 bg-white rounded-xl shadow-sm border border-line">
                         {booking?.token?.token_number && <QRCode value={booking.token.token_number} size={64} />}
                       </div>
-                      <div>
+                      <div className="min-w-0">
                         <p className="text-sm font-bold text-muted">{t("yourToken")} <span className="text-forest font-extrabold text-xl">#{booking?.token?.token_number || "N/A"}</span></p>
                         <p className="text-sm font-medium text-forest">{activeCrop?.name} &bull; {booking?.booking?.estimated_quantity || 0} q</p>
                       </div>
@@ -173,13 +173,13 @@ export default function FarmerPage({ language, onLanguageChange, onLogout }) {
                   </>
                 ) : (
                   <div className="text-center py-8">
-                    <p className="text-sm text-muted font-medium mb-4">{t("nextStep")}</p>
+                    <p className="text-sm text-muted font-medium mb-4">{t("bookSlot")}</p>
                     <Button onClick={() => setActiveTab("bookings")}>{t("bookSlot")}</Button>
                   </div>
                 )}
               </div>
 
-              <div className="flex-1 border-t sm:border-t-0 sm:border-l border-line pt-6 sm:pt-0 sm:pl-6 flex flex-col items-center justify-center">
+              <div className="min-w-0 flex-1 border-t border-line pt-6 flex flex-col items-center justify-center sm:border-l sm:border-t-0 sm:pl-6 sm:pt-0">
                 <h3 className="text-xs font-bold text-muted uppercase tracking-widest mb-4 self-start">{t("capacityUsed")}</h3>
                 <Badge tone="success" className="mb-4 self-start"><span className="w-1.5 h-1.5 bg-green-500 rounded-full mr-2" /> {t("open")}</Badge>
                 <div className="flex items-center justify-between w-full mt-2">
@@ -219,7 +219,7 @@ export default function FarmerPage({ language, onLanguageChange, onLogout }) {
             </Card>
           </div>
 
-          <div className="space-y-6">
+          <div className="min-w-0 space-y-6">
             <Card className="bg-forest text-white border-transparent">
               <h3 className="text-xs font-bold text-white/50 uppercase tracking-widest mb-4">{t("liveQueue")}</h3>
               {queueEntry ? (
@@ -261,17 +261,17 @@ export default function FarmerPage({ language, onLanguageChange, onLogout }) {
 
       {/* ── CENTRES ── */}
       {activeTab === "centres" && (
-        <div className="max-w-4xl mx-auto space-y-4">
+        <div className="min-w-0 max-w-4xl mx-auto space-y-4">
           <h1 className="font-display text-2xl font-bold text-forest mb-6">{t("centre")}</h1>
           {centres.map((c) => (
-            <Card key={c.id} className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-4">
+            <Card key={c.id} className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+              <div className="flex min-w-0 items-center gap-4">
                 <div className="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center border border-green-100">
                   <MapPin className="w-5 h-5 text-brand" />
                 </div>
-                <div>
-                  <p className="font-bold text-forest">{c.name}</p>
-                  <p className="text-xs text-muted font-medium mt-1">{c.district} &bull; Capacity: {c.daily_capacity} q/day</p>
+                <div className="min-w-0">
+                  <p className="break-words font-bold text-forest">{c.name}</p>
+                  <p className="break-words text-xs text-muted font-medium mt-1">{c.district} &bull; Capacity: {c.daily_capacity} q/day</p>
                 </div>
               </div>
               <Badge tone="success">{t("open")}</Badge>
@@ -283,8 +283,8 @@ export default function FarmerPage({ language, onLanguageChange, onLogout }) {
       {/* ── BOOKINGS ── */}
       {activeTab === "bookings" && (
         <div className="max-w-4xl mx-auto">
-          <Card className="p-0 overflow-hidden">
-            <div className="p-6 border-b border-line bg-slate-50/50 flex items-center gap-4 overflow-x-auto">
+          <Card className="min-w-0 overflow-hidden p-0">
+            <div className="flex items-center gap-4 overflow-x-auto border-b border-line bg-slate-50/50 p-4 sm:p-6">
               {["Centre", "Date", "Slot", "Quantity", "Confirm"].map((step, idx) => (
                 <div key={idx} className={`flex items-center gap-2 whitespace-nowrap text-sm font-bold ${idx === 2 ? "text-brand" : "text-muted"}`}>
                   <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs text-white ${idx === 2 ? "bg-brand" : "bg-slate-300"}`}>{idx + 1}</span>
@@ -292,7 +292,7 @@ export default function FarmerPage({ language, onLanguageChange, onLogout }) {
                 </div>
               ))}
             </div>
-            <div className="p-8 space-y-8">
+            <div className="space-y-8 p-4 sm:p-8">
               <div>
                 <h2 className="font-display text-2xl font-bold text-forest mb-2">Choose a Time Slot</h2>
                 <div className="flex items-center gap-3 mb-6 p-4 bg-green-50 rounded-xl border border-green-100">
@@ -334,9 +334,9 @@ export default function FarmerPage({ language, onLanguageChange, onLogout }) {
                   })}
                 </div>
               </div>
-              <div className="flex justify-between items-center pt-6 border-t border-line">
-                <Button variant="ghost" onClick={() => setActiveTab("dashboard")}>{t("overview")}</Button>
-                <Button onClick={createBooking} disabled={!selectedSlot || !selectedCrop}>{t("confirmBooking")} <ArrowRight className="w-4 h-4 ml-2" /></Button>
+              <div className="flex flex-col items-stretch gap-3 border-t border-line pt-6 sm:flex-row sm:items-center sm:justify-between">
+                <Button className="w-full sm:w-auto" variant="ghost" onClick={() => setActiveTab("dashboard")}>{t("overview")}</Button>
+                <Button className="w-full sm:w-auto" onClick={createBooking} disabled={!selectedSlot || !selectedCrop}>{t("confirmBooking")} <ArrowRight className="w-4 h-4 ml-2" /></Button>
               </div>
             </div>
           </Card>
@@ -345,13 +345,13 @@ export default function FarmerPage({ language, onLanguageChange, onLogout }) {
 
       {/* ── TOKEN ── */}
       {activeTab === "token" && (
-        <div className="max-w-md mx-auto">
+        <div className="min-w-0 max-w-md mx-auto">
           <h1 className="font-display text-2xl font-bold text-forest mb-6">Your Digital Token</h1>
           <Card className="flex flex-col items-center gap-6 text-center">
             {booking?.token?.token_number ? (
               <>
-                <div className="p-6 bg-white rounded-2xl border border-line shadow-sm">
-                  <QRCode value={booking.token.token_number} size={180} />
+                <div className="max-w-full p-4 sm:p-6 bg-white rounded-2xl border border-line shadow-sm">
+                  <QRCode value={booking.token.token_number} size={180} style={{ maxWidth: "100%", height: "auto" }} />
                 </div>
                 <div>
                   <p className="text-xs font-bold text-muted uppercase tracking-widest mb-1">Token Number</p>
@@ -372,7 +372,7 @@ export default function FarmerPage({ language, onLanguageChange, onLogout }) {
 
       {/* ── QUEUE ── */}
       {activeTab === "queue" && (
-        <div className="max-w-2xl mx-auto">
+        <div className="min-w-0 max-w-2xl mx-auto">
           <h1 className="font-display text-2xl font-bold text-forest mb-6">Live Queue Status</h1>
           {queueEntry ? (
             <Card className="bg-forest text-white border-transparent text-center">
@@ -392,20 +392,20 @@ export default function FarmerPage({ language, onLanguageChange, onLogout }) {
 
       {/* ── PROCUREMENT ── */}
       {activeTab === "procurement" && (
-        <div className="max-w-2xl mx-auto space-y-4">
+        <div className="min-w-0 max-w-2xl mx-auto space-y-4">
           <h1 className="font-display text-2xl font-bold text-forest mb-6">Procurement Details</h1>
           {procurement ? (
             <Card>
               <div className="space-y-4">
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <span className="text-sm font-bold text-muted">Status</span>
                   <Badge tone="warning">{procurement.procurement_status}</Badge>
                 </div>
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <span className="text-sm font-bold text-muted">Actual Quantity</span>
                   <span className="text-sm font-bold text-forest">{procurement.actual_quantity} q</span>
                 </div>
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <span className="text-sm font-bold text-muted">Quality Grade</span>
                   <span className="text-sm font-bold text-forest">{procurement.quality_grade}</span>
                 </div>
@@ -421,20 +421,20 @@ export default function FarmerPage({ language, onLanguageChange, onLogout }) {
 
       {/* ── PAYMENT ── */}
       {activeTab === "payment" && (
-        <div className="max-w-2xl mx-auto">
+        <div className="min-w-0 max-w-2xl mx-auto">
           <h1 className="font-display text-2xl font-bold text-forest mb-6">Payment Status</h1>
           {payment ? (
             <Card>
               <div className="space-y-4">
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <span className="text-sm font-bold text-muted">Amount</span>
                   <span className="text-lg font-extrabold text-forest">&#8377;{payment.amount?.toLocaleString("en-IN")}</span>
                 </div>
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <span className="text-sm font-bold text-muted">Status</span>
                   <Badge tone="warning">{payment.payment_status}</Badge>
                 </div>
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <span className="text-sm font-bold text-muted">Ref</span>
                   <span className="text-sm font-mono text-muted">{payment.transaction_ref}</span>
                 </div>
@@ -450,7 +450,7 @@ export default function FarmerPage({ language, onLanguageChange, onLogout }) {
 
       {/* ── NOTIFICATIONS ── */}
       {activeTab === "notifications" && (
-        <div className="max-w-2xl mx-auto">
+        <div className="min-w-0 max-w-2xl mx-auto">
           <h1 className="font-display text-2xl font-bold text-forest mb-6">Notifications</h1>
           <Card>
             {booking ? (

@@ -83,12 +83,12 @@ export default function AdminPage({ language, onLanguageChange, onLogout }) {
       language={language}
       onLanguageChange={onLanguageChange}
     >
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 max-w-[1400px] mx-auto">
+      <div className="grid min-w-0 grid-cols-1 gap-6 lg:grid-cols-12 max-w-[1400px] mx-auto">
         {/* Main Content Area */}
         <div className="lg:col-span-8 space-y-6">
           <h1 className="font-display text-2xl font-bold text-forest mb-6">{t("adminPortal")}</h1>
           
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <Card className="flex items-center gap-4">
                <div className="w-12 h-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center">
                  <Users className="w-6 h-6" />
@@ -119,12 +119,12 @@ export default function AdminPage({ language, onLanguageChange, onLogout }) {
           </div>
 
           <Card className="p-0 overflow-hidden">
-            <div className="px-6 py-4 border-b border-line flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-4 py-4 sm:px-6">
               <h2 className="font-bold text-forest text-lg">{t("liveQueue")}</h2>
               <Badge tone="default">{t("viewAll")}</Badge>
             </div>
             <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left">
+              <table className="w-full min-w-[560px] text-left text-sm">
                 <thead className="bg-slate-50 text-muted font-bold border-b border-line">
                   <tr>
                      <th className="px-6 py-3">#</th>
@@ -157,8 +157,8 @@ export default function AdminPage({ language, onLanguageChange, onLogout }) {
           {booking && (
             <Card>
               <h3 className="font-bold text-forest mb-4">{t("manageActiveToken")}: {booking?.token?.token_number || t("notAvailable")}</h3>
-              <div className="flex items-end gap-4">
-                 <div className="flex-1">
+                <div className="flex flex-col items-stretch gap-4 sm:flex-row sm:items-end">
+                  <div className="min-w-0 flex-1">
                    <label className="block text-xs font-bold text-muted uppercase tracking-widest mb-2">{t("stage")}</label>
                    <Select value={status} onChange={(e) => setStatus(e.target.value)}>
                       <option value="BOOKED">{t("statusBooked")}</option>
@@ -170,7 +170,7 @@ export default function AdminPage({ language, onLanguageChange, onLogout }) {
                       <option value="PAID">{t("statusPaid")}</option>
                    </Select>
                  </div>
-                 <Button onClick={saveStatus}>{t("updateToken")}</Button>
+                 <Button className="w-full sm:w-auto" onClick={saveStatus}>{t("updateToken")}</Button>
               </div>
             </Card>
           )}
@@ -183,11 +183,11 @@ export default function AdminPage({ language, onLanguageChange, onLogout }) {
              <Badge tone="success" className="w-full justify-center py-2 text-sm mb-6"><span className="w-2 h-2 bg-green-500 rounded-full mr-2" /> {t("operatingNormally")}</Badge>
              
              <div className="space-y-4 mb-6">
-               <div className="flex items-center justify-between">
+                 <div className="flex items-center justify-between gap-4">
                  <span className="text-sm font-bold text-muted">{t("queue")}</span>
                  <span className="text-sm font-bold text-forest">23 {t("farmers")}</span>
                </div>
-               <div className="flex items-center justify-between">
+                 <div className="flex items-center justify-between gap-4">
                  <span className="text-sm font-bold text-muted">{t("estimatedWait")}</span>
                  <span className="text-sm font-bold text-forest">35 {t("minutes")}</span>
                </div>
@@ -209,21 +209,21 @@ export default function AdminPage({ language, onLanguageChange, onLogout }) {
              <div className="space-y-6">
                 <div>
                    <div className="flex items-center justify-between mb-2">
-                     <span className="text-sm font-bold text-forest flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-amber-500" /> {t("qualityAndWeight")}</span>
+                     <span className="min-w-0 text-sm font-bold text-forest flex items-center gap-2"><CheckCircle2 className="w-4 h-4 shrink-0 text-amber-500" /> <span className="break-words">{t("qualityAndWeight")}</span></span>
                      <span className="text-xs text-muted font-bold">12 / 20</span>
                    </div>
                    <div className="w-full bg-slate-100 rounded-full h-1.5"><div className="bg-amber-500 h-1.5 rounded-full" style={{ width: '60%' }}></div></div>
                 </div>
                 <div>
                    <div className="flex items-center justify-between mb-2">
-                     <span className="text-sm font-bold text-forest flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-blue-500" /> {t("procurement")}</span>
+                     <span className="min-w-0 text-sm font-bold text-forest flex items-center gap-2"><CheckCircle2 className="w-4 h-4 shrink-0 text-blue-500" /> <span className="break-words">{t("procurement")}</span></span>
                      <span className="text-xs text-muted font-bold">0 / 30</span>
                    </div>
                    <div className="w-full bg-slate-100 rounded-full h-1.5"><div className="bg-blue-500 h-1.5 rounded-full" style={{ width: '0%' }}></div></div>
                 </div>
                 <div>
                    <div className="flex items-center justify-between mb-2">
-                     <span className="text-sm font-bold text-forest flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-brand" /> {t("payment")}</span>
+                     <span className="min-w-0 text-sm font-bold text-forest flex items-center gap-2"><CheckCircle2 className="w-4 h-4 shrink-0 text-brand" /> <span className="break-words">{t("payment")}</span></span>
                      <span className="text-xs text-muted font-bold">54 / 78</span>
                    </div>
                    <div className="w-full bg-slate-100 rounded-full h-1.5"><div className="bg-brand h-1.5 rounded-full" style={{ width: '70%' }}></div></div>
