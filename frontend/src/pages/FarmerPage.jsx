@@ -17,6 +17,7 @@ export default function FarmerPage({ language, onLanguageChange, onLogout }) {
   const [selectedCentre, setSelectedCentre] = useState("");
   const [selectedSlot, setSelectedSlot] = useState("");
   const [quantity, setQuantity] = useState(40);
+  const [notifications, setNotifications] = useState([]);
 
   const [booking, setBooking] = useState(() => {
     try {
@@ -34,12 +35,20 @@ export default function FarmerPage({ language, onLanguageChange, onLogout }) {
   useEffect(() => {
     async function loadCentres() {
       try {
-        const [centreData, cropData] = await Promise.all([
+        const [centreData, cropData, notifs] = await Promise.all([
           api.getCentres(),
           api.getCrops(),
+          api.getNotifications()
         ]);
         setCentres(centreData);
         setCrops(cropData);
+        setNotifications(notifs);
+        
+        const unread = notifs.filter(n => !n.read);
+        if (unread.length > 0) {
+          toast(`You have ${unread.length} new notification(s)!`, { icon: '🔔' });
+        }
+
         setSelectedCrop((current) => current || booking?.booking?.crop_id || cropData?.[0]?.id || "");
         setSelectedCentre((current) => current || centreData?.[0]?.id || "");
         if (config.farmerId) {
@@ -129,11 +138,25 @@ export default function FarmerPage({ language, onLanguageChange, onLogout }) {
 
   const activeCrop = crops.find((c) => c.id === (booking?.booking?.crop_id || selectedCrop));
 
+  const availableCrops = crops.filter(c => {
+    const centre = centres.find(cen => cen.id === selectedCentre);
+    if (!centre || !centre.supported_crops || centre.supported_crops.length === 0) return true; // fallback
+    return centre.supported_crops.includes(c.id);
+  });
+
+  const handleTabChange = async (tabId) => {
+    setActiveTab(tabId);
+    if (tabId === "notifications" && notifications.some(n => !n.read)) {
+      await api.markNotificationsRead();
+      setNotifications(notifications.map(n => ({...n, read: true})));
+    }
+  };
+
   return (
     <SidebarLayout
       navItems={navItems}
       activeTab={activeTab}
-      onTabChange={setActiveTab}
+      onTabChange={handleTabChange}
       onLogout={onLogout}
       language={language}
       onLanguageChange={onLanguageChange}
@@ -211,7 +234,7 @@ export default function FarmerPage({ language, onLanguageChange, onLogout }) {
                   <MapPin className="w-6 h-6 text-brand" />
                 </div>
                 <div>
-                  <p className="font-bold text-forest text-sm">Mangalagiri Procurement Centre</p>
+                  <p className="font-bold text-forest text-sm">{centres.find(c => c.id === selectedCentre)?.name || "Unknown Centre"}</p>
                   <p className="text-xs text-muted font-medium mt-1">{t("open")}</p>
                 </div>
               </div>
@@ -274,7 +297,12 @@ export default function FarmerPage({ language, onLanguageChange, onLogout }) {
                   <p className="text-xs text-muted font-medium mt-1">{c.district} &bull; Capacity: {c.daily_capacity} q/day</p>
                 </div>
               </div>
-              <Badge tone="success">{t("open")}</Badge>
+              <div className="flex items-center gap-3">
+                <Badge tone="success">{t("open")}</Badge>
+                <Button variant={selectedCentre === c.id ? "primary" : "outline"} size="sm" onClick={() => { setSelectedCentre(c.id); setActiveTab("bookings"); }}>
+                  {selectedCentre === c.id ? "Selected" : "Book Here"}
+                </Button>
+              </div>
             </Card>
           ))}
         </div>
@@ -294,19 +322,18 @@ export default function FarmerPage({ language, onLanguageChange, onLogout }) {
             </div>
             <div className="p-8 space-y-8">
               <div>
-                <h2 className="font-display text-2xl font-bold text-forest mb-2">Choose a Time Slot</h2>
-                <div className="flex items-center gap-3 mb-6 p-4 bg-green-50 rounded-xl border border-green-100">
-                  <MapPin className="w-5 h-5 text-brand" />
-                  <div>
-                    <p className="font-bold text-forest text-sm">Mangalagiri Procurement Centre</p>
-                    <p className="text-xs text-brand font-medium">Operating normally</p>
-                  </div>
+                <h2 className="font-display text-2xl font-bold text-forest mb-6">Choose a Time Slot</h2>
+                <div className="mb-6">
+                  <label className="block text-sm font-bold text-forest mb-4">{t("centre")}</label>
+                  <Select value={selectedCentre} onChange={(e) => setSelectedCentre(e.target.value)}>
+                    {centres.map((c) => <option value={c.id} key={c.id}>{c.name}</option>)}
+                  </Select>
                 </div>
               </div>
               <div>
                 <label className="block text-sm font-bold text-forest mb-4">{t("crop")}</label>
                 <Select value={selectedCrop} onChange={(e) => setSelectedCrop(e.target.value)}>
-                  {crops.map((c) => <option value={c.id} key={c.id}>{c.name}</option>)}
+                  {availableCrops.map((c) => <option value={c.id} key={c.id}>{c.name}</option>)}
                 </Select>
               </div>
               <div>
@@ -325,7 +352,7 @@ export default function FarmerPage({ language, onLanguageChange, onLogout }) {
                             : isAvailable ? "border-line bg-surface hover:border-brand/30" : "border-slate-100 bg-slate-50 opacity-60 cursor-not-allowed"
                         }`}>
                         <div>
-                          <p className="font-bold text-forest text-sm">{slot.time}</p>
+                          <p className="font-bold text-forest text-sm">{slot.date} &bull; {slot.time}</p>
                           <p className="text-xs text-muted font-medium mt-1">{slot.remaining} q available</p>
                         </div>
                         <Badge tone={isAvailable ? "success" : "default"}>{isAvailable ? "Available" : "Full"}</Badge>
@@ -453,22 +480,17 @@ export default function FarmerPage({ language, onLanguageChange, onLogout }) {
         <div className="max-w-2xl mx-auto">
           <h1 className="font-display text-2xl font-bold text-forest mb-6">Notifications</h1>
           <Card>
-            {booking ? (
+            {notifications.length > 0 ? (
               <div className="space-y-4">
-                <div className="flex items-start gap-3 p-4 bg-green-50 rounded-xl border border-green-100">
-                  <span className="w-2 h-2 mt-1.5 rounded-full bg-brand shrink-0" />
-                  <div>
-                    <p className="text-sm font-bold text-forest">Slot Booked Successfully</p>
-                    <p className="text-xs text-muted mt-0.5">Your slot at Mangalagiri Centre on {booking?.booking?.date} is confirmed.</p>
+                {notifications.map(n => (
+                  <div key={n.id} className="flex items-start gap-3 p-4 bg-green-50 rounded-xl border border-green-100">
+                    <span className={`w-2 h-2 mt-1.5 rounded-full shrink-0 ${n.read ? 'bg-slate-300' : 'bg-brand'}`} />
+                    <div>
+                      <p className="text-sm font-bold text-forest">{n.message}</p>
+                      <p className="text-xs text-muted mt-0.5">{new Date(n.date).toLocaleString()}</p>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-start gap-3 p-4 bg-blue-50 rounded-xl border border-blue-100">
-                  <span className="w-2 h-2 mt-1.5 rounded-full bg-blue-500 shrink-0" />
-                  <div>
-                    <p className="text-sm font-bold text-forest">Centre Update</p>
-                    <p className="text-xs text-muted mt-0.5">The centre is operating normally. Expected wait time: 35-45 min.</p>
-                  </div>
-                </div>
+                ))}
               </div>
             ) : (
               <p className="text-muted font-medium text-center py-8">No notifications yet.</p>

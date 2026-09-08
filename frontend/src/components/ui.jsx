@@ -173,7 +173,7 @@ export function SidebarLayout({ children, activeTab, onTabChange, navItems, onLo
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white font-bold">SM</div>
             <div>
-              <p className="text-xs text-brand font-bold uppercase tracking-widest">{t("greetingFarmer")}</p>
+              <p className="text-xs text-brand font-bold">{t("greetingFarmer")}</p>
               <p className="text-sm text-white font-bold">Ramesh Kumar</p>
             </div>
           </div>
