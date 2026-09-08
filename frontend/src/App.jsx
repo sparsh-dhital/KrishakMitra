@@ -129,33 +129,9 @@ export default function App() {
         />
       )}
 
-      {view === "farmer" && (
-        <FarmerPage
-          language={language}
-          onLanguageChange={changeLanguage}
-          onLogout={logout}
-          t={t}
-          farmerId={session?.farmerId}
-        />
-      )}
-
-      {view === "admin" && (
-        <AdminPage
-          language={language}
-          onLanguageChange={changeLanguage}
-          onLogout={logout}
-          t={t}
-        />
-      )}
-
-      {view === "buyer" && (
-        <BuyerPage
-          language={language}
-          onLanguageChange={changeLanguage}
-          onLogout={logout}
-          buyerId={session?.buyerId || "demo-buyer"}
-        />
-      )}
+      {view === "farmer" && <FarmerPage language={language} onLanguageChange={changeLanguage} onLogout={logout} onHome={() => setView("landing")} farmerId={session?.farmerId} />}
+      {view === "admin" && <AdminPage language={language} onLanguageChange={changeLanguage} onLogout={logout} onHome={() => setView("landing")} />}
+      {view === "buyer" && <BuyerPage language={language} onLanguageChange={changeLanguage} onLogout={logout} onHome={() => setView("landing")} buyerId={session?.buyerId || "demo-buyer"} />}
     </SmoothScroll>
   );
 }

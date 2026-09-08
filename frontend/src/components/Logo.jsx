@@ -1,52 +1,72 @@
 /**
  * KrishakMitra Logo Component
- * Uses the official brand asset. No substitutes or altered variants.
  *
  * Variants:
- *  - "full"   : full logo with text, for desktop navbar / sidebar / login
- *  - "emblem" : crops to just the circular emblem (top ~60% of image), for mobile header
+ *  - "full"    : circular emblem + "KrishakMitra" text side by side
+ *  - "emblem"  : circular emblem only (collapsed sidebar / mobile header)
+ *  - "text"    : styled text logo only
+ *  - "stacked" : emblem on top, text below (login page / landing hero)
  */
-import logoImg from "../assets/logo.png";
+import emblemImg from "../assets/logo_emblem.png";
+import textImg from "../assets/logo_text.png";
 
 export default function Logo({ variant = "full", className = "" }) {
   if (variant === "emblem") {
     return (
-      <div
-        className={`overflow-hidden rounded-full ${className}`}
-        style={{ aspectRatio: "1 / 1" }}
-        aria-label="KrishakMitra emblem"
-      >
-        {/*
-         * The logo PNG is ~1:1 square. The emblem circle occupies
-         * roughly the top 65% of the image height. We scale the
-         * image to 154% height so the circle fills the container,
-         * then shift it up slightly.
-         */}
+      <img
+        src={emblemImg}
+        alt="KrishakMitra"
+        draggable={false}
+        className={`object-contain select-none ${className}`}
+      />
+    );
+  }
+
+  if (variant === "text") {
+    return (
+      <img
+        src={textImg}
+        alt="KrishakMitra"
+        draggable={false}
+        className={`object-contain select-none ${className}`}
+      />
+    );
+  }
+
+  if (variant === "stacked") {
+    return (
+      <div className={`flex flex-col items-center gap-2 ${className}`}>
         <img
-          src={logoImg}
+          src={emblemImg}
+          alt="KrishakMitra emblem"
+          draggable={false}
+          className="h-20 w-20 object-contain select-none"
+        />
+        <img
+          src={textImg}
           alt="KrishakMitra"
           draggable={false}
-          style={{
-            width: "154%",
-            height: "154%",
-            marginLeft: "-27%",
-            marginTop: "-4%",
-            objectFit: "cover",
-            objectPosition: "top center",
-          }}
+          className="h-8 w-auto object-contain select-none"
         />
       </div>
     );
   }
 
-  // "full" variant — full logo, preserve proportions with mix-blend-multiply
-  // on light backgrounds (the PNG has a white bg, blend removes it visually).
+  // "full" — emblem + text side by side
   return (
-    <img
-      src={logoImg}
-      alt="KrishakMitra"
-      draggable={false}
-      className={`object-contain select-none ${className}`}
-    />
+    <div className={`flex items-center gap-2.5 ${className}`}>
+      <img
+        src={emblemImg}
+        alt="KrishakMitra emblem"
+        draggable={false}
+        className="h-10 w-10 object-contain select-none shrink-0"
+      />
+      <img
+        src={textImg}
+        alt="KrishakMitra"
+        draggable={false}
+        className="h-7 w-auto object-contain select-none"
+      />
+    </div>
   );
 }

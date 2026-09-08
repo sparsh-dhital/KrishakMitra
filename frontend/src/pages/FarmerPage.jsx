@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import QRCode from "react-qr-code";
 import { LayoutDashboard, MapPin, CalendarDays, QrCode, ListOrdered, ShoppingCart, CreditCard, Bell, ChevronRight, Activity, Clock, ArrowRight, Gavel } from "lucide-react";
@@ -8,7 +9,7 @@ import { Badge, Card, Button, Input, Select, SidebarLayout, CircularProgress, Pr
 import AuctionCard from "../components/AuctionCard";
 import { createAuctionDirectly, getFarmerAuctions, getFarmerBidNotifications } from "../services/biddingService";
 
-export default function FarmerPage({ language, onLanguageChange, onLogout, farmerId }) {
+export default function FarmerPage({ language, onLanguageChange, onLogout, onHome, farmerId }) {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("dashboard");
   const [centres, setCentres] = useState([]);
@@ -203,7 +204,7 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, farme
       navItems={navItems}
       activeTab={activeTab}
       onTabChange={handleTabChange}
-      onLogout={onLogout}
+      onLogout={onLogout} onHome={onHome}
       language={language}
       onLanguageChange={onLanguageChange}
     >
@@ -356,91 +357,151 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, farme
 
       {/* ── BOOKINGS ── */}
       {activeTab === "bookings" && (
-        <div className="max-w-4xl mx-auto">
-          <Card className="min-w-0 overflow-hidden p-0">
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="max-w-4xl mx-auto"
+        >
+          <Card className="min-w-0 overflow-hidden p-0 shadow-lg">
             <div className="flex items-center gap-4 overflow-x-auto border-b border-line bg-slate-50/50 p-4 sm:p-6">
               {["Centre", "Date", "Slot", "Quantity", "Confirm"].map((step, idx) => (
                 <div key={idx} className={`flex items-center gap-2 whitespace-nowrap text-sm font-bold ${idx === 2 ? "text-brand" : "text-muted"}`}>
-                  <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs text-white ${idx === 2 ? "bg-brand" : "bg-slate-300"}`}>{idx + 1}</span>
+                  <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs text-white ${idx === 2 ? "bg-brand shadow-md" : "bg-slate-300"}`}>{idx + 1}</span>
                   {step}
                 </div>
               ))}
             </div>
             <div className="space-y-8 p-4 sm:p-8">
-              <div>
-                <h2 className="font-display text-2xl font-bold text-forest mb-6">Choose a Time Slot</h2>
-                <div className="mb-6">
-                  <label className="block text-sm font-bold text-forest mb-4">{t("centre")}</label>
-                  <Select value={selectedCentre} onChange={(e) => setSelectedCentre(e.target.value)}>
-                    {centres.map((c) => <option value={c.id} key={c.id}>{c.name}</option>)}
-                  </Select>
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-forest mb-4">{t("crop")}</label>
-                <Select value={selectedCrop} onChange={(e) => setSelectedCrop(e.target.value)}>
-                  {availableCrops.map((c) => <option value={c.id} key={c.id}>{c.name}</option>)}
-                </Select>
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-forest mb-4">{t("quantity")}</label>
-                <Input type="number" min="1" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-forest mb-4">{t("availableSlots")}</label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {slots.map((slot) => {
-                    const isAvailable = slot.tone === "green";
-                    return (
-                      <button key={slot.id} onClick={() => isAvailable && setSelectedSlot(slot.id)} disabled={!isAvailable}
-                        className={`flex items-center justify-between p-4 rounded-xl border-2 transition-all text-left ${
-                          selectedSlot === slot.id ? "border-brand bg-green-50 ring-2 ring-brand/10"
-                            : isAvailable ? "border-line bg-surface hover:border-brand/30" : "border-slate-100 bg-slate-50 opacity-60 cursor-not-allowed"
-                        }`}>
-                        <div>
-                          <p className="font-bold text-forest text-sm">{slot.date} &bull; {slot.time}</p>
-                          <p className="text-xs text-muted font-medium mt-1">{slot.remaining} q available</p>
-                        </div>
-                        <Badge tone={isAvailable ? "success" : "default"}>{isAvailable ? "Available" : "Full"}</Badge>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-              <div className="flex flex-col items-stretch gap-3 border-t border-line pt-6 sm:flex-row sm:items-center sm:justify-between">
-                <Button className="w-full sm:w-auto" variant="ghost" onClick={() => setActiveTab("dashboard")}>{t("overview")}</Button>
-                <Button className="w-full sm:w-auto" onClick={createBooking} disabled={!selectedSlot || !selectedCrop}>{t("confirmBooking")} <ArrowRight className="w-4 h-4 ml-2" /></Button>
-              </div>
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key="booking-form"
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="space-y-8"
+                >
+                  <div>
+                    <h2 className="font-display text-2xl font-bold text-forest mb-6">Choose a Time Slot</h2>
+                    <div className="mb-6">
+                      <label className="block text-sm font-bold text-forest mb-4">{t("centre")}</label>
+                      <Select value={selectedCentre} onChange={(e) => setSelectedCentre(e.target.value)} className="shadow-sm">
+                        {centres.map((c) => <option value={c.id} key={c.id}>{c.name}</option>)}
+                      </Select>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-forest mb-4">{t("crop")}</label>
+                    <Select value={selectedCrop} onChange={(e) => setSelectedCrop(e.target.value)} className="shadow-sm">
+                      {availableCrops.map((c) => <option value={c.id} key={c.id}>{c.name}</option>)}
+                    </Select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-forest mb-4">{t("quantity")}</label>
+                    <Input type="number" min="1" value={quantity} onChange={(e) => setQuantity(e.target.value)} className="shadow-sm" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-forest mb-4">{t("availableSlots")}</label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {slots.map((slot, i) => {
+                        const isAvailable = slot.tone === "green";
+                        return (
+                          <motion.button 
+                            whileHover={isAvailable ? { scale: 1.02 } : {}}
+                            whileTap={isAvailable ? { scale: 0.98 } : {}}
+                            key={slot.id} 
+                            onClick={() => isAvailable && setSelectedSlot(slot.id)} 
+                            disabled={!isAvailable}
+                            className={`flex items-center justify-between p-4 rounded-xl border-2 transition-all text-left shadow-sm ${
+                              selectedSlot === slot.id ? "border-brand bg-green-50 ring-2 ring-brand/10 shadow-md"
+                                : isAvailable ? "border-line bg-surface hover:border-brand/30" : "border-slate-100 bg-slate-50 opacity-60 cursor-not-allowed"
+                            }`}>
+                            <div>
+                              <p className="font-bold text-forest text-sm">{slot.date} &bull; {slot.time}</p>
+                              <p className="text-xs text-muted font-medium mt-1">{slot.remaining} q available</p>
+                            </div>
+                            <Badge tone={isAvailable ? "success" : "default"}>{isAvailable ? "Available" : "Full"}</Badge>
+                          </motion.button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <div className="flex flex-col items-stretch gap-3 border-t border-line pt-6 sm:flex-row sm:items-center sm:justify-between">
+                    <Button className="w-full sm:w-auto" variant="ghost" onClick={() => setActiveTab("dashboard")}>{t("overview")}</Button>
+                    <Button className="w-full sm:w-auto shadow-md hover:shadow-lg transition-shadow" onClick={createBooking} disabled={!selectedSlot || !selectedCrop}>{t("confirmBooking")} <ArrowRight className="w-4 h-4 ml-2" /></Button>
+                  </div>
+                </motion.div>
+              </AnimatePresence>
             </div>
           </Card>
-        </div>
+        </motion.div>
       )}
 
       {/* ── TOKEN ── */}
       {activeTab === "token" && (
-        <div className="min-w-0 max-w-md mx-auto">
-          <h1 className="font-display text-2xl font-bold text-forest mb-6">Your Digital Token</h1>
-          <Card className="flex flex-col items-center gap-6 text-center">
-            {booking?.token?.token_number ? (
-              <>
-                <div className="max-w-full p-4 sm:p-6 bg-white rounded-2xl border border-line shadow-sm">
-                  <QRCode value={booking.token.token_number} size={180} style={{ maxWidth: "100%", height: "auto" }} />
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="min-w-0 max-w-md mx-auto"
+        >
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="font-display text-2xl font-bold text-forest">Your Digital Token</h1>
+          </div>
+          {booking?.token?.token_number ? (
+            <div className="relative overflow-hidden bg-white rounded-3xl border border-line shadow-2xl drop-shadow-xl">
+              {/* Premium Ticket Header */}
+              <div className="bg-forest p-6 text-white text-center relative overflow-hidden">
+                <div className="absolute top-0 right-0 -mt-10 -mr-10 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+                <div className="absolute bottom-0 left-0 -mb-10 -ml-10 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+                <p className="text-xs font-bold text-brand uppercase tracking-widest mb-1 relative z-10">Confirmed Booking</p>
+                <h2 className="font-display text-3xl font-extrabold relative z-10">{booking?.booking?.date || "TBD"}</h2>
+              </div>
+              
+              {/* Perforated edge */}
+              <div className="relative flex items-center justify-between -mt-3 z-20">
+                 <div className="w-6 h-6 bg-[#F8F9FA] rounded-full -ml-3 shadow-inner"></div>
+                 <div className="flex-1 border-t-2 border-dashed border-slate-200 mx-2"></div>
+                 <div className="w-6 h-6 bg-[#F8F9FA] rounded-full -mr-3 shadow-inner"></div>
+              </div>
+
+              {/* Ticket Body */}
+              <div className="p-8 flex flex-col items-center text-center">
+                <div className="max-w-full p-4 bg-white rounded-2xl border-4 border-slate-50 shadow-sm mb-6">
+                  <QRCode value={booking.token.token_number} size={200} style={{ maxWidth: "100%", height: "auto" }} />
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-muted uppercase tracking-widest mb-1">Token Number</p>
-                  <p className="font-display text-4xl font-extrabold text-forest">#{booking.token.token_number}</p>
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Token Number</p>
+                  <p className="font-display text-5xl font-extrabold text-forest tracking-tight">#{booking.token.token_number}</p>
                 </div>
-                <p className="text-sm text-muted">Show this QR code at the procurement centre gate</p>
-                <Badge tone="success" className="text-sm px-4 py-2">Valid for {booking?.booking?.date || "TBD"}</Badge>
-              </>
-            ) : (
-              <>
-                <p className="text-muted font-medium py-8">No token yet. Book a slot first.</p>
-                <Button onClick={() => setActiveTab("bookings")}>Book a Slot</Button>
-              </>
-            )}
-          </Card>
-        </div>
+                
+                <div className="w-full mt-8 bg-slate-50 rounded-2xl p-4 flex justify-between items-center text-left">
+                   <div>
+                     <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5">Crop</p>
+                     <p className="font-bold text-forest">{crops.find((c) => c.id === booking?.booking?.crop_id)?.name || "Unknown"}</p>
+                   </div>
+                   <div className="text-right">
+                     <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5">Quantity</p>
+                     <p className="font-bold text-forest">{booking?.booking?.estimated_quantity || 0} Quintals</p>
+                   </div>
+                </div>
+              </div>
+              
+              {/* Footer */}
+              <div className="bg-slate-50 border-t border-line p-4 text-center">
+                 <p className="text-xs text-slate-500 font-medium">Please present this QR code at the gate</p>
+              </div>
+            </div>
+          ) : (
+            <Card className="flex flex-col items-center gap-6 text-center py-12">
+              <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center text-slate-300">
+                <QrCode className="w-10 h-10" />
+              </div>
+              <div>
+                <p className="text-forest font-bold text-lg mb-1">No token yet</p>
+                <p className="text-muted font-medium">Book a slot to generate your gate pass.</p>
+              </div>
+              <Button onClick={() => setActiveTab("bookings")} className="mt-2">Book a Slot</Button>
+            </Card>
+          )}
+        </motion.div>
       )}
 
       {/* ── QUEUE ── */}

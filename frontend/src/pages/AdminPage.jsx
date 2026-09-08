@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
-import { LayoutDashboard, Users, Activity, FileText, Bell, DatabaseZap, ShieldAlert, CheckCircle2, Gavel } from "lucide-react";
+import { LayoutDashboard, Users, Activity, FileText, Bell, DatabaseZap, ShieldAlert, CheckCircle2, Gavel, Clock } from "lucide-react";
 import { api } from "../services/api";
 import { SidebarLayout, Card, Badge, Button, Select, Input } from "../components/ui";
 import { Plus, Trash2, Edit2 } from "lucide-react";
@@ -262,11 +262,136 @@ function CentresTab() {
           </table>
         </div>
       </Card>
+      </div>
+    );
+  }
+
+function TodaysBookingsTab() {
+  const { t } = useTranslation();
+  const mockBookings = [
+    { id: "KM-8492", farmer: "Ramesh Kumar", crop: "Paddy Grade A", qty: "40 Quintals", slot: "09:00 AM - 12:00 PM", status: "Pending" },
+    { id: "KM-8493", farmer: "Suresh Babu", crop: "Cotton", qty: "15 Quintals", slot: "09:00 AM - 12:00 PM", status: "Arrived" },
+    { id: "KM-8494", farmer: "Venkat Rao", crop: "Maize", qty: "25 Quintals", slot: "12:00 PM - 03:00 PM", status: "Pending" },
+  ];
+
+  return (
+    <div className="max-w-[1400px] mx-auto space-y-6">
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h2 className="text-2xl font-display font-extrabold text-forest">{t("todaysBookings") || "Today's Bookings"}</h2>
+          <p className="text-muted mt-1">Manage scheduled arrivals for today.</p>
+        </div>
+        <Button variant="primary" className="gap-2">
+          <FileText className="w-4 h-4" /> Export Report
+        </Button>
+      </div>
+
+      <Card className="overflow-hidden p-0 shadow-md">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-slate-50 border-b border-line text-sm font-bold text-slate-500 uppercase tracking-wider">
+                <th className="p-4 pl-6">Token ID</th>
+                <th className="p-4">Farmer</th>
+                <th className="p-4">Crop & Quantity</th>
+                <th className="p-4">Time Slot</th>
+                <th className="p-4">Status</th>
+                <th className="p-4 pr-6 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-line text-sm">
+              {mockBookings.map((booking) => (
+                <tr key={booking.id} className="hover:bg-slate-50 transition-colors">
+                  <td className="p-4 pl-6 font-bold text-forest">{booking.id}</td>
+                  <td className="p-4 font-medium">{booking.farmer}</td>
+                  <td className="p-4">
+                    <p className="font-bold text-forest">{booking.crop}</p>
+                    <p className="text-xs text-muted">{booking.qty}</p>
+                  </td>
+                  <td className="p-4">
+                    <div className="inline-flex items-center gap-1.5 bg-slate-100 text-slate-600 px-2.5 py-1 rounded-md text-xs font-bold">
+                      <Clock className="w-3.5 h-3.5" />
+                      {booking.slot}
+                    </div>
+                  </td>
+                  <td className="p-4">
+                    <Badge variant={booking.status === "Arrived" ? "primary" : "warning"}>{booking.status}</Badge>
+                  </td>
+                  <td className="p-4 pr-6 text-right">
+                    <Button variant="outline" size="sm" className="bg-white hover:bg-slate-50 border-slate-200">
+                      View Details
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Card>
     </div>
   );
 }
 
-export default function AdminPage({ language, onLanguageChange, onLogout }) {
+function ActiveQueueTab() {
+  const { t } = useTranslation();
+  const mockQueue = [
+    { id: "KM-8490", farmer: "Hari Krishna", crop: "Paddy Grade A", qty: "35 Quintals", status: "Quality Check", waitTime: "15 mins" },
+    { id: "KM-8493", farmer: "Suresh Babu", crop: "Cotton", qty: "15 Quintals", status: "Weighing", waitTime: "5 mins" },
+    { id: "KM-8488", farmer: "Gopi Chand", crop: "Paddy Grade A", qty: "50 Quintals", status: "Payment Processing", waitTime: "30 mins" },
+  ];
+
+  return (
+    <div className="max-w-[1400px] mx-auto space-y-6">
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h2 className="text-2xl font-display font-extrabold text-forest">{t("liveQueue") || "Active Queue"}</h2>
+          <p className="text-muted mt-1">Real-time status of farmers currently at the centre.</p>
+        </div>
+        <div className="flex gap-3">
+           <Badge variant="primary" className="bg-green-100 text-green-700">3 Currently Active</Badge>
+           <Badge variant="outline">Avg Wait: 18 mins</Badge>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4">
+        {mockQueue.map((item, index) => (
+          <Card key={item.id} className="p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-l-4 hover:shadow-md transition-shadow" style={{ borderLeftColor: item.status === 'Quality Check' ? '#F59E0B' : item.status === 'Weighing' ? '#3B82F6' : '#10B981' }}>
+            <div className="flex items-center gap-4">
+               <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center font-bold text-lg text-slate-400">
+                 {index + 1}
+               </div>
+               <div>
+                 <div className="flex items-center gap-2 mb-1">
+                   <h3 className="font-bold text-forest text-lg">{item.farmer}</h3>
+                   <span className="text-xs font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">{item.id}</span>
+                 </div>
+                 <p className="text-sm text-muted">{item.crop} • {item.qty}</p>
+               </div>
+            </div>
+            
+            <div className="flex items-center gap-6 w-full sm:w-auto">
+               <div className="text-left sm:text-right flex-1 sm:flex-none">
+                 <p className="text-xs text-muted font-bold uppercase tracking-wider mb-1">Current Status</p>
+                 <Badge variant={item.status === 'Quality Check' ? 'warning' : 'primary'} className="text-sm">
+                   {item.status}
+                 </Badge>
+               </div>
+               <div className="text-right hidden sm:block min-w-[80px]">
+                 <p className="text-xs text-muted font-bold uppercase tracking-wider mb-1">Wait Time</p>
+                 <p className="font-bold text-forest flex items-center justify-end gap-1"><Clock className="w-3 h-3 text-brand" /> {item.waitTime}</p>
+               </div>
+               <Button variant="primary" size="sm" className="shrink-0">
+                 Next Step
+               </Button>
+            </div>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}
+  
+  export default function AdminPage({ language, onLanguageChange, onLogout, onHome }) {
   const { t } = useTranslation();
   const [centre, setCentre] = useState(null);
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -342,7 +467,7 @@ export default function AdminPage({ language, onLanguageChange, onLogout }) {
       navItems={navItems} 
       activeTab={activeTab} 
       onTabChange={setActiveTab}
-      onLogout={onLogout}
+      onLogout={onLogout} onHome={onHome}
       language={language}
       onLanguageChange={onLanguageChange}
     >
@@ -499,9 +624,11 @@ export default function AdminPage({ language, onLanguageChange, onLogout }) {
       )}
 
       {activeTab === "centres" && <CentresTab />}
+      {activeTab === "bookings" && <TodaysBookingsTab />}
+      {activeTab === "queue" && <ActiveQueueTab />}
       {activeTab === "marketplace" && <BuyerMarketplace userType="admin" />}
 
-      {activeTab !== "dashboard" && activeTab !== "centres" && activeTab !== "marketplace" && (
+      {activeTab !== "dashboard" && activeTab !== "centres" && activeTab !== "bookings" && activeTab !== "queue" && activeTab !== "marketplace" && (
         <div className="flex flex-col items-center justify-center py-32 text-center">
           <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 mb-6">
             <LayoutDashboard className="w-10 h-10" />

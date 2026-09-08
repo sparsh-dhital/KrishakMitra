@@ -21,12 +21,12 @@ import {
 import Logo from "../components/Logo";
 import LanguagePicker from "../components/LanguagePicker";
 
-export default function LandingPage({ onNavigateLogin, language, onLanguageChange }) {
+export default function LandingPage({ onNavigateLogin, hasSession, language, onLanguageChange }) {
   return (
     <div className="min-h-screen bg-[#F8F9FA] font-body text-forest selection:bg-brand selection:text-white">
       {/* Navbar */}
       <header className="w-full py-4 px-4 sm:py-6 sm:px-6 max-w-7xl mx-auto flex items-center justify-between gap-3">
-        <Logo variant="full" className="h-8 sm:h-10 w-auto max-w-[48vw]" />
+        <Logo variant="full" className="h-14" />
         <nav className="hidden md:flex items-center gap-10 text-base font-semibold">
           <a href="#features" className="hover:text-brand transition-colors">Features</a>
           <a href="#how-it-works" className="hover:text-brand transition-colors">How it Works</a>
@@ -35,8 +35,8 @@ export default function LandingPage({ onNavigateLogin, language, onLanguageChang
         </nav>
         <div className="flex shrink-0 items-center gap-2 sm:gap-5">
           <LanguagePicker value={language} onChange={onLanguageChange} />
-          <button onClick={onNavigateLogin} className="bg-forest text-white px-4 py-2.5 sm:px-8 sm:py-3 rounded-full text-sm sm:text-base font-medium hover:bg-forest-dark transition-colors">
-            Login
+          <button onClick={onNavigateLogin} className="bg-forest text-white px-4 py-2.5 sm:px-8 sm:py-3 rounded-full text-sm sm:text-base font-medium hover:bg-forest-dark transition-colors shadow-sm">
+            {hasSession ? "Open Dashboard" : "Login / Register"}
           </button>
         </div>
       </header>
@@ -55,8 +55,8 @@ export default function LandingPage({ onNavigateLogin, language, onLanguageChang
             Experience seamless coordination between farmers, procurement centres, and government systems. No more queues, just transparent, real-time efficiency.
           </p>
           <div className="flex flex-col sm:flex-row items-center gap-5 mb-14">
-            <button className="w-full sm:w-auto bg-brand text-white px-10 py-4 rounded-full text-lg font-bold flex items-center justify-center gap-2 hover:bg-brand-hover transition-colors shadow-lg shadow-brand/20">
-              Book Your Slot <ArrowRight className="w-5 h-5" />
+            <button onClick={onNavigateLogin} className="w-full sm:w-auto bg-brand text-white px-10 py-4 rounded-full text-lg font-bold flex items-center justify-center gap-2 hover:bg-brand-hover transition-colors shadow-lg shadow-brand/20">
+              {hasSession ? "Go to Dashboard" : "Book Your Slot"} <ArrowRight className="w-5 h-5" />
             </button>
             <button className="w-full sm:w-auto bg-white text-forest px-10 py-4 rounded-full text-lg font-bold flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors border border-line">
               <Play className="w-5 h-5 fill-forest" /> Watch Demo
@@ -246,7 +246,7 @@ export default function LandingPage({ onNavigateLogin, language, onLanguageChang
               </div>
             </div>
 
-            <div className="relative min-w-0 overflow-hidden">
+            <div className="relative min-w-0">
               <div className="absolute -top-5 right-0 sm:-top-8 xl:-right-8 bg-brand text-white text-center px-4 sm:px-6 py-3 sm:py-4 rounded-3xl shadow-xl z-10 transform rotate-3">
                 <p className="font-extrabold text-3xl leading-none">10K+</p>
                 <p className="text-xs font-bold opacity-90 mt-2 uppercase tracking-wider">Farmers</p>
@@ -303,7 +303,7 @@ export default function LandingPage({ onNavigateLogin, language, onLanguageChang
       <footer className="bg-forest pt-20 pb-10 border-t border-white/10">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 sm:gap-12 mb-16 sm:mb-20">
           <div className="col-span-2 md:col-span-1">
-            <Logo variant="full" className="h-10 w-auto grayscale brightness-200 mb-8" />
+            <Logo variant="full" className="h-11 mb-6" />
             <p className="text-white/60 text-sm leading-relaxed">Empowering Farmers with Technology and Transparency.</p>
           </div>
           

@@ -49,9 +49,9 @@ export default function LoginPage({ onBack, onLogin, t, language, onLanguageChan
         
         <Card className="shadow-xl shadow-brand/5 border-line p-5 sm:p-10">
           <div className="flex flex-col items-center mb-6">
-            {/* mix-blend-multiply removes white PNG bg on the white card */}
-            <Logo variant="full" className="h-24 w-auto mix-blend-multiply" />
-            <p className="text-sm text-muted font-medium text-center">Access your procurement dashboard</p>
+            {/* stacked variant: emblem on top, styled text below */}
+            <Logo variant="stacked" className="mb-1" />
+            <p className="text-sm text-muted font-medium text-center mt-2">Access your procurement dashboard</p>
           </div>
 
           <div className="flex p-1 bg-slate-100 rounded-xl mb-8">
