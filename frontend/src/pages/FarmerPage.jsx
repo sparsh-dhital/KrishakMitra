@@ -12,6 +12,7 @@ import { createAuctionDirectly, getFarmerAuctions, getFarmerBidNotifications } f
 export default function FarmerPage({ language, onLanguageChange, onLogout, onHome, farmerId }) {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("dashboard");
+  const [bookingStep, setBookingStep] = useState(0);
   const [centres, setCentres] = useState([]);
   const [farmer, setFarmer] = useState(null);
   const [crops, setCrops] = useState([]);
@@ -193,6 +194,9 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, onHom
 
   const handleTabChange = async (tabId) => {
     setActiveTab(tabId);
+    if (tabId === "bookings") {
+      setBookingStep(0);
+    }
     if (tabId === "notifications" && notifications.some(n => !n.read)) {
       await api.markNotificationsRead();
       setNotifications(notifications.map(n => ({...n, read: true})));
@@ -364,70 +368,139 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, onHom
         >
           <Card className="min-w-0 overflow-hidden p-0 shadow-lg">
             <div className="flex items-center gap-4 overflow-x-auto border-b border-line bg-slate-50/50 p-4 sm:p-6">
-              {["Centre", "Date", "Slot", "Quantity", "Confirm"].map((step, idx) => (
-                <div key={idx} className={`flex items-center gap-2 whitespace-nowrap text-sm font-bold ${idx === 2 ? "text-brand" : "text-muted"}`}>
-                  <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs text-white ${idx === 2 ? "bg-brand shadow-md" : "bg-slate-300"}`}>{idx + 1}</span>
-                  {step}
-                </div>
-              ))}
+              {["Centre", "Crop", "Quantity", "Slot", "Confirm"].map((step, idx) => {
+                const isActive = bookingStep === idx;
+                const isCompleted = bookingStep > idx;
+                // Allow clicking if it's a completed step or the very next step we can access
+                const canClick = idx <= bookingStep || (idx === bookingStep + 1 && ((bookingStep === 0 && selectedCentre) || (bookingStep === 1 && selectedCrop) || (bookingStep === 2 && quantity) || (bookingStep === 3 && selectedSlot)));
+                
+                return (
+                  <button 
+                    key={idx} 
+                    onClick={() => canClick && setBookingStep(idx)}
+                    disabled={!canClick}
+                    className={`flex items-center gap-2 whitespace-nowrap text-sm font-bold focus:outline-none transition-colors ${isActive ? "text-brand" : isCompleted ? "text-forest cursor-pointer" : "text-muted opacity-60 cursor-not-allowed"}`}
+                  >
+                    <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs text-white transition-colors ${isActive ? "bg-brand shadow-md" : isCompleted ? "bg-forest" : "bg-slate-300"}`}>
+                      {idx + 1}
+                    </span>
+                    {step}
+                  </button>
+                );
+              })}
             </div>
-            <div className="space-y-8 p-4 sm:p-8">
+            <div className="p-4 sm:p-8 min-h-[300px]">
               <AnimatePresence mode="wait">
                 <motion.div
-                  key="booking-form"
+                  key={`step-${bookingStep}`}
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
-                  className="space-y-8"
+                  exit={{ opacity: 0, x: 10 }}
+                  transition={{ duration: 0.2 }}
+                  className="space-y-6"
                 >
-                  <div>
-                    <h2 className="font-display text-2xl font-bold text-forest mb-6">Choose a Time Slot</h2>
-                    <div className="mb-6">
-                      <label className="block text-sm font-bold text-forest mb-4">{t("centre")}</label>
+                  {bookingStep === 0 && (
+                    <div>
+                      <h2 className="font-display text-xl font-bold text-forest mb-4">Select a Centre</h2>
                       <Select value={selectedCentre} onChange={(e) => setSelectedCentre(e.target.value)} className="shadow-sm">
+                        <option value="" disabled>Select Centre</option>
                         {centres.map((c) => <option value={c.id} key={c.id}>{c.name}</option>)}
                       </Select>
+                      <div className="mt-8 flex justify-end">
+                        <Button onClick={() => setBookingStep(1)} disabled={!selectedCentre}>Next step</Button>
+                      </div>
                     </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-bold text-forest mb-4">{t("crop")}</label>
-                    <Select value={selectedCrop} onChange={(e) => setSelectedCrop(e.target.value)} className="shadow-sm">
-                      {availableCrops.map((c) => <option value={c.id} key={c.id}>{c.name}</option>)}
-                    </Select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-bold text-forest mb-4">{t("quantity")}</label>
-                    <Input type="number" min="1" value={quantity} onChange={(e) => setQuantity(e.target.value)} className="shadow-sm" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-bold text-forest mb-4">{t("availableSlots")}</label>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {slots.map((slot, i) => {
-                        const isAvailable = slot.tone === "green";
-                        return (
-                          <motion.button 
-                            whileHover={isAvailable ? { scale: 1.02 } : {}}
-                            whileTap={isAvailable ? { scale: 0.98 } : {}}
-                            key={slot.id} 
-                            onClick={() => isAvailable && setSelectedSlot(slot.id)} 
-                            disabled={!isAvailable}
-                            className={`flex items-center justify-between p-4 rounded-xl border-2 transition-all text-left shadow-sm ${
-                              selectedSlot === slot.id ? "border-brand bg-green-50 ring-2 ring-brand/10 shadow-md"
-                                : isAvailable ? "border-line bg-surface hover:border-brand/30" : "border-slate-100 bg-slate-50 opacity-60 cursor-not-allowed"
-                            }`}>
-                            <div>
-                              <p className="font-bold text-forest text-sm">{slot.date} &bull; {slot.time}</p>
-                              <p className="text-xs text-muted font-medium mt-1">{slot.remaining} q available</p>
-                            </div>
-                            <Badge tone={isAvailable ? "success" : "default"}>{isAvailable ? "Available" : "Full"}</Badge>
-                          </motion.button>
-                        );
-                      })}
+                  )}
+
+                  {bookingStep === 1 && (
+                    <div>
+                      <h2 className="font-display text-xl font-bold text-forest mb-4">Select your Crop</h2>
+                      <Select value={selectedCrop} onChange={(e) => setSelectedCrop(e.target.value)} className="shadow-sm">
+                        <option value="" disabled>Select Crop</option>
+                        {availableCrops.map((c) => <option value={c.id} key={c.id}>{c.name}</option>)}
+                      </Select>
+                      <div className="mt-8 flex justify-between">
+                        <Button variant="ghost" onClick={() => setBookingStep(0)}>Back</Button>
+                        <Button onClick={() => setBookingStep(2)} disabled={!selectedCrop}>Next step</Button>
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex flex-col items-stretch gap-3 border-t border-line pt-6 sm:flex-row sm:items-center sm:justify-between">
-                    <Button className="w-full sm:w-auto" variant="ghost" onClick={() => setActiveTab("dashboard")}>{t("overview")}</Button>
-                    <Button className="w-full sm:w-auto shadow-md hover:shadow-lg transition-shadow" onClick={createBooking} disabled={!selectedSlot || !selectedCrop}>{t("confirmBooking")} <ArrowRight className="w-4 h-4 ml-2" /></Button>
-                  </div>
+                  )}
+
+                  {bookingStep === 2 && (
+                    <div>
+                      <h2 className="font-display text-xl font-bold text-forest mb-4">Estimated Quantity (Quintals)</h2>
+                      <Input type="number" min="1" value={quantity} onChange={(e) => setQuantity(e.target.value)} className="shadow-sm" />
+                      <div className="mt-8 flex justify-between">
+                        <Button variant="ghost" onClick={() => setBookingStep(1)}>Back</Button>
+                        <Button onClick={() => setBookingStep(3)} disabled={!quantity || quantity <= 0}>Next step</Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {bookingStep === 3 && (
+                    <div>
+                      <h2 className="font-display text-xl font-bold text-forest mb-4">Choose a Time Slot</h2>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[400px] overflow-y-auto pr-2">
+                        {slots.length > 0 ? slots.map((slot, i) => {
+                          const isAvailable = slot.tone === "green";
+                          return (
+                            <motion.button 
+                              whileHover={isAvailable ? { scale: 1.02 } : {}}
+                              whileTap={isAvailable ? { scale: 0.98 } : {}}
+                              key={slot.id} 
+                              onClick={() => isAvailable && setSelectedSlot(slot.id)} 
+                              disabled={!isAvailable}
+                              className={`flex items-center justify-between p-4 rounded-xl border-2 transition-all text-left shadow-sm ${
+                                selectedSlot === slot.id ? "border-brand bg-green-50 ring-2 ring-brand/10 shadow-md"
+                                  : isAvailable ? "border-line bg-surface hover:border-brand/30" : "border-slate-100 bg-slate-50 opacity-60 cursor-not-allowed"
+                              }`}>
+                              <div>
+                                <p className="font-bold text-forest text-sm">{slot.date} &bull; {slot.time}</p>
+                                <p className="text-xs text-muted font-medium mt-1">{slot.remaining} q available</p>
+                              </div>
+                              <Badge tone={isAvailable ? "success" : "default"}>{isAvailable ? "Available" : "Full"}</Badge>
+                            </motion.button>
+                          );
+                        }) : (
+                          <p className="text-muted py-4 col-span-2 text-center">No slots available for this centre.</p>
+                        )}
+                      </div>
+                      <div className="mt-8 flex justify-between">
+                        <Button variant="ghost" onClick={() => setBookingStep(2)}>Back</Button>
+                        <Button onClick={() => setBookingStep(4)} disabled={!selectedSlot}>Review Booking</Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {bookingStep === 4 && (
+                    <div>
+                      <h2 className="font-display text-xl font-bold text-forest mb-4">Review & Confirm</h2>
+                      <div className="bg-slate-50 rounded-xl p-6 space-y-4 border border-line">
+                        <div className="flex justify-between border-b border-line pb-4">
+                          <span className="text-muted font-medium">Centre</span>
+                          <span className="font-bold text-forest">{centres.find(c => c.id === selectedCentre)?.name || "N/A"}</span>
+                        </div>
+                        <div className="flex justify-between border-b border-line pb-4">
+                          <span className="text-muted font-medium">Crop</span>
+                          <span className="font-bold text-forest">{crops.find(c => c.id === selectedCrop)?.name || "N/A"}</span>
+                        </div>
+                        <div className="flex justify-between border-b border-line pb-4">
+                          <span className="text-muted font-medium">Quantity</span>
+                          <span className="font-bold text-forest">{quantity} q</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted font-medium">Slot</span>
+                          <span className="font-bold text-forest">
+                            {slots.find(s => s.id === selectedSlot)?.date || "N/A"} &bull; {slots.find(s => s.id === selectedSlot)?.time || "N/A"}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-stretch gap-3 pt-6 mt-4 sm:flex-row sm:items-center sm:justify-between">
+                        <Button className="w-full sm:w-auto" variant="ghost" onClick={() => setBookingStep(3)}>Back</Button>
+                        <Button className="w-full sm:w-auto shadow-md hover:shadow-lg transition-shadow" onClick={createBooking} disabled={!selectedSlot || !selectedCrop}>{t("confirmBooking")} <ArrowRight className="w-4 h-4 ml-2" /></Button>
+                      </div>
+                    </div>
+                  )}
                 </motion.div>
               </AnimatePresence>
             </div>
