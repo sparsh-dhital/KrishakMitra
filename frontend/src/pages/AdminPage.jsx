@@ -568,6 +568,7 @@ function ActiveQueueTab() {
     { id: "KM-8490", name: "Hari Krishna", token: "KM-8490", quantity: "35 Quintals", status: "Weighing" },
     { id: "KM-8493", name: "Suresh Babu", token: "KM-8493", quantity: "15 Quintals", status: "Quality Check" },
     { id: "KM-8488", name: "Gopi Chand", token: "KM-8488", quantity: "50 Quintals", status: "Payment Processing" },
+    { id: "KM-8496", name: "Ravi Teja", token: "KM-8496", quantity: "25 Quintals", status: "Waiting" },
   ];
   const queuePreview = showAllQueue ? queueMembers : queueMembers.slice(0, 2);
   const processingCount = queueMembers.filter((farmer) => farmer.status !== "Completed").length;
