@@ -1,6 +1,7 @@
 import os
 import smtplib
 import logging
+from html import escape
 from email.message import EmailMessage
 
 from fastapi import APIRouter, BackgroundTasks, HTTPException, status
@@ -48,6 +49,11 @@ def send_contact_email(data: ContactMessage) -> None:
             "Missing email configuration. Set EMAIL_HOST, EMAIL_USER, EMAIL_PASSWORD, and CONTACT_TO_EMAIL in backend/.env."
         )
 
+    safe_name = escape(data.full_name.strip())
+    safe_email = escape(data.email or "Not provided")
+    safe_phone = escape(f"{data.country_code} {data.phone}")
+    safe_message = escape(data.message.strip()).replace("\n", "<br>")
+
     # ---------------------------------------------------------
     # 1. ADMIN NOTIFICATION: The email sent to your project inbox
     # ---------------------------------------------------------
@@ -61,21 +67,21 @@ def send_contact_email(data: ContactMessage) -> None:
         <table style="width: 100%; border-collapse: collapse;">
           <tr>
             <td style="padding: 10px 0; border-bottom: 1px solid #f1f5f9; color: #64748b; font-weight: bold; width: 30%;">Full Name:</td>
-            <td style="padding: 10px 0; border-bottom: 1px solid #f1f5f9; color: #0f172a;">{data.full_name}</td>
+            <td style="padding: 10px 0; border-bottom: 1px solid #f1f5f9; color: #0f172a;">{safe_name}</td>
           </tr>
           <tr>
             <td style="padding: 10px 0; border-bottom: 1px solid #f1f5f9; color: #64748b; font-weight: bold;">Phone Number:</td>
-            <td style="padding: 10px 0; border-bottom: 1px solid #f1f5f9; color: #0f172a;">{data.country_code} {data.phone}</td>
+            <td style="padding: 10px 0; border-bottom: 1px solid #f1f5f9; color: #0f172a;">{safe_phone}</td>
           </tr>
           <tr>
             <td style="padding: 10px 0; border-bottom: 1px solid #f1f5f9; color: #64748b; font-weight: bold;">Email Address:</td>
-            <td style="padding: 10px 0; border-bottom: 1px solid #f1f5f9; color: #0f172a;">{data.email or 'Not provided'}</td>
+            <td style="padding: 10px 0; border-bottom: 1px solid #f1f5f9; color: #0f172a;">{safe_email}</td>
           </tr>
         </table>
         <div style="margin-top: 25px;">
           <p style="color: #64748b; font-weight: bold; margin-bottom: 10px;">Message:</p>
           <div style="background-color: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; color: #334155; line-height: 1.6;">
-            {data.message.strip()}
+            {safe_message}
           </div>
         </div>
       </div>
@@ -104,7 +110,7 @@ def send_contact_email(data: ContactMessage) -> None:
           </div>
           <div style="padding: 30px 20px; background-color: #ffffff; color: #334155;">
             <h2 style="margin-top: 0; color: #0f172a;">Message Received!</h2>
-            <p style="line-height: 1.6;">Hello <strong>{data.full_name}</strong>,</p>
+            <p style="line-height: 1.6;">Hello <strong>{safe_name}</strong>,</p>
             <p style="line-height: 1.6;">Thank you for reaching out to KrishakMitra. We have successfully received your message.</p>
             <p style="line-height: 1.6;">Our team will review your inquiry and get back to you shortly to assist with your agricultural needs.</p>
             <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 25px 0;" />

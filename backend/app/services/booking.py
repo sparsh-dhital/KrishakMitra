@@ -38,15 +38,27 @@ def create_booking(
     if not slot:
         raise HTTPException(status_code=404, detail="Slot not found")
 
-    available = float(slot["capacity_quintals"]) - float(
-        slot["booked_quintals"] or 0
-    )
+    available = float(slot["capacity_quintals"]) - float(slot["booked_quintals"] or 0)
 
     if estimated_quantity > available:
         raise HTTPException(
             status_code=400,
             detail=f"Only {available} quintals are available in this slot",
         )
+
+    # Recheck and reserve capacity in one database-side update predicate. The
+    # update count is the concurrency guard; a second request cannot reserve
+    # the same remaining quantity after the first one succeeds.
+    reservation = (
+        supabase.table("slots")
+        .update({"booked_quintals": float(slot["booked_quintals"] or 0) + estimated_quantity})
+        .eq("id", str(slot_id))
+        .eq("centre_id", str(centre_id))
+        .lte("booked_quintals", float(slot["capacity_quintals"]) - estimated_quantity)
+        .execute()
+    )
+    if not reservation.data:
+        raise HTTPException(status_code=409, detail="This slot was filled by another booking")
 
     booking = (
         supabase
@@ -90,8 +102,13 @@ def create_booking(
 
     if token:
         try:
-            queue_res = supabase.table("queue_entries").select("id").execute()
-            pos = len(queue_res.data) + 1 if queue_res.data else 1
+            queue_res = (
+                supabase.table("queue_entries")
+                .select("id", count="exact")
+                .eq("status", "waiting")
+                .execute()
+            )
+            pos = (queue_res.count or 0) + 1
             supabase.table("queue_entries").insert({
                 "token_id": token[0]["id"],
                 "queue_position": pos,
