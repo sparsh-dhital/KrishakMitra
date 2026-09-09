@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Toaster } from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import Lenis from "lenis";
@@ -80,7 +80,7 @@ export default function App() {
     localStorage.setItem("krishak-mitra-session", JSON.stringify(next));
   };
 
-  // If user already has a session and clicks "Go to Dashboard" on landing page
+  // Always let the user choose a dashboard explicitly from the landing page.
   const handleNavigateLogin = () => {
     if (session) {
       // Already logged in  go straight to their dashboard
@@ -121,6 +121,7 @@ export default function App() {
 
       {view === "contact" && (
         <ContactPage
+
           onBack={() => setView("landing")}
           language={language}
           onLanguageChange={changeLanguage}

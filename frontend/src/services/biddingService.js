@@ -167,6 +167,27 @@ export async function acceptHighestBidDirectly(auctionId) {
   return data;
 }
 
+export async function removeAuctionDirectly(auctionId) {
+  if (!auctionId) throw new Error("Auction details are required.");
+  if (auctionId.startsWith("demo-")) {
+    const listings = demoListings().filter((auction) => auction.id !== auctionId);
+    writeDemo(demoAuctionsKey, listings);
+    writeDemo(demoBidsKey, readDemo(demoBidsKey, []).filter((bid) => bid.auction_id !== auctionId));
+    writeDemo(demoNotificationsKey, readDemo(demoNotificationsKey, []).filter((notification) => notification.auction_id !== auctionId));
+    return { id: auctionId };
+  }
+
+  const client = requireClient();
+  const { data, error } = await client
+    .from("auctions")
+    .delete()
+    .eq("id", auctionId)
+    .select("id")
+    .single();
+  if (error) throw error;
+  return data;
+}
+
 export async function getOpenAuctions() {
   if (!supabase) return demoListings().filter((auction) => auction.status === "open");
   const client = requireClient();

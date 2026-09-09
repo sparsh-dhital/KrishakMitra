@@ -1,4 +1,4 @@
-﻿import { motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { 
   ArrowRight, 
   Play, 
@@ -16,17 +16,41 @@ import {
   CheckCircle2,
   Phone,
   Activity,
-  Leaf
+  Leaf,
+  Gavel
 } from "lucide-react";
 import Logo from "../components/Logo";
 import LanguagePicker from "../components/LanguagePicker";
+import { useEffect, useState } from "react";
 
 export default function LandingPage({ onNavigateLogin, onNavigateContact, hasSession, language, onLanguageChange }) {
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#F8F9FA] flex flex-col items-center justify-center font-body text-forest">
+        <Logo variant="full" className="h-24 w-auto mb-8 animate-pulse mix-blend-multiply" />
+        <div className="flex gap-3 mb-6">
+          <div className="w-3.5 h-3.5 bg-brand rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+          <div className="w-3.5 h-3.5 bg-brand rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+          <div className="w-3.5 h-3.5 bg-brand rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+        </div>
+        <h2 className="text-xl md:text-2xl font-medium text-forest/80">Welcome to KrishakMitra</h2>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-[#F8F9FA] font-body text-forest selection:bg-brand selection:text-white">
-      
+    <div className="min-h-screen bg-[#F8F9FA] font-body text-forest selection:bg-brand selection:text-white overflow-x-hidden">
       <header className="w-full py-4 px-4 sm:py-6 sm:px-6 max-w-7xl mx-auto flex items-center justify-between gap-3">
-        <Logo variant="full" className="h-14" />
+        <Logo variant="full" className="h-14 mix-blend-multiply" />
         <nav className="hidden md:flex items-center gap-10 text-base font-semibold">
           <a href="#features" className="hover:text-brand transition-colors">Features</a>
           <a href="#how-it-works" className="hover:text-brand transition-colors">How it Works</a>
@@ -132,7 +156,7 @@ export default function LandingPage({ onNavigateLogin, onNavigateContact, hasSes
         </div>
       </section>
 
-      
+
       <section className="border-y border-line bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16 grid grid-cols-2 md:grid-cols-4 gap-8 sm:gap-10 text-center divide-x-0 md:divide-x divide-line/50">
           <div>
@@ -150,6 +174,47 @@ export default function LandingPage({ onNavigateLogin, onNavigateContact, hasSes
           <div>
             <h3 className="text-xl sm:text-3xl lg:text-5xl font-display font-extrabold mb-3">100Cr+</h3>
             <p className="text-base font-medium text-muted">Payments Processed</p>
+          </div>
+        </div>
+      </section>
+
+      {/* MSP Harvest Challenge */}
+      <section id="msp-challenge" className="py-24 bg-[#F8F9FA]">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="grid lg:grid-cols-[1.05fr_0.95fr] gap-8 items-stretch">
+            <div className="bg-forest text-white rounded-[2.5rem] p-8 md:p-12 flex flex-col justify-between">
+              <div>
+                <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-white/70 border border-white/20 px-4 py-1.5 rounded-full mb-8">
+                  <Activity className="w-4 h-4 text-brand" /> MSP harvest season
+                </div>
+                <h2 className="text-3xl md:text-4xl font-display font-extrabold leading-tight mb-6">When procurement slows down, farmers carry the risk.</h2>
+                <p className="text-white/75 text-base md:text-lg leading-relaxed">
+                  Farmers face significant challenges during the MSP harvest procurement seasons. They experience long waiting times, lack critical information regarding procurement schedules, and suffer from uncertainty about their procurement and payment status. This results in severe overcrowding at Mandis, multi-day wait times under open skies, and potential crop spoilage.
+                </p>
+              </div>
+              <div className="mt-10 grid grid-cols-3 gap-3 border-t border-white/15 pt-6">
+                <div><p className="text-2xl font-extrabold text-white">Multi-day</p><p className="text-xs text-white/55 mt-1">waiting risk</p></div>
+                <div><p className="text-2xl font-extrabold text-white">Open skies</p><p className="text-xs text-white/55 mt-1">farmer exposure</p></div>
+                <div><p className="text-2xl font-extrabold text-white">Crop loss</p><p className="text-xs text-white/55 mt-1">spoilage risk</p></div>
+              </div>
+            </div>
+
+            <div className="grid sm:grid-cols-2 gap-4">
+              {[
+                { icon: Clock, title: "Plan before arrival", text: "See available mandi slots and capacity before loading the harvest." },
+                { icon: Activity, title: "Know the queue", text: "Track token movement and estimated turn time instead of waiting blindly." },
+                { icon: ShieldCheck, title: "Protect the MSP journey", text: "Keep booking, quality, acceptance, and payment updates in one traceable flow." },
+                { icon: TrendingDown, title: "Reduce spoilage pressure", text: "Less uncertainty means fewer unnecessary trips and less time in crowded yards." },
+                { icon: Gavel, title: "Unlock private demand", text: "Farmers can also list harvested crops for direct buyer and institution bids." },
+                { icon: CreditCard, title: "Close the payment loop", text: "Make payment status visible after procurement instead of leaving farmers guessing." },
+              ].map((item) => (
+                <div key={item.title} className="bg-white border border-line rounded-3xl p-6 shadow-sm hover:shadow-md hover:border-brand/30 transition-all">
+                  <div className="w-11 h-11 rounded-2xl bg-green-50 text-brand flex items-center justify-center mb-5"><item.icon className="w-5 h-5" /></div>
+                  <h3 className="font-bold text-forest text-lg mb-2">{item.title}</h3>
+                  <p className="text-sm text-muted leading-relaxed">{item.text}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
