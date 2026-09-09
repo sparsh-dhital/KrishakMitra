@@ -268,11 +268,128 @@ function CentresTab() {
 
 function TodaysBookingsTab() {
   const { t } = useTranslation();
+  const [exportMenuOpen, setExportMenuOpen] = useState(false);
   const mockBookings = [
     { id: "KM-8492", farmer: "Ramesh Kumar", crop: "Paddy Grade A", qty: "40 Quintals", slot: "09:00 AM - 12:00 PM", status: "Pending" },
     { id: "KM-8493", farmer: "Suresh Babu", crop: "Cotton", qty: "15 Quintals", slot: "09:00 AM - 12:00 PM", status: "Arrived" },
     { id: "KM-8494", farmer: "Venkat Rao", crop: "Maize", qty: "25 Quintals", slot: "12:00 PM - 03:00 PM", status: "Pending" },
   ];
+
+  const escapeCsv = (value) => `"${String(value ?? "").replace(/"/g, '""')}"`;
+
+  const getExportFileName = (extension) => {
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, "0");
+    const dd = String(today.getDate()).padStart(2, "0");
+    return `todays-bookings-${yyyy}-${mm}-${dd}.${extension}`;
+  };
+
+  const downloadFile = (content, filename, mimeType) => {
+    const blob = new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const buildTableCsv = (rows) => {
+    const header = ["Token ID", "Farmer", "Crop & Quantity", "Time Slot", "Status"];
+    const dataRows = rows.map((row) => [row.id, row.farmer, `${row.crop} (${row.qty})`, row.slot, row.status]);
+    const csvRows = [header, ...dataRows].map((line) => line.map((cell) => escapeCsv(cell)).join(","));
+    return `\uFEFF${csvRows.join("\n")}`;
+  };
+
+  const buildPdfDocument = (rows) => {
+    const table = [
+      ["Token ID", "Farmer", "Crop & Quantity", "Time Slot", "Status"],
+      ...rows.map((row) => [row.id, row.farmer, `${row.crop} (${row.qty})`, row.slot, row.status]),
+    ];
+
+    const widths = [90, 120, 150, 120, 80];
+    const colSpacing = 10;
+    const rowHeight = 20;
+    let y = 760;
+    let contentStream = "BT /F1 11 Tf 50 760 Td (Today's Bookings Report) Tj ET\n";
+
+    table.forEach((row, rowIndex) => {
+      let x = 50;
+      row.forEach((cell, cellIndex) => {
+        const safeCell = String(cell).replace(/\\/g, "\\\\").replace(/\(/g, "\\(").replace(/\)/g, "\\)");
+        const cellWidth = widths[cellIndex] || 100;
+        contentStream += `BT /F1 9 Tf ${x} ${y - rowIndex * rowHeight} Td (${safeCell}) Tj ET\n`;
+        x += cellWidth + colSpacing;
+      });
+    });
+
+    const objects = [
+      "<< /Type /Catalog /Pages 2 0 R >>",
+      "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+      "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>",
+      `<< /Length ${contentStream.length} >>\nstream\n${contentStream}endstream`,
+      "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+    ];
+
+    let pdf = "%PDF-1.4\n";
+    const offsets = [0];
+    objects.forEach((obj) => {
+      offsets.push(pdf.length);
+      pdf += `${offsets.length - 1} 0 obj\n${obj}\nendobj\n`;
+    });
+
+    const xrefOffset = pdf.length;
+    pdf += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
+    offsets.slice(1).forEach((offset) => {
+      pdf += `${String(offset).padStart(10, "0")} 00000 n \n`;
+    });
+    pdf += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`;
+
+    return pdf;
+  };
+
+  const handleExport = (format) => {
+    const rows = mockBookings;
+
+    if (format === "pdf") {
+      downloadFile(buildPdfDocument(rows), getExportFileName("pdf"), "application/pdf");
+      return;
+    }
+
+    if (format === "word") {
+      const htmlTable = `
+        <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+          <body>
+            <table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse; width:100%; font-family:Arial; font-size:11pt;">
+              <tr>
+                <th>Token ID</th>
+                <th>Farmer</th>
+                <th>Crop & Quantity</th>
+                <th>Time Slot</th>
+                <th>Status</th>
+              </tr>
+              ${rows.map((row) => `
+                <tr>
+                  <td>${row.id}</td>
+                  <td>${row.farmer}</td>
+                  <td>${row.crop} (${row.qty})</td>
+                  <td>${row.slot}</td>
+                  <td>${row.status}</td>
+                </tr>
+              `).join("")}
+            </table>
+          </body>
+        </html>
+      `;
+      downloadFile(htmlTable, getExportFileName("doc"), "application/msword");
+      return;
+    }
+
+    downloadFile(buildTableCsv(rows), getExportFileName("csv"), "text/csv;charset=utf-8");
+  };
 
   return (
     <div className="max-w-[1400px] mx-auto space-y-6">
@@ -281,9 +398,18 @@ function TodaysBookingsTab() {
           <h2 className="text-2xl font-display font-extrabold text-forest">{t("todaysBookings") || "Today's Bookings"}</h2>
           <p className="text-muted mt-1">Manage scheduled arrivals for today.</p>
         </div>
-        <Button variant="primary" className="gap-2">
-          <FileText className="w-4 h-4" /> Export Report
-        </Button>
+        <div className="relative">
+          <Button variant="primary" className="gap-2" onClick={() => setExportMenuOpen((open) => !open)}>
+            <FileText className="w-4 h-4" /> Export Report
+          </Button>
+          {exportMenuOpen && (
+            <div className="absolute right-0 mt-2 w-44 rounded-xl border border-line bg-white shadow-xl z-20 overflow-hidden">
+              <button type="button" onClick={() => { handleExport("pdf"); setExportMenuOpen(false); }} className="block w-full px-4 py-3 text-left text-sm font-medium text-forest hover:bg-slate-50">PDF</button>
+              <button type="button" onClick={() => { handleExport("word"); setExportMenuOpen(false); }} className="block w-full px-4 py-3 text-left text-sm font-medium text-forest hover:bg-slate-50">Word Document</button>
+              <button type="button" onClick={() => { handleExport("excel"); setExportMenuOpen(false); }} className="block w-full px-4 py-3 text-left text-sm font-medium text-forest hover:bg-slate-50">Excel</button>
+            </div>
+          )}
+        </div>
       </div>
 
       <Card className="overflow-hidden p-0 shadow-md">
@@ -296,7 +422,6 @@ function TodaysBookingsTab() {
                 <th className="p-4">Crop & Quantity</th>
                 <th className="p-4">Time Slot</th>
                 <th className="p-4">Status</th>
-                <th className="p-4 pr-6 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-line text-sm">
@@ -317,11 +442,6 @@ function TodaysBookingsTab() {
                   <td className="p-4">
                     <Badge variant={booking.status === "Arrived" ? "primary" : "warning"}>{booking.status}</Badge>
                   </td>
-                  <td className="p-4 pr-6 text-right">
-                    <Button variant="outline" size="sm" className="bg-white hover:bg-slate-50 border-slate-200">
-                      View Details
-                    </Button>
-                  </td>
                 </tr>
               ))}
             </tbody>
@@ -334,11 +454,55 @@ function TodaysBookingsTab() {
 
 function ActiveQueueTab() {
   const { t } = useTranslation();
-  const mockQueue = [
-    { id: "KM-8490", farmer: "Hari Krishna", crop: "Paddy Grade A", qty: "35 Quintals", status: "Quality Check", waitTime: "15 mins" },
-    { id: "KM-8493", farmer: "Suresh Babu", crop: "Cotton", qty: "15 Quintals", status: "Weighing", waitTime: "5 mins" },
-    { id: "KM-8488", farmer: "Gopi Chand", crop: "Paddy Grade A", qty: "50 Quintals", status: "Payment Processing", waitTime: "30 mins" },
+
+  const initialQueue = [
+    { id: "KM-8490", farmer: "Hari Krishna", crop: "Paddy Grade A", qty: "35 Quintals", status: "Quality Check", remainingSeconds: 15 * 60 },
+    { id: "KM-8493", farmer: "Suresh Babu", crop: "Cotton", qty: "15 Quintals", status: "Weighing", remainingSeconds: 8 * 60 + 16 },
+    { id: "KM-8488", farmer: "Gopi Chand", crop: "Paddy Grade A", qty: "50 Quintals", status: "Payment Processing", remainingSeconds: 3 * 60 + 15 },
   ];
+
+  const [queue, setQueue] = useState(initialQueue);
+
+  const nextStatusMap = {
+    "Quality Check": "Weighing",
+    Weighing: "Payment Processing",
+    "Payment Processing": "Completed",
+    Completed: "Completed",
+  };
+
+  const formatWaitTime = (seconds) => {
+    const total = Math.max(0, Number(seconds) || 0);
+    const mins = Math.floor(total / 60);
+    const secs = total % 60;
+    return `${mins} mins ${secs} secs`;
+  };
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setQueue((currentQueue) =>
+        currentQueue.map((item) => {
+          if (item.status === "Completed") return item;
+
+          const nextRemaining = Math.max(0, (item.remainingSeconds || 0) - 1);
+
+          if (nextRemaining > 0) {
+            return { ...item, remainingSeconds: nextRemaining };
+          }
+
+          const nextStatus = nextStatusMap[item.status] || item.status;
+          const nextStageSeconds = nextStatus === "Completed" ? 0 : nextStatus === "Weighing" ? 8 * 60 + 16 : 3 * 60 + 15;
+
+          return {
+            ...item,
+            status: nextStatus,
+            remainingSeconds: nextStageSeconds,
+          };
+        })
+      );
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
 
   return (
     <div className="max-w-[1400px] mx-auto space-y-6">
@@ -348,44 +512,47 @@ function ActiveQueueTab() {
           <p className="text-muted mt-1">Real-time status of farmers currently at the centre.</p>
         </div>
         <div className="flex gap-3">
-           <Badge variant="primary" className="bg-green-100 text-green-700">3 Currently Active</Badge>
+           <Badge variant="primary" className="bg-green-100 text-green-700">{queue.filter((item) => item.status !== "Completed").length} Currently Active</Badge>
            <Badge variant="outline">Avg Wait: 18 mins</Badge>
         </div>
       </div>
 
       <div className="grid grid-cols-1 gap-4">
-        {mockQueue.map((item, index) => (
-          <Card key={item.id} className="p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-l-4 hover:shadow-md transition-shadow" style={{ borderLeftColor: item.status === 'Quality Check' ? '#F59E0B' : item.status === 'Weighing' ? '#3B82F6' : '#10B981' }}>
-            <div className="flex items-center gap-4">
-               <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center font-bold text-lg text-slate-400">
-                 {index + 1}
-               </div>
-               <div>
-                 <div className="flex items-center gap-2 mb-1">
-                   <h3 className="font-bold text-forest text-lg">{item.farmer}</h3>
-                   <span className="text-xs font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">{item.id}</span>
+        {queue.map((item, index) => {
+          const isCompleted = item.status === "Completed";
+          return (
+            <Card key={item.id} className="p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-l-4 hover:shadow-md transition-shadow" style={{ borderLeftColor: item.status === 'Quality Check' ? '#F59E0B' : item.status === 'Weighing' ? '#3B82F6' : item.status === 'Payment Processing' ? '#10B981' : '#94A3B8' }}>
+              <div className="flex items-center gap-4">
+                 <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center font-bold text-lg text-slate-400">
+                   {index + 1}
                  </div>
-                 <p className="text-sm text-muted">{item.crop} • {item.qty}</p>
-               </div>
-            </div>
-            
-            <div className="flex items-center gap-6 w-full sm:w-auto">
-               <div className="text-left sm:text-right flex-1 sm:flex-none">
-                 <p className="text-xs text-muted font-bold uppercase tracking-wider mb-1">Current Status</p>
-                 <Badge variant={item.status === 'Quality Check' ? 'warning' : 'primary'} className="text-sm">
-                   {item.status}
-                 </Badge>
-               </div>
-               <div className="text-right hidden sm:block min-w-[80px]">
-                 <p className="text-xs text-muted font-bold uppercase tracking-wider mb-1">Wait Time</p>
-                 <p className="font-bold text-forest flex items-center justify-end gap-1"><Clock className="w-3 h-3 text-brand" /> {item.waitTime}</p>
-               </div>
-               <Button variant="primary" size="sm" className="shrink-0">
-                 Next Step
-               </Button>
-            </div>
-          </Card>
-        ))}
+                 <div>
+                   <div className="flex items-center gap-2 mb-1">
+                     <h3 className="font-bold text-forest text-lg">{item.farmer}</h3>
+                     <span className="text-xs font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">{item.id}</span>
+                   </div>
+                   <p className="text-sm text-muted">{item.crop} • {item.qty}</p>
+                 </div>
+              </div>
+              
+              <div className="flex items-center gap-6 w-full sm:w-auto">
+                 <div className="text-left sm:text-right flex-1 sm:flex-none">
+                   <p className="text-xs text-muted font-bold uppercase tracking-wider mb-1">Current Status</p>
+                   <Badge variant={item.status === 'Quality Check' ? 'warning' : item.status === 'Weighing' ? 'primary' : isCompleted ? 'default' : 'success'} className="text-sm">
+                     {item.status}
+                   </Badge>
+                 </div>
+                 <div className="text-right hidden sm:block min-w-[120px]">
+                   <p className="text-xs text-muted font-bold uppercase tracking-wider mb-1">Wait Time</p>
+                   <p className="font-bold text-forest flex items-center justify-end gap-1"><Clock className="w-3 h-3 text-brand" /> {formatWaitTime(item.remainingSeconds)}</p>
+                 </div>
+                 <div className="shrink-0 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-500">
+                   Auto
+                 </div>
+              </div>
+            </Card>
+          );
+        })}
       </div>
     </div>
   );
