@@ -619,7 +619,7 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, onHom
                           </div>
                         </div>
                         <div className="flex justify-between border-b border-line pb-4">
-                          <span className="text-muted font-medium">Estimated Fare</span>
+                          <span className="text-muted font-medium">Estimated Revenue</span>
                           <span className="font-bold text-brand text-lg">₹ {selectedCrops.reduce((sum, cropId) => {
                             const crop = crops.find(c => c.id === cropId);
                             const q = Number(quantities[cropId] || 0);
@@ -821,17 +821,11 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, onHom
             <Card className="max-w-2xl">
               <h2 className="font-display text-xl font-bold text-forest mb-6">New private listing</h2>
               <form onSubmit={createAuction} className="space-y-5">
-<<<<<<< HEAD
-                <div><label className="block text-sm font-bold text-forest mb-2">Crop</label><Select value={auctionCrop} onChange={(event) => setAuctionCrop(event.target.value)} required>{crops.map((crop) => <option key={crop?.id} value={crop?.id}>{crop?.name || "Unnamed crop"}</option>)}</Select></div>
-                <div><label className="block text-sm font-bold text-forest mb-2">Quantity (quintals)</label><Input type="number" min="0.01" step="0.01" value={auctionQuantity} onChange={(event) => setAuctionQuantity(event.target.value)} required /></div>
-                <div><label className="block text-sm font-bold text-forest mb-2">Base price per quintal</label><Input type="number" min="0.01" step="0.01" value={auctionBasePrice} onChange={(event) => setAuctionBasePrice(event.target.value)} placeholder="Enter minimum acceptable price" required /></div>
-                <Button type="submit" disabled={auctionSaving || (!auctionCrop && !crops[0]?.id)}>{auctionSaving ? "Publishing..." : "Publish private listing"}</Button>
-=======
                 <div>
                   <label className="block text-sm font-bold text-forest mb-2">Crop</label>
                   {!useManualCrop ? (
                     <div className="space-y-3">
-                      <Select value={selectedCrop} onChange={(event) => setSelectedCrop(event.target.value)} required>
+                      <Select value={auctionCrop} onChange={(event) => setAuctionCrop(event.target.value)} required>
                         {crops.map((crop) => <option key={crop?.id} value={crop?.id}>{crop?.name || "Unnamed crop"}</option>)}
                       </Select>
                       <button
@@ -878,8 +872,7 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, onHom
                   <label className="block text-sm font-bold text-forest mb-2">Base price per quintal</label>
                   <Input type="number" min="0.01" step="0.01" value={auctionBasePrice} onChange={(event) => setAuctionBasePrice(event.target.value)} placeholder="Enter minimum acceptable price" required />
                 </div>
-                <Button type="submit" disabled={auctionSaving || !selectedCrop || (useManualCrop && !manualCropName)}>{auctionSaving ? "Publishing..." : "Publish private listing"}</Button>
->>>>>>> origin/gaurav-hero
+                <Button type="submit" disabled={auctionSaving || (!auctionCrop && !crops[0]?.id && !useManualCrop) || (useManualCrop && !manualCropName)}>{auctionSaving ? "Publishing..." : "Publish private listing"}</Button>
               </form>
             </Card>
           ) : (
