@@ -1,5 +1,5 @@
-/**
- * LanguagePicker — beautiful dropdown for 12 Indian languages.
+﻿/**
+ * LanguagePicker  beautiful dropdown for 12 Indian languages.
  * Shows native script name + English label. Fully keyboard-accessible.
  */
 import { useState, useRef, useEffect } from "react";
@@ -32,7 +32,7 @@ export default function LanguagePicker({ value, onChange, className = "" }) {
 
   return (
     <div ref={ref} className={`relative ${className}`}>
-      {/* Trigger */}
+      
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
@@ -47,7 +47,7 @@ export default function LanguagePicker({ value, onChange, className = "" }) {
         />
       </button>
 
-      {/* Dropdown */}
+      
       {open && (
         <div
           role="listbox"
@@ -72,11 +72,11 @@ export default function LanguagePicker({ value, onChange, className = "" }) {
                   }`}
                 >
                   <span className="flex items-center gap-3">
-                    {/* Native name in its own script */}
+                    
                     <span className={`font-bold ${isActive ? "text-forest" : "text-slate-800"}`}>
                       {lang.native}
                     </span>
-                    {/* English label */}
+                    
                     <span className="text-xs text-muted font-medium">{lang.label}</span>
                   </span>
                   {isActive && <Check className="w-4 h-4 text-brand shrink-0" />}

@@ -40,10 +40,13 @@ function SmoothScroll({ children }) {
 // Views: "landing" | "login" | "farmer" | "admin" | "buyer"
 export default function App() {
   const { t, i18n } = useTranslation();
-  const [language, setLanguage] = useState(() => i18n.resolvedLanguage || i18n.language || "en");
+  const [language, setLanguage] = useState(
+    () => i18n.resolvedLanguage || i18n.language || "en",
+  );
 
   useEffect(() => {
-    const handleLanguageChanged = (nextLanguage) => setLanguage(nextLanguage || "en");
+    const handleLanguageChanged = (nextLanguage) =>
+      setLanguage(nextLanguage || "en");
     i18n.on("languageChanged", handleLanguageChanged);
     return () => i18n.off("languageChanged", handleLanguageChanged);
   }, [i18n]);
@@ -54,7 +57,14 @@ export default function App() {
   // Load persisted session but DON'T auto-navigate into dashboard
   const [session, setSession] = useState(() => {
     try {
-      return JSON.parse(localStorage.getItem("krishak-mitra-session") || "null");
+      const value = JSON.parse(
+        localStorage.getItem("krishak-mitra-session") || "null",
+      );
+      return value &&
+        ["farmer", "buyer", "admin"].includes(value.role) &&
+        value.name
+        ? value
+        : null;
     } catch {
       return null;
     }
@@ -70,7 +80,8 @@ export default function App() {
     setSession(null);
     setView("landing");
     localStorage.removeItem("krishak-mitra-session");
-    localStorage.removeItem("krishak-mitra-booking");
+    if (session?.farmerId)
+      localStorage.removeItem(`krishak-mitra-booking:${session.farmerId}`);
   };
 
   const handleLogin = (role, mobile, farmerId, buyerId, name) => {
@@ -82,7 +93,18 @@ export default function App() {
 
   // Always let the user choose a dashboard explicitly from the landing page.
   const handleNavigateLogin = () => {
-    setView("login");
+    if (session) {
+      // Already logged in  go straight to their dashboard
+      setView(
+        session.role === "admin"
+          ? "admin"
+          : session.role === "buyer"
+            ? "buyer"
+            : "farmer",
+      );
+    } else {
+      setView("login");
+    }
   };
 
   return (
@@ -116,13 +138,11 @@ export default function App() {
 
       {view === "contact" && (
         <ContactPage
+          onBack={() => setView("landing")}
           language={language}
           onLanguageChange={changeLanguage}
-          onBack={() => setView("landing")}
         />
       )}
-
-
 
       {view === "login" && (
         <LoginPage
@@ -134,9 +154,35 @@ export default function App() {
         />
       )}
 
-      {view === "farmer" && <FarmerPage language={language} onLanguageChange={changeLanguage} onLogout={logout} onHome={() => setView("landing")} farmerId={session?.farmerId} farmerName={session?.name} />}
-      {view === "admin" && <AdminPage language={language} onLanguageChange={changeLanguage} onLogout={logout} onHome={() => setView("landing")} adminName={session?.name} />}
-      {view === "buyer" && <BuyerPage language={language} onLanguageChange={changeLanguage} onLogout={logout} onHome={() => setView("landing")} buyerId={session?.buyerId || "demo-buyer"} buyerName={session?.name} />}
+      {view === "farmer" && (
+        <FarmerPage
+          language={language}
+          onLanguageChange={changeLanguage}
+          onLogout={logout}
+          onHome={() => setView("landing")}
+          farmerId={session?.farmerId}
+          farmerName={session?.name}
+        />
+      )}
+      {view === "admin" && (
+        <AdminPage
+          language={language}
+          onLanguageChange={changeLanguage}
+          onLogout={logout}
+          onHome={() => setView("landing")}
+          adminName={session?.name}
+        />
+      )}
+      {view === "buyer" && (
+        <BuyerPage
+          language={language}
+          onLanguageChange={changeLanguage}
+          onLogout={logout}
+          onHome={() => setView("landing")}
+          buyerId={session?.buyerId || "demo-buyer"}
+          buyerName={session?.name}
+        />
+      )}
     </SmoothScroll>
   );
 }

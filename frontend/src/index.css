@@ -7,11 +7,15 @@
 
   --color-forest: #0A2A1B;
   --color-forest-dark: #071D12;
+  --color-forest-card: #123b2a;
   --color-brand: #187948;
   --color-brand-hover: #126038;
-  --color-cream: #F5F9F6;
+  --color-harvest: #b7ef62;
+  --color-harvest-hover: #a3da51;
+  --color-cream: #f5f7f1;
   --color-surface: #ffffff;
-  --color-line: #E2EBE5;
+  --color-surface-warm: #f7f9f4;
+  --color-line: #dce6d7;
   --color-muted: #4B6358;
 }
 

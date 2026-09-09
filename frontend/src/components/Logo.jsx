@@ -1,4 +1,4 @@
-/**
+﻿/**
  * KrishakMitra Logo Component
  *
  * Variants:
@@ -9,8 +9,10 @@
  */
 import emblemImg from "../assets/logo_emblem.png";
 import textImg from "../assets/logo_text.png";
+import textTransparentImg from "../assets/logo_text_transparent.png";
 
-export default function Logo({ variant = "full", className = "" }) {
+export default function Logo({ variant = "full", className = "", dark = false }) {
+  const currentTextImg = dark ? textTransparentImg : textImg;
   if (variant === "emblem") {
     return (
       <img
@@ -25,7 +27,7 @@ export default function Logo({ variant = "full", className = "" }) {
   if (variant === "text") {
     return (
       <img
-        src={textImg}
+        src={currentTextImg}
         alt="KrishakMitra"
         draggable={false}
         className={`object-contain select-none ${className}`}
@@ -43,7 +45,7 @@ export default function Logo({ variant = "full", className = "" }) {
           className="h-20 w-20 object-contain select-none"
         />
         <img
-          src={textImg}
+          src={currentTextImg}
           alt="KrishakMitra"
           draggable={false}
           className="h-8 w-auto object-contain select-none"
@@ -52,7 +54,7 @@ export default function Logo({ variant = "full", className = "" }) {
     );
   }
 
-  // "full" — emblem + text side by side
+  // "full"  emblem + text side by side
   return (
     <div className={`flex items-center gap-2.5 ${className}`}>
       <img
@@ -62,7 +64,7 @@ export default function Logo({ variant = "full", className = "" }) {
         className="h-10 w-10 object-contain select-none shrink-0"
       />
       <img
-        src={textImg}
+        src={currentTextImg}
         alt="KrishakMitra"
         draggable={false}
         className="h-7 w-auto object-contain select-none"

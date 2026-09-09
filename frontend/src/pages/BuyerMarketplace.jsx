@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { X, Store, RefreshCw, Search, SlidersHorizontal, Sparkles } from "lucide-react";
 import { AuctionCard } from "../components/AuctionCard";
-import { Badge, Button, Card, Input } from "../components/ui";
+import { Badge, Button, Card, Input, Eyebrow } from "../components/ui";
 import { getOpenAuctions, placeBidDirectly } from "../services/biddingService";
 
 export default function BuyerMarketplace({ role = "admin", buyerId = "demo-buyer" }) {
@@ -52,16 +52,16 @@ export default function BuyerMarketplace({ role = "admin", buyerId = "demo-buyer
     <div className="max-w-6xl mx-auto space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          <p className="text-xs font-bold uppercase tracking-widest text-brand mb-2">Private market</p>
-          <h1 className="font-display text-2xl font-bold text-forest">Direct Farmer Marketplace</h1>
-          <p className="text-sm text-muted mt-1">Buy harvested crops directly through live private bids.</p>
+          <Eyebrow className="mb-2">PRIVATE MARKET</Eyebrow>
+          <h1 className="font-display text-4xl font-extrabold text-forest">Direct Farmer Marketplace</h1>
+          <p className="text-sm text-muted mt-2">Buy harvested crops directly through live private bids.</p>
         </div>
         <Button variant="outline" size="sm" onClick={loadAuctions} disabled={loading} className="gap-2"><RefreshCw className="w-4 h-4" /> Refresh</Button>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <Card className="p-4"><p className="text-xs font-bold uppercase tracking-widest text-muted">Open listings</p><p className="font-display text-2xl font-extrabold text-forest mt-1">{auctions.length}</p></Card>
-        <Card className="p-4"><p className="text-xs font-bold uppercase tracking-widest text-muted">Lowest base price</p><p className="font-display text-2xl font-extrabold text-brand mt-1">{auctions.length ? `₹${Math.min(...auctions.map((auction) => Number(auction?.base_price || 0))).toLocaleString("en-IN")}` : "-"}</p></Card>
+        <Card className="p-4"><p className="text-xs font-bold uppercase tracking-widest text-muted">Lowest base price</p><p className="font-display text-2xl font-extrabold text-brand mt-1">{auctions.length ? `${Math.min(...auctions.map((auction) => Number(auction?.base_price || 0))).toLocaleString("en-IN")}` : "-"}</p></Card>
         <Card className="p-4"><p className="text-xs font-bold uppercase tracking-widest text-muted">Direct trade</p><p className="font-display text-2xl font-extrabold text-forest mt-1 flex items-center gap-2">Live <Sparkles className="w-5 h-5 text-amber-500" /></p></Card>
       </div>
 
