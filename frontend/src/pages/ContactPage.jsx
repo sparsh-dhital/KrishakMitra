@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ArrowLeft, Mail, Phone, MapPin, Send, ChevronDown } from "lucide-react";
 import toast from "react-hot-toast";
 import Logo from "../components/Logo";
@@ -14,6 +15,7 @@ const countryOptions = [
 ];
 
 export default function ContactPage({ onBack, language, onLanguageChange }) {
+  const { t } = useTranslation();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState(countryOptions[0]);
@@ -83,13 +85,13 @@ export default function ContactPage({ onBack, language, onLanguageChange }) {
         {/* Left Side: Info */}
         <div>
           <div className="inline-flex items-center text-sm font-bold text-brand bg-brand/10 px-4 py-1.5 rounded-full mb-6">
-            Get In Touch
+            {t("contact.getInTouch")}
           </div>
           <h1 className="font-display text-4xl md:text-5xl font-extrabold tracking-tight mb-6">
-            We're here to help you grow.
+            {t("contact.title")}
           </h1>
           <p className="text-muted text-lg leading-relaxed mb-12 max-w-md">
-            Have questions about the procurement process, platform usage, or need technical support? Reach out to our dedicated team.
+            {t("contact.description")}
           </p>
 
           <div className="space-y-8">
@@ -98,9 +100,9 @@ export default function ContactPage({ onBack, language, onLanguageChange }) {
                 <Phone className="w-6 h-6 text-brand" />
               </div>
               <div>
-                <h3 className="font-bold text-lg mb-1">Call Us (Toll-Free)</h3>
+                <h3 className="font-bold text-lg mb-1">{t("contact.callUs")}</h3>
                 <p className="text-muted">1800-123-4567</p>
-                <p className="text-sm text-muted/70 mt-1">Available Mon-Sat, 9am - 6pm</p>
+                <p className="text-sm text-muted/70 mt-1">{t("contact.hours")}</p>
               </div>
             </div>
             
@@ -109,9 +111,9 @@ export default function ContactPage({ onBack, language, onLanguageChange }) {
                 <Mail className="w-6 h-6 text-brand" />
               </div>
               <div>
-                <h3 className="font-bold text-lg mb-1">Email Support</h3>
+                <h3 className="font-bold text-lg mb-1">{t("contact.emailSupport")}</h3>
                 <p className="text-muted">support@krishakmitra.gov.in</p>
-                <p className="text-sm text-muted/70 mt-1">We aim to reply within 24 hours</p>
+                <p className="text-sm text-muted/70 mt-1">{t("contact.replyTime")}</p>
               </div>
             </div>
 
@@ -120,7 +122,7 @@ export default function ContactPage({ onBack, language, onLanguageChange }) {
                 <MapPin className="w-6 h-6 text-brand" />
               </div>
               <div>
-                <h3 className="font-bold text-lg mb-1">Head Office</h3>
+                <h3 className="font-bold text-lg mb-1">{t("contact.headOffice")}</h3>
                 <p className="text-muted">Ministry of Agriculture</p>
                 <p className="text-sm text-muted/70 mt-1">Krishi Bhawan, New Delhi, 110001</p>
               </div>
@@ -130,7 +132,7 @@ export default function ContactPage({ onBack, language, onLanguageChange }) {
 
         {/* Right Side: Form */}
         <div className="bg-white rounded-[2rem] p-8 md:p-12 shadow-xl border border-line">
-          <h2 className="text-2xl font-bold mb-8">Send us a message</h2>
+          <h2 className="text-2xl font-bold mb-8">{t("contact.sendMessage")}</h2>
           <form
             onSubmit={handleSubmit}
             onFocusCapture={(event) => {
@@ -141,7 +143,7 @@ export default function ContactPage({ onBack, language, onLanguageChange }) {
             className="space-y-6"
           >
             <div>
-              <label className="block text-sm font-bold mb-2">Full Name</label>
+              <label className="block text-sm font-bold mb-2">{t("login.fullName")}</label>
               <input 
                 type="text" 
                 name="full_name"
@@ -152,7 +154,7 @@ export default function ContactPage({ onBack, language, onLanguageChange }) {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-bold mb-2">Phone Number</label>
+                <label className="block text-sm font-bold mb-2">{t("contact.phoneNumber")}</label>
                 <div className="flex gap-2">
                   <div className="relative w-20 shrink-0" data-country-picker>
                     <button
@@ -202,7 +204,7 @@ export default function ContactPage({ onBack, language, onLanguageChange }) {
                 <p className="text-xs text-muted mt-2">Enter {selectedCountry.digits} digits.</p>
               </div>
               <div>
-                <label className="block text-sm font-bold mb-2">Email Address</label>
+                <label className="block text-sm font-bold mb-2">{t("contact.emailAddress")}</label>
                 <input 
                   type="email" 
                   name="email"
@@ -212,7 +214,7 @@ export default function ContactPage({ onBack, language, onLanguageChange }) {
               </div>
             </div>
             <div>
-              <label className="block text-sm font-bold mb-2">Message</label>
+              <label className="block text-sm font-bold mb-2">{t("contact.message")}</label>
               <textarea 
                 name="message"
                 required
