@@ -58,7 +58,7 @@ function BrandMark() {
     <span className="flex items-center gap-2.5">
       <Logo variant="emblem" className="h-12 w-12" />
       <span className="font-display text-xl font-extrabold tracking-[-.04em] text-white">
-        Krishak<span className="text-[#b7ef62]">Mitra</span>
+        Krishak<span className="text-harvest">Mitra</span>
       </span>
     </span>
   );
@@ -80,7 +80,7 @@ export default function LandingPage({
   const impactItems = t("landing.impact.items", { returnObjects: true });
   const centreRows = t("landing.centre.rows", { returnObjects: true });
   return (
-    <div className="min-h-screen overflow-x-hidden bg-[#f5f7f1] font-body text-forest selection:bg-brand selection:text-white">
+    <div className="min-h-screen overflow-x-hidden bg-cream font-body text-forest selection:bg-brand selection:text-white">
       <header className="absolute inset-x-0 top-0 z-50 border-b border-white/15 bg-forest/25 text-white backdrop-blur-md">
         <div className="mx-auto flex h-19 max-w-345 items-center justify-between gap-4 px-5 sm:px-8 lg:px-12">
           <a href="#top">
@@ -111,7 +111,7 @@ export default function LandingPage({
             />
             <button
               onClick={onNavigateLogin}
-              className="rounded-full bg-[#b7ef62] px-5 py-3 text-sm font-extrabold text-forest hover:bg-white"
+              className="rounded-full bg-harvest px-5 py-3 text-sm font-extrabold text-forest hover:bg-white"
             >
               {hasSession ? t("landing.nav.dashboard") : t("landing.nav.login")}
             </button>
@@ -141,7 +141,7 @@ export default function LandingPage({
             </button>
             <button
               onClick={onNavigateLogin}
-              className="mt-2 rounded-xl bg-[#b7ef62] p-3 text-left text-forest"
+              className="mt-2 rounded-xl bg-harvest p-3 text-left text-forest"
             >
               {cta}
             </button>
@@ -149,7 +149,7 @@ export default function LandingPage({
         )}
       </header>
       <main id="top">
-        <section className="relative isolate min-h-180 overflow-hidden bg-[#123b2a] pt-32 text-white sm:min-h-195 lg:min-h-210 lg:pt-40">
+        <section className="relative isolate min-h-180 overflow-hidden bg-forest-card pt-32 text-white sm:min-h-195 lg:min-h-210 lg:pt-40">
           <div
             className="absolute inset-0 -z-20 bg-cover bg-position-[center_58%] sm:bg-position-[center_52%] lg:bg-position-[center_48%]"
             style={{ backgroundImage: `url(${heroImage})` }}
@@ -169,9 +169,7 @@ export default function LandingPage({
                 <br />
                 {t("landing.hero.title2")}
                 <br />
-                <span className="text-[#b7ef62]">
-                  {t("landing.hero.title3")}
-                </span>
+                <span className="text-harvest">{t("landing.hero.title3")}</span>
               </h1>
               <p className="mx-auto mt-7 max-w-xl text-center text-base leading-7 text-white/78 sm:text-lg">
                 {t("landing.hero.description")}
@@ -179,7 +177,7 @@ export default function LandingPage({
               <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
                 <button
                   onClick={onNavigateLogin}
-                  className="inline-flex items-center justify-center gap-3 rounded-full bg-[#b7ef62] px-6 py-4 text-sm font-extrabold text-forest hover:bg-white"
+                  className="inline-flex items-center justify-center gap-3 rounded-full bg-harvest px-6 py-4 text-sm font-extrabold text-forest hover:bg-white"
                 >
                   {cta}
                   <ArrowRight className="h-4 w-4" />
@@ -193,15 +191,15 @@ export default function LandingPage({
               </div>
               <div className="mt-12 flex flex-wrap justify-center gap-7 text-xs font-semibold text-white/65">
                 <span>
-                  <Check className="mr-2 inline h-4 w-4 text-[#b7ef62]" />
+                  <Check className="mr-2 inline h-4 w-4 text-harvest" />
                   {t("landing.hero.farmer")}
                 </span>
                 <span>
-                  <Check className="mr-2 inline h-4 w-4 text-[#b7ef62]" />
+                  <Check className="mr-2 inline h-4 w-4 text-harvest" />
                   {t("landing.hero.centre")}
                 </span>
                 <span>
-                  <Check className="mr-2 inline h-4 w-4 text-[#b7ef62]" />
+                  <Check className="mr-2 inline h-4 w-4 text-harvest" />
                   {t("landing.hero.visits")}
                 </span>
               </div>
@@ -209,7 +207,7 @@ export default function LandingPage({
           </div>
         </section>
         <section className="px-5 py-12 sm:px-8 sm:py-16 lg:px-12">
-          <div className="mx-auto grid max-w-345 gap-8 border-y border-[#dce6d7] py-8 md:grid-cols-[1.1fr_2fr] lg:py-10">
+          <div className="mx-auto grid max-w-345 gap-8 border-y border-line py-8 md:grid-cols-[1.1fr_2fr] lg:py-10">
             <div>
               <Label>{t("landing.promise.eyebrow")}</Label>
               <h2 className="mt-4 font-display text-3xl font-extrabold sm:text-4xl">
@@ -252,7 +250,7 @@ export default function LandingPage({
                     className="border-t-2 border-[#c8d9c6] pt-5 lg:min-h-52.5 lg:border-t-0"
                   >
                     <div className="flex justify-between">
-                      <span className="flex h-11 w-11 items-center justify-center rounded-full bg-forest text-[#b7ef62]">
+                      <span className="flex h-11 w-11 items-center justify-center rounded-full bg-forest text-harvest">
                         <Icon className="h-5 w-5" />
                       </span>
                       <b className="font-display text-4xl text-[#cfdfcd]">
@@ -289,11 +287,9 @@ export default function LandingPage({
                   <motion.article
                     key={title}
                     whileHover={{ y: -5 }}
-                    className={`min-h-52.5 border p-6 hover:shadow-xl ${i === 0 ? "border-forest bg-forest text-white" : "border-[#dce6d7] bg-[#f7f9f4]"}`}
+                    className={`min-h-52.5 border p-6 hover:shadow-xl ${i === 0 ? "border-forest bg-forest text-white" : "border-line bg-surface-warm"}`}
                   >
-                    <Icon
-                      className={i === 0 ? "text-[#b7ef62]" : "text-brand"}
-                    />
+                    <Icon className={i === 0 ? "text-harvest" : "text-brand"} />
                     <h3 className="mt-12 font-display text-lg font-extrabold">
                       {title}
                     </h3>
@@ -352,7 +348,7 @@ export default function LandingPage({
                   </div>
                 ))}
               </div>
-              <div className="mt-5 rounded-2xl border border-[#dce6d7] p-4">
+              <div className="mt-5 rounded-2xl border border-line p-4">
                 <div className="flex justify-between text-xs font-bold">
                   <span>{t("landing.farmer.progress")}</span>
                   <span className="text-brand">3 of 5</span>
@@ -374,16 +370,14 @@ export default function LandingPage({
         </section>
         <section
           id="impact"
-          className="bg-[#123b2a] px-5 py-20 text-white sm:px-8 sm:py-28 lg:px-12"
+          className="bg-forest-card px-5 py-20 text-white sm:px-8 sm:py-28 lg:px-12"
         >
           <div className="mx-auto max-w-345">
             <Label dark>{t("landing.impact.eyebrow")}</Label>
             <h2 className="mt-5 font-display text-4xl font-extrabold sm:text-6xl">
               {t("landing.impact.title1")}
               <br />
-              <span className="text-[#b7ef62]">
-                {t("landing.impact.title2")}
-              </span>
+              <span className="text-harvest">{t("landing.impact.title2")}</span>
             </h2>
             <p className="mt-6 max-w-xl text-base leading-7 text-white/65">
               {t("landing.impact.description")}
@@ -392,7 +386,7 @@ export default function LandingPage({
               {impactItems.map(([title, text], i) => (
                 <div
                   key={title}
-                  className={`p-6 ${i === 4 ? "bg-[#b7ef62] text-forest" : "bg-forest"}`}
+                  className={`p-6 ${i === 4 ? "bg-harvest text-forest" : "bg-forest"}`}
                 >
                   <p className="font-display text-xl font-extrabold">{title}</p>
                   <p className="mt-3 text-sm leading-6 opacity-60">{text}</p>
@@ -457,7 +451,7 @@ export default function LandingPage({
           </div>
         </section>
         <section className="px-5 pb-20 sm:px-8 sm:pb-28 lg:px-12">
-          <div className="mx-auto max-w-345 bg-[#b7ef62] px-6 py-14 text-center sm:px-12 sm:py-20">
+          <div className="mx-auto max-w-345 bg-harvest px-6 py-14 text-center sm:px-12 sm:py-20">
             <Leaf className="mx-auto text-forest" />
             <h2 className="mx-auto mt-5 max-w-3xl font-display text-4xl font-extrabold text-forest sm:text-6xl">
               {t("landing.cta.title")}
