@@ -39,6 +39,9 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, farme
   const [auctionQuantity, setAuctionQuantity] = useState(1);
   const [auctionBasePrice, setAuctionBasePrice] = useState("");
   const [auctionSaving, setAuctionSaving] = useState(false);
+  const [auctionGrade, setAuctionGrade] = useState("A");
+  const [useManualCrop, setUseManualCrop] = useState(false);
+  const [manualCropName, setManualCropName] = useState("");
 
   useEffect(() => {
     async function loadCentres() {
@@ -137,9 +140,13 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, farme
     setAuctionSaving(true);
     try {
       const selectedCropRecord = crops.find((crop) => crop?.id === selectedCrop);
-      const listing = await createAuctionDirectly({ farmerId, cropId: selectedCrop, cropName: selectedCropRecord?.name, quantity: auctionQuantity, basePrice: auctionBasePrice });
+      const cropNameToUse = useManualCrop ? manualCropName : selectedCropRecord?.name;
+      const listing = await createAuctionDirectly({ farmerId, cropId: selectedCrop, cropName: cropNameToUse, quantity: auctionQuantity, basePrice: auctionBasePrice, grade: auctionGrade });
       setAuctions((current) => [listing, ...current]);
       setAuctionBasePrice("");
+      setAuctionGrade("A");
+      setManualCropName("");
+      setUseManualCrop(false);
       toast.success("Private market listing created.");
       setAuctionTab("listings");
     } catch (error) {
@@ -526,10 +533,58 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, farme
             <Card className="max-w-2xl">
               <h2 className="font-display text-xl font-bold text-forest mb-6">New private listing</h2>
               <form onSubmit={createAuction} className="space-y-5">
-                <div><label className="block text-sm font-bold text-forest mb-2">Crop</label><Select value={selectedCrop} onChange={(event) => setSelectedCrop(event.target.value)} required>{crops.map((crop) => <option key={crop?.id} value={crop?.id}>{crop?.name || "Unnamed crop"}</option>)}</Select></div>
-                <div><label className="block text-sm font-bold text-forest mb-2">Quantity (quintals)</label><Input type="number" min="0.01" step="0.01" value={auctionQuantity} onChange={(event) => setAuctionQuantity(event.target.value)} required /></div>
-                <div><label className="block text-sm font-bold text-forest mb-2">Base price per quintal</label><Input type="number" min="0.01" step="0.01" value={auctionBasePrice} onChange={(event) => setAuctionBasePrice(event.target.value)} placeholder="Enter minimum acceptable price" required /></div>
-                <Button type="submit" disabled={auctionSaving || !selectedCrop}>{auctionSaving ? "Publishing..." : "Publish private listing"}</Button>
+                <div>
+                  <label className="block text-sm font-bold text-forest mb-2">Crop</label>
+                  {!useManualCrop ? (
+                    <div className="space-y-3">
+                      <Select value={selectedCrop} onChange={(event) => setSelectedCrop(event.target.value)} required>
+                        {crops.map((crop) => <option key={crop?.id} value={crop?.id}>{crop?.name || "Unnamed crop"}</option>)}
+                      </Select>
+                      <button
+                        type="button"
+                        onClick={() => setUseManualCrop(true)}
+                        className="text-sm text-brand font-bold hover:underline"
+                      >
+                        + Add custom crop name
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      <Input
+                        type="text"
+                        value={manualCropName}
+                        onChange={(event) => setManualCropName(event.target.value)}
+                        placeholder="Enter crop name"
+                        required
+                      />
+                      <button
+                        type="button"
+                        onClick={() => { setUseManualCrop(false); setManualCropName(""); }}
+                        className="text-sm text-brand font-bold hover:underline"
+                      >
+                        ← Select from list
+                      </button>
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-forest mb-2">Quality Grade</label>
+                  <Select value={auctionGrade} onChange={(event) => setAuctionGrade(event.target.value)} required>
+                    <option value="A">Grade A (Excellent)</option>
+                    <option value="B">Grade B (Good)</option>
+                    <option value="C">Grade C (Average)</option>
+                    <option value="D">Grade D (Fair)</option>
+                  </Select>
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-forest mb-2">Quantity (quintals)</label>
+                  <Input type="number" min="0.01" step="0.01" value={auctionQuantity} onChange={(event) => setAuctionQuantity(event.target.value)} required />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-forest mb-2">Base price per quintal</label>
+                  <Input type="number" min="0.01" step="0.01" value={auctionBasePrice} onChange={(event) => setAuctionBasePrice(event.target.value)} placeholder="Enter minimum acceptable price" required />
+                </div>
+                <Button type="submit" disabled={auctionSaving || !selectedCrop || (useManualCrop && !manualCropName)}>{auctionSaving ? "Publishing..." : "Publish private listing"}</Button>
               </form>
             </Card>
           ) : (
