@@ -570,6 +570,7 @@ function ActiveQueueTab() {
     { id: "KM-8488", name: "Gopi Chand", token: "KM-8488", quantity: "50 Quintals", status: "Payment Processing" },
   ];
   const queuePreview = showAllQueue ? queueMembers : queueMembers.slice(0, 2);
+  const processingCount = queueMembers.filter((farmer) => farmer.status !== "Completed").length;
 
   const [booking, setBooking] = useState(() => {
     try {
@@ -667,7 +668,7 @@ function ActiveQueueTab() {
                    <Activity className="w-6 h-6" />
                  </div>
                  <div>
-                   <p className="font-display text-2xl font-extrabold text-forest">{booking ? "23" : "0"}</p>
+                   <p className="font-display text-2xl font-extrabold text-forest">{queueMembers.length}</p>
                    <p className="text-xs text-muted font-bold uppercase tracking-widest mt-1">{t("inQueue")}</p>
                  </div>
               </Card>
@@ -676,7 +677,7 @@ function ActiveQueueTab() {
                    <FileText className="w-6 h-6" />
                  </div>
                  <div>
-                   <p className="font-display text-2xl font-extrabold text-forest">{booking && procurement ? "4" : "0"}</p>
+                   <p className="font-display text-2xl font-extrabold text-forest">{processingCount}</p>
                    <p className="text-xs text-muted font-bold uppercase tracking-widest mt-1">{t("processing")}</p>
                  </div>
               </Card>
@@ -696,7 +697,7 @@ function ActiveQueueTab() {
                   {showAllQueue ? "Show Less" : "View All"}
                 </button>
               </div>
-              <div className="overflow-x-auto">
+              <div className={`${showAllQueue ? "max-h-[420px] overflow-y-auto" : "h-[156px] overflow-hidden"} overflow-x-auto`}>
                 <table className="w-full text-sm text-left">
                   <thead className="bg-slate-50 text-muted font-bold border-b border-line">
                     <tr>
