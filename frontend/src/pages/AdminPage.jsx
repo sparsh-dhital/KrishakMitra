@@ -3,7 +3,7 @@ import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import { LayoutDashboard, Users, Activity, FileText, Bell, DatabaseZap, ShieldAlert, CheckCircle2, Clock } from "lucide-react";
 import { api } from "../services/api";
-import { SidebarLayout, Card, Badge, Button, Select, Input } from "../components/ui";
+import { SidebarLayout, Card, Badge, Button, Select, Input, Eyebrow } from "../components/ui";
 import { Plus, Trash2, Edit2 } from "lucide-react";
 
 function CentresTab() {
@@ -158,7 +158,10 @@ function CentresTab() {
   return (
     <div className="space-y-6 max-w-[1000px] mx-auto">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold font-display text-forest">Procurement Centres</h2>
+        <div>
+          <Eyebrow className="mb-2">MANAGEMENT</Eyebrow>
+          <h2 className="text-4xl font-bold font-display text-forest">Procurement Centres</h2>
+        </div>
         {!isAdding && (
           <Button onClick={() => setIsAdding(true)} className="gap-2 shadow-lg shadow-brand/20">
             <Plus className="w-4 h-4" /> Add Centre
@@ -252,7 +255,7 @@ function CentresTab() {
 
       <Card className="p-0 overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left">
+          <table className="w-full min-w-max text-sm text-left">
             <thead className="bg-slate-50 text-muted font-bold border-b border-line uppercase tracking-widest text-[10px]">
               <tr>
                  <th className="px-6 py-4">Centre Name</th>
@@ -425,8 +428,9 @@ function TodaysBookingsTab({ bookings, onRemove, onViewDetails }) {
     <div className="max-w-[1400px] mx-auto space-y-6">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h2 className="text-2xl font-display font-extrabold text-forest">{t("todaysBookings") || "Today's Bookings"}</h2>
-          <p className="text-muted mt-1">Manage scheduled arrivals for today.</p>
+          <Eyebrow className="mb-2">DAILY OPERATIONS</Eyebrow>
+          <h2 className="text-4xl font-display font-extrabold text-forest">{t("todaysBookings") || "Today's Bookings"}</h2>
+          <p className="text-muted mt-2">Manage scheduled arrivals for today.</p>
         </div>
         <div className="relative">
           <Button variant="primary" className="gap-2" onClick={() => setExportMenuOpen((open) => !open)}>
@@ -444,7 +448,7 @@ function TodaysBookingsTab({ bookings, onRemove, onViewDetails }) {
 
       <Card className="overflow-hidden p-0 shadow-md">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full min-w-max text-left border-collapse">
             <thead>
               <tr className="bg-slate-50 border-b border-line text-sm font-bold text-slate-500 uppercase tracking-wider">
                 <th className="p-4 pl-6">Token ID</th>
@@ -506,8 +510,9 @@ function ActiveQueueTab({ bookings, onRemove, onViewDetails }) {
     <div className="max-w-[1400px] mx-auto space-y-6">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h2 className="text-2xl font-display font-extrabold text-forest">{t("liveQueue") || "Active Queue"}</h2>
-          <p className="text-muted mt-1">Real-time status of farmers currently at the centre.</p>
+          <Eyebrow className="mb-2">LIVE STATUS</Eyebrow>
+          <h2 className="text-4xl font-display font-extrabold text-forest">{t("liveQueue") || "Active Queue"}</h2>
+          <p className="text-muted mt-2">Real-time status of farmers currently at the centre.</p>
         </div>
         <div className="flex items-center gap-3">
            <Badge variant="primary" className="bg-green-100 text-green-700">{bookings.length} Currently Active</Badge>
@@ -612,72 +617,76 @@ function PaymentManagementTab({ bookings, onStatusChange }) {
         <div className="p-4 bg-slate-50 border-b border-line">
           <h3 className="font-bold text-forest">Pending Payment Requests</h3>
         </div>
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="bg-slate-50 border-b border-line text-sm font-bold text-slate-500 uppercase tracking-wider">
-              <th className="p-4 pl-6">Farmer</th>
-              <th className="p-4">Contact</th>
-              <th className="p-4">Crop (Qty)</th>
-              <th className="p-4">Fare (Rs)</th>
-              <th className="p-4 pr-6 text-right">Action</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-line">
-            {pendingPayments.map(p => (
-              <tr key={p.booking.id} className="hover:bg-slate-50 transition-colors">
-                <td className="p-4 pl-6 font-bold text-forest">{p.booking.farmer_name}</td>
-                <td className="p-4 text-muted">{p.booking.farmer_mobile || "+91 98765 43210"}</td>
-                <td className="p-4 text-muted">{(p.booking.crops || []).map(c => c.crop_name).join(', ')} ({p.booking.estimated_quantity}q)</td>
-                <td className="p-4 font-mono font-bold text-brand">₹ {p.booking.estimated_fare}</td>
-                <td className="p-4 pr-6 text-right">
-                  <Button variant="primary" size="sm" onClick={() => setSelectedPayment(p)}>
-                    Process Payment
-                  </Button>
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-max text-left border-collapse">
+            <thead>
+              <tr className="bg-slate-50 border-b border-line text-sm font-bold text-slate-500 uppercase tracking-wider">
+                <th className="p-4 pl-6">Farmer</th>
+                <th className="p-4">Contact</th>
+                <th className="p-4">Crop (Qty)</th>
+                <th className="p-4">Fare (Rs)</th>
+                <th className="p-4 pr-6 text-right">Action</th>
               </tr>
-            ))}
-            {pendingPayments.length === 0 && (
-              <tr>
-                <td colSpan="5" className="p-8 text-center text-muted">No pending payment requests.</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-line">
+              {pendingPayments.map(p => (
+                <tr key={p.booking.id} className="hover:bg-slate-50 transition-colors">
+                  <td className="p-4 pl-6 font-bold text-forest">{p.booking.farmer_name}</td>
+                  <td className="p-4 text-muted">{p.booking.farmer_mobile || "+91 98765 43210"}</td>
+                  <td className="p-4 text-muted">{(p.booking.crops || []).map(c => c.crop_name).join(', ')} ({p.booking.estimated_quantity}q)</td>
+                  <td className="p-4 font-mono font-bold text-brand">₹ {p.booking.estimated_fare}</td>
+                  <td className="p-4 pr-6 text-right">
+                    <Button variant="primary" size="sm" onClick={() => setSelectedPayment(p)}>
+                      Process Payment
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+              {pendingPayments.length === 0 && (
+                <tr>
+                  <td colSpan="5" className="p-8 text-center text-muted">No pending payment requests.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </Card>
 
       <Card className="p-0 overflow-hidden">
         <div className="p-4 bg-slate-50 border-b border-line">
           <h3 className="font-bold text-forest">Completed Payments</h3>
         </div>
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="bg-slate-50 border-b border-line text-sm font-bold text-slate-500 uppercase tracking-wider">
-              <th className="p-4 pl-6">Farmer</th>
-              <th className="p-4">Contact</th>
-              <th className="p-4">Crop (Qty)</th>
-              <th className="p-4">Fare (Rs)</th>
-              <th className="p-4 pr-6 text-right">Status</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-line">
-            {completedPayments.map(p => (
-              <tr key={p.booking.id} className="hover:bg-slate-50 transition-colors">
-                <td className="p-4 pl-6 font-bold text-forest">{p.booking.farmer_name}</td>
-                <td className="p-4 text-muted">{p.booking.farmer_mobile || "+91 98765 43210"}</td>
-                <td className="p-4 text-muted">{(p.booking.crops || []).map(c => c.crop_name).join(', ')} ({p.booking.estimated_quantity}q)</td>
-                <td className="p-4 font-mono font-bold text-brand">₹ {p.booking.estimated_fare}</td>
-                <td className="p-4 pr-6 text-right">
-                  <Badge variant="success">PAID</Badge>
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-max text-left border-collapse">
+            <thead>
+              <tr className="bg-slate-50 border-b border-line text-sm font-bold text-slate-500 uppercase tracking-wider">
+                <th className="p-4 pl-6">Farmer</th>
+                <th className="p-4">Contact</th>
+                <th className="p-4">Crop (Qty)</th>
+                <th className="p-4">Fare (Rs)</th>
+                <th className="p-4 pr-6 text-right">Status</th>
               </tr>
-            ))}
-            {completedPayments.length === 0 && (
-              <tr>
-                <td colSpan="5" className="p-8 text-center text-muted">No completed payments yet.</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-line">
+              {completedPayments.map(p => (
+                <tr key={p.booking.id} className="hover:bg-slate-50 transition-colors">
+                  <td className="p-4 pl-6 font-bold text-forest">{p.booking.farmer_name}</td>
+                  <td className="p-4 text-muted">{p.booking.farmer_mobile || "-"}</td>
+                  <td className="p-4 text-muted">{(p.booking.crops || []).map(c => c.crop_name).join(', ')} ({p.booking.estimated_quantity}q)</td>
+                  <td className="p-4 font-mono font-bold text-brand">₹ {p.booking.estimated_fare}</td>
+                  <td className="p-4 pr-6 text-right">
+                    <Badge tone="success" className="gap-1.5 px-3 py-1.5"><Check className="w-3.5 h-3.5" /> Paid</Badge>
+                  </td>
+                </tr>
+              ))}
+              {completedPayments.length === 0 && (
+                <tr>
+                  <td colSpan="5" className="p-8 text-center text-muted">No completed payments yet.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </Card>
 
       {selectedPayment && (
@@ -712,7 +721,11 @@ function PaymentManagementTab({ bookings, onStatusChange }) {
 export default function AdminPage({ language, onLanguageChange, onLogout, onHome }) {
   const { t } = useTranslation();
   const [centre, setCentre] = useState(null);
-  const [activeTab, setActiveTab] = useState("dashboard");
+  const [activeTab, setActiveTab] = useState(() => sessionStorage.getItem("krishak-mitra-admin-tab") || "dashboard");
+
+  useEffect(() => {
+    sessionStorage.setItem("krishak-mitra-admin-tab", activeTab);
+  }, [activeTab]);
 
   const [allBookings, setAllBookings] = useState([]);
   const [selectedBooking, setSelectedBooking] = useState(null);
@@ -806,7 +819,10 @@ export default function AdminPage({ language, onLanguageChange, onLogout, onHome
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 max-w-[1400px] mx-auto">
           {/* Main Content Area */}
           <div className="lg:col-span-8 space-y-6">
-            <h1 className="font-display text-2xl font-bold text-forest mb-6">{t("adminPortal")}</h1>
+            <div className="mb-6">
+               <Eyebrow className="mb-2">OVERVIEW</Eyebrow>
+               <h1 className="font-display text-4xl font-bold text-forest">{t("adminPortal")}</h1>
+            </div>
             
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <Card className="flex items-center gap-4">
@@ -840,11 +856,11 @@ export default function AdminPage({ language, onLanguageChange, onLogout, onHome
 
             <Card className="p-0 overflow-hidden">
               <div className="px-6 py-4 border-b border-line flex items-center justify-between">
-                <h2 className="font-bold text-forest text-lg">{t("liveQueue")}</h2>
+                <Eyebrow>{t("liveQueue")}</Eyebrow>
                 <Badge tone="default">{t("viewAll")}</Badge>
               </div>
               <div className="overflow-x-auto">
-                <table className="w-full text-sm text-left">
+                <table className="w-full min-w-max text-sm text-left">
                   <thead className="bg-slate-50 text-muted font-bold border-b border-line">
                     <tr>
                        <th className="px-6 py-3">#</th>
@@ -1116,27 +1132,29 @@ function CropsTab() {
       )}
 
       <Card className="p-0 overflow-hidden">
-        <table className="w-full text-left">
-          <thead className="bg-slate-50 text-muted font-bold border-b border-line uppercase text-[10px] tracking-wider">
-            <tr>
-              <th className="p-4 pl-6">Crop Name</th>
-              <th className="p-4">Minimum Support Price (MSP)</th>
-              <th className="p-4 pr-6 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-line">
-            {crops.map(c => (
-              <tr key={c.id} className="hover:bg-slate-50">
-                <td className="p-4 pl-6 font-bold text-forest">{c.name}</td>
-                <td className="p-4 font-mono font-bold text-brand">₹ {c.minimum_support_price}</td>
-                <td className="p-4 pr-6 text-right space-x-2">
-                  <button onClick={() => { setEditingId(c.id); setFormData({ name: c.name, minimum_support_price: c.minimum_support_price }); }} className="p-2 text-slate-400 hover:text-brand rounded-full hover:bg-brand/10"><Edit2 className="w-4 h-4" /></button>
-                  <button onClick={() => handleDelete(c.id)} className="p-2 text-slate-400 hover:text-red-500 rounded-full hover:bg-red-50"><Trash2 className="w-4 h-4" /></button>
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-max text-left">
+            <thead className="bg-slate-50 text-muted font-bold border-b border-line uppercase text-[10px] tracking-wider">
+              <tr>
+                <th className="p-4 pl-6">Crop Name</th>
+                <th className="p-4">Minimum Support Price (MSP)</th>
+                <th className="p-4 pr-6 text-right">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-line">
+              {crops.map(c => (
+                <tr key={c.id} className="hover:bg-slate-50">
+                  <td className="p-4 pl-6 font-bold text-forest">{c.name}</td>
+                  <td className="p-4 font-mono font-bold text-brand">₹ {c.minimum_support_price}</td>
+                  <td className="p-4 pr-6 text-right space-x-2">
+                    <button onClick={() => { setEditingId(c.id); setFormData({ name: c.name, minimum_support_price: c.minimum_support_price }); }} className="p-2 text-slate-400 hover:text-brand rounded-full hover:bg-brand/10"><Edit2 className="w-4 h-4" /></button>
+                    <button onClick={() => handleDelete(c.id)} className="p-2 text-slate-400 hover:text-red-500 rounded-full hover:bg-red-50"><Trash2 className="w-4 h-4" /></button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </Card>
     </div>
   );

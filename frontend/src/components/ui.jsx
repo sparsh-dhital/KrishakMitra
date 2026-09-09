@@ -18,7 +18,7 @@ export const Button = forwardRef(({ className, variant = "primary", size = "defa
       className={cn(
         "inline-flex items-center justify-center rounded-full font-bold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 active:scale-95 disabled:pointer-events-none disabled:opacity-50",
         {
-          "bg-brand text-white hover:bg-brand-hover hover:shadow-md shadow-sm": variant === "primary",
+          "bg-harvest text-forest hover:bg-harvest-hover hover:shadow-md shadow-sm": variant === "primary",
           "bg-white text-forest border border-line hover:border-brand/30 hover:bg-slate-50 hover:shadow-sm": variant === "outline",
           "bg-forest text-white hover:bg-forest-dark hover:shadow-md shadow-sm": variant === "dark",
           "bg-transparent text-muted hover:text-forest hover:bg-slate-100": variant === "ghost",
@@ -95,12 +95,21 @@ export const Card = forwardRef(({ className, ...props }, ref) => {
   return (
     <div
       ref={ref}
-      className={cn("bg-surface border border-line rounded-3xl p-6 shadow-sm hover:shadow-md transition-all duration-300", className)}
+      className={cn("bg-surface border border-line rounded-[26px] p-5 sm:p-7 shadow-xl hover:shadow-2xl transition-all duration-300", className)}
       {...props}
     />
   );
 });
 Card.displayName = "Card";
+
+export function Eyebrow({ children, dark = false, className }) {
+  return (
+    <span className={cn("inline-flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[.18em]", dark ? "text-harvest" : "text-brand", className)}>
+      <i className="h-1.5 w-1.5 rounded-full bg-current" />
+      {children}
+    </span>
+  );
+}
 
 export function CircularProgress({ value, label, subLabel }) {
   const radius = 36;
@@ -149,14 +158,14 @@ export function ProgressTimeline({ steps, currentStep }) {
             )}
             
             <div className={cn(
-              "w-8 h-8 rounded-full flex items-center justify-center transition-all duration-500 border-[3px] bg-surface z-10 relative",
-              isCompleted ? "border-brand bg-brand text-white shadow-md shadow-brand/30" : 
-              isCurrent ? "border-brand text-brand ring-4 ring-brand/10 shadow-sm" : 
-              "border-slate-200 text-slate-300"
+              "w-8 h-8 rounded-full flex items-center justify-center transition-all duration-500 border-2 bg-surface z-10 relative",
+              isCompleted ? "border-harvest bg-forest text-harvest shadow-md" : 
+              isCurrent ? "border-harvest text-harvest ring-4 ring-harvest/20 shadow-sm bg-white" : 
+              "border-[#dce6d7] text-[#c8d9c6]"
             )}>
               {isCompleted ? <Check className="w-4 h-4 font-bold" /> : 
-               isCurrent ? <div className="w-2.5 h-2.5 rounded-full bg-brand animate-pulse" /> :
-               <div className="w-2 h-2 rounded-full bg-slate-200" />}
+               isCurrent ? <div className="w-2.5 h-2.5 rounded-full bg-harvest animate-pulse" /> :
+               <div className="w-2 h-2 rounded-full bg-[#dce6d7]" />}
             </div>
             
             <div className="text-center mt-3 px-1 w-full">
@@ -168,7 +177,7 @@ export function ProgressTimeline({ steps, currentStep }) {
               </span>
               <span className={cn(
                 "block text-[10px] font-medium transition-colors duration-300 mt-1 truncate",
-                isCurrent ? "text-brand font-bold" : "text-muted"
+                isCurrent ? "text-forest font-bold" : "text-muted"
               )}>
                 {step.subtitle || (isCompleted ? "Done" : isCurrent ? "In Progress" : "Pending")}
               </span>
@@ -213,13 +222,13 @@ export function SidebarLayout({ children, activeTab, onTabChange, navItems, onLo
     <div className="flex min-h-screen min-w-0 overflow-x-hidden bg-cream">
       
       <aside 
-        className={cn("hidden lg:flex bg-forest flex-col fixed inset-y-0 left-0 z-50 transition-all duration-300 ease-in-out shadow-2xl overflow-hidden", isExpanded ? "w-[260px]" : "w-[72px]")}
+        className={cn("hidden lg:flex bg-[#0b291d] flex-col fixed inset-y-0 left-0 z-50 transition-all duration-300 ease-in-out shadow-2xl overflow-hidden", isExpanded ? "w-[260px]" : "w-[72px]")}
       >
         
         <div className={cn("px-3 py-4 flex items-center border-b border-white/10 transition-all duration-300", isExpanded ? "justify-between px-4" : "justify-center")}>
-          
-          <div className={cn("transition-all duration-300 overflow-hidden", isExpanded ? "opacity-100 max-w-full" : "opacity-0 max-w-0 pointer-events-none")}>
-            <Logo variant="text" className="h-7 w-auto" />
+          {/* Text logo — visible only when expanded */}
+          <div className={cn("transition-all duration-300", isExpanded ? "opacity-100 scale-100 delay-100" : "opacity-0 scale-95 absolute pointer-events-none")}>
+            <Logo variant="text" className="h-7 w-auto" dark={true} />
           </div>
           
           <div className={cn("transition-all duration-300 shrink-0", !isExpanded ? "opacity-100" : "opacity-0 w-0 overflow-hidden pointer-events-none")}>
@@ -252,7 +261,7 @@ export function SidebarLayout({ children, activeTab, onTabChange, navItems, onLo
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white text-sm font-bold shrink-0 shadow-inner">SM</div>
             <div className={cn("whitespace-nowrap overflow-hidden transition-all duration-300", isExpanded ? "opacity-100 w-32 ml-1" : "opacity-0 w-0 ml-0")}>
-              <p className="text-xs text-brand font-bold">{defaultRoleLabel}</p>
+              <p className="text-xs text-harvest font-bold">{defaultRoleLabel}</p>
               <p className="text-sm text-white font-bold truncate max-w-[150px]">{displayName}</p>
             </div>
           </div>
@@ -267,13 +276,13 @@ export function SidebarLayout({ children, activeTab, onTabChange, navItems, onLo
                 key={item.id}
                 onClick={() => onTabChange(item.id)}
                 className={cn(
-                  "flex items-center w-full py-3 rounded-xl text-sm font-bold transition-all relative group focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-1 focus-visible:ring-offset-forest",
-                  isActive ? "bg-brand text-white shadow-md" : "text-slate-300 hover:text-white hover:bg-white/10",
+                  "flex items-center w-full py-3 rounded-xl text-sm font-bold transition-all relative group focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-1 focus-visible:ring-offset-[#0b291d]",
+                  isActive ? "bg-white/10 text-harvest shadow-md border border-white/5" : "text-white/60 hover:text-white hover:bg-white/5",
                   isExpanded ? "gap-3 px-4" : "justify-center px-0"
                 )}
                 title={!isExpanded ? item.label : undefined}
               >
-                <Icon className={cn("w-5 h-5 shrink-0 transition-colors", isActive ? "text-white" : "text-slate-400 group-hover:text-white")} />
+                <Icon className={cn("w-5 h-5 shrink-0 transition-colors", isActive ? "text-harvest" : "text-white/50 group-hover:text-white")} />
                 <span className={cn("whitespace-nowrap transition-all duration-300", isExpanded ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4 absolute")}>{item.label}</span>
               </button>
             );
@@ -295,7 +304,7 @@ export function SidebarLayout({ children, activeTab, onTabChange, navItems, onLo
       </aside>
 
       
-      <main className={cn("min-w-0 flex-1 pb-20 lg:pb-0 transition-all duration-300 ease-in-out", isExpanded ? "lg:pl-[260px]" : "lg:pl-[72px]")}>
+      <main className={cn("min-w-0 flex-1 pb-24 lg:pb-0 transition-all duration-300 ease-in-out", isExpanded ? "lg:pl-[260px]" : "lg:pl-[72px]")}>
         
         <header className="h-[72px] border-b border-line/50 bg-white/70 backdrop-blur-2xl sticky top-0 z-40">
           <div className="flex h-full items-center gap-4 px-4 sm:px-6 lg:px-8">

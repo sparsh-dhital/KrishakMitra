@@ -1,10 +1,14 @@
-﻿import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Gavel, LayoutDashboard, Bell, ArrowRight, CheckCircle2, XCircle, Clock } from "lucide-react";
-import { SidebarLayout, Card, Badge, Button } from "../components/ui";
+import { SidebarLayout, Card, Badge, Button, Eyebrow } from "../components/ui";
 import BuyerMarketplace from "./BuyerMarketplace";
 
 export default function BuyerPage({ language, onLanguageChange, onLogout, onHome, buyerId }) {
-  const [activeTab, setActiveTab] = useState("marketplace");
+  const [activeTab, setActiveTab] = useState(() => sessionStorage.getItem("krishak-mitra-buyer-tab") || "marketplace");
+  
+  useEffect(() => {
+    sessionStorage.setItem("krishak-mitra-buyer-tab", activeTab);
+  }, [activeTab]);
   const navItems = [
     { id: "marketplace", label: "Browse Auctions", icon: Gavel },
     { id: "activity", label: "My Bid Activity", icon: LayoutDashboard },
@@ -25,8 +29,8 @@ export default function BuyerPage({ language, onLanguageChange, onLogout, onHome
       {activeTab === "marketplace" && <BuyerMarketplace role="buyer" buyerId={buyerId || "demo-buyer"} />}
       {activeTab === "activity" && (
         <div className="max-w-5xl mx-auto">
-          <p className="text-xs font-bold uppercase tracking-widest text-brand mb-2">Buyer workspace</p>
-          <h1 className="font-display text-2xl font-bold text-forest mb-6">My bid activity</h1>
+          <Eyebrow className="mb-2">BUYER WORKSPACE</Eyebrow>
+          <h1 className="font-display text-4xl font-extrabold text-forest mb-6">My bid activity</h1>
           
           <div className="space-y-4">
             <Card className="flex items-center justify-between hover:shadow-md transition-shadow border-l-4 border-l-brand">
@@ -93,8 +97,8 @@ export default function BuyerPage({ language, onLanguageChange, onLogout, onHome
       )}
       {activeTab === "notifications" && (
         <div className="max-w-3xl mx-auto">
-          <p className="text-xs font-bold uppercase tracking-widest text-brand mb-2">Buyer workspace</p>
-          <h1 className="font-display text-2xl font-bold text-forest mb-6">Notifications</h1>
+          <Eyebrow className="mb-2">BUYER WORKSPACE</Eyebrow>
+          <h1 className="font-display text-4xl font-extrabold text-forest mb-6">Notifications</h1>
           <div className="space-y-4">
             <div className="flex items-start gap-4 p-4 bg-white rounded-2xl border border-line shadow-sm">
               <div className="w-2 h-2 mt-2 rounded-full bg-brand shrink-0" />

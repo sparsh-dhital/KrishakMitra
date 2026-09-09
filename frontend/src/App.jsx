@@ -48,10 +48,29 @@ export default function App() {
     return () => i18n.off("languageChanged", handleLanguageChanged);
   }, [i18n]);
 
-  // Always start at the landing page regardless of any saved session
-  const [view, setView] = useState("landing");
+  // Initialize view from sessionStorage, ensuring dashboards have a valid session
+  const [view, setView] = useState(() => {
+    const savedView = sessionStorage.getItem("krishak-mitra-view");
+    let initialSession = null;
+    try {
+      initialSession = JSON.parse(localStorage.getItem("krishak-mitra-session") || "null");
+    } catch {}
 
-  // Load persisted session but DON'T auto-navigate into dashboard
+    if (savedView && ["farmer", "admin", "buyer"].includes(savedView)) {
+      if (initialSession) {
+        const expectedView = initialSession.role === "admin" ? "admin" : initialSession.role === "buyer" ? "buyer" : "farmer";
+        if (expectedView === savedView) return savedView;
+      }
+      return "landing";
+    }
+    return savedView || "landing";
+  });
+
+  useEffect(() => {
+    sessionStorage.setItem("krishak-mitra-view", view);
+  }, [view]);
+
+  // Load persisted session
   const [session, setSession] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem("krishak-mitra-session") || "null");
@@ -71,6 +90,10 @@ export default function App() {
     setView("landing");
     localStorage.removeItem("krishak-mitra-session");
     localStorage.removeItem("krishak-mitra-booking");
+    sessionStorage.removeItem("krishak-mitra-view");
+    sessionStorage.removeItem("krishak-mitra-farmer-tab");
+    sessionStorage.removeItem("krishak-mitra-admin-tab");
+    sessionStorage.removeItem("krishak-mitra-buyer-tab");
   };
 
   const handleLogin = (role, mobile, farmerId, buyerId, name) => {

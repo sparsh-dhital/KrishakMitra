@@ -2,7 +2,7 @@
 import toast from "react-hot-toast";
 import { X, Store, RefreshCw, Search, SlidersHorizontal, Sparkles } from "lucide-react";
 import { AuctionCard } from "../components/AuctionCard";
-import { Badge, Button, Card, Input } from "../components/ui";
+import { Badge, Button, Card, Input, Eyebrow } from "../components/ui";
 import { getOpenAuctions, placeBidDirectly } from "../services/biddingService";
 
 export default function BuyerMarketplace({ role = "admin", buyerId = "demo-buyer" }) {
@@ -52,9 +52,9 @@ export default function BuyerMarketplace({ role = "admin", buyerId = "demo-buyer
     <div className="max-w-6xl mx-auto space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          <p className="text-xs font-bold uppercase tracking-widest text-brand mb-2">Private market</p>
-          <h1 className="font-display text-2xl font-bold text-forest">Direct Farmer Marketplace</h1>
-          <p className="text-sm text-muted mt-1">Buy harvested crops directly through live private bids.</p>
+          <Eyebrow className="mb-2">PRIVATE MARKET</Eyebrow>
+          <h1 className="font-display text-4xl font-extrabold text-forest">Direct Farmer Marketplace</h1>
+          <p className="text-sm text-muted mt-2">Buy harvested crops directly through live private bids.</p>
         </div>
         <Button variant="outline" size="sm" onClick={loadAuctions} disabled={loading} className="gap-2"><RefreshCw className="w-4 h-4" /> Refresh</Button>
       </div>
