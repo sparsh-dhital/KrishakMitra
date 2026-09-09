@@ -131,22 +131,47 @@ export function CircularProgress({ value, label, subLabel }) {
 
 export function ProgressTimeline({ steps, currentStep }) {
   return (
-    <div className="w-full grid grid-cols-5 gap-1 sm:flex sm:items-center sm:justify-between relative mt-4 mb-2">
-      <div className="absolute left-4 right-4 top-4 h-0.5 bg-slate-100 -z-10" />
-      <div 
-        className="absolute left-4 top-4 h-0.5 bg-brand -z-10 transition-all duration-500" 
-        style={{ width: `calc(${(currentStep / (steps.length - 1)) * 100}% - 2rem)` }}
-      />
+    <div className="flex w-full mt-2 mb-4">
       {steps.map((step, idx) => {
-        const isCompleted = idx <= currentStep;
+        const isCompleted = idx < currentStep;
+        const isCurrent = idx === currentStep;
+        
         return (
-          <div key={idx} className="min-w-0 flex flex-col items-center gap-2">
-            <div className={cn("w-8 h-8 rounded-full flex items-center justify-center transition-colors border-4 border-surface", isCompleted ? "bg-brand text-white" : "bg-slate-200 text-slate-400")}>
-              {isCompleted ? <Check className="w-4 h-4" /> : <span className="w-2 h-2 rounded-full bg-current" />}
+          <div key={idx} className="relative flex-1 flex flex-col items-center">
+            {/* Line to previous node */}
+            {idx !== 0 && (
+              <div className="absolute top-4 -left-1/2 w-full h-[3px] bg-slate-100 -z-0">
+                <div 
+                  className="h-full bg-brand transition-all duration-700 ease-out"
+                  style={{ width: isCompleted || isCurrent ? "100%" : "0%" }}
+                />
+              </div>
+            )}
+            
+            <div className={cn(
+              "w-8 h-8 rounded-full flex items-center justify-center transition-all duration-500 border-[3px] bg-surface z-10 relative",
+              isCompleted ? "border-brand bg-brand text-white shadow-md shadow-brand/30" : 
+              isCurrent ? "border-brand text-brand ring-4 ring-brand/10 shadow-sm" : 
+              "border-slate-200 text-slate-300"
+            )}>
+              {isCompleted ? <Check className="w-4 h-4 font-bold" /> : 
+               isCurrent ? <div className="w-2.5 h-2.5 rounded-full bg-brand animate-pulse" /> :
+               <div className="w-2 h-2 rounded-full bg-slate-200" />}
             </div>
-            <div className="text-center">
-              <span className="block max-w-full break-words text-xs font-bold text-forest">{step.title}</span>
-              <span className="block max-w-full break-words text-[10px] text-muted">{step.subtitle || (isCompleted ? "Completed" : "Pending")}</span>
+            
+            <div className="text-center mt-3 px-1 w-full">
+              <span className={cn(
+                "block text-[11px] sm:text-xs font-bold transition-colors duration-300 leading-tight",
+                isCompleted || isCurrent ? "text-forest" : "text-slate-400"
+              )}>
+                {step.title}
+              </span>
+              <span className={cn(
+                "block text-[10px] font-medium transition-colors duration-300 mt-1 truncate",
+                isCurrent ? "text-brand font-bold" : "text-muted"
+              )}>
+                {step.subtitle || (isCompleted ? "Done" : isCurrent ? "In Progress" : "Pending")}
+              </span>
             </div>
           </div>
         );

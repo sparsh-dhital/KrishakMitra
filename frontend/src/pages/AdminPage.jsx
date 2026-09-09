@@ -13,6 +13,7 @@ function CentresTab() {
   const [loading, setLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [newCropName, setNewCropName] = useState("");
   
   const [formData, setFormData] = useState({ 
     name: "", district: "", daily_capacity: "",
@@ -45,6 +46,22 @@ function CentresTab() {
           : [...prev.supported_crops, cropId]
       };
     });
+  };
+
+  const handleAddNewCrop = async () => {
+    if (!newCropName.trim()) return;
+    try {
+      const newCrop = await api.addCrop(newCropName.trim(), 0);
+      setCrops(prev => [...prev, newCrop]);
+      setFormData(prev => ({
+        ...prev,
+        supported_crops: [...prev.supported_crops, newCrop.id]
+      }));
+      setNewCropName("");
+      toast.success("New crop added!");
+    } catch (err) {
+      toast.error("Failed to add crop");
+    }
   };
 
   const generateSlots = () => {
@@ -183,6 +200,23 @@ function CentresTab() {
                   </label>
                 ))}
               </div>
+              <div className="flex gap-2 mt-2">
+                <Input 
+                  placeholder="Type new crop name..." 
+                  value={newCropName} 
+                  onChange={e => setNewCropName(e.target.value)} 
+                  className="h-10 text-sm"
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleAddNewCrop();
+                    }
+                  }}
+                />
+                <Button type="button" variant="outline" size="sm" onClick={handleAddNewCrop} className="h-10 whitespace-nowrap">
+                  Add Crop
+                </Button>
+              </div>
             </div>
 
             <div className="space-y-4">
@@ -203,12 +237,8 @@ function CentresTab() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-muted uppercase tracking-widest">Slot Duration</label>
-                  <Select value={formData.slot_duration} onChange={e => setFormData({...formData, slot_duration: e.target.value})}>
-                    <option value="15">15 Minutes</option>
-                    <option value="30">30 Minutes</option>
-                    <option value="60">1 Hour</option>
-                  </Select>
+                  <label className="text-xs font-bold text-muted uppercase tracking-widest">Slot Duration (Minutes)</label>
+                  <Input required type="number" min="5" value={formData.slot_duration} onChange={e => setFormData({...formData, slot_duration: e.target.value})} placeholder="e.g. 30" />
                 </div>
               </div>
             </div>
@@ -396,14 +426,8 @@ function ActiveQueueTab() {
   const [centre, setCentre] = useState(null);
   const [activeTab, setActiveTab] = useState("dashboard");
 
-  const [booking, setBooking] = useState(() => {
-    try {
-      const saved = localStorage.getItem("krishak-mitra-booking");
-      return !saved || saved === "undefined" ? null : JSON.parse(saved);
-    } catch {
-      return null;
-    }
-  });
+  const [allBookings, setAllBookings] = useState([]);
+  const [selectedBooking, setSelectedBooking] = useState(null);
 
   const [status, setStatus] = useState("BOOKED");
   const [procurement, setProcurement] = useState(null);
@@ -421,34 +445,38 @@ function ActiveQueueTab() {
 
   useEffect(() => {
     api.getCentres().then((data) => setCentre(data?.[0] || null)).finally(() => setLoading(false));
+    api.getAllBookings().then(setAllBookings);
   }, []);
 
   useEffect(() => {
-    if (!booking?.booking?.id) return;
-    api.getBooking(booking.booking.id).then((data) => {
-      setBooking((current) => ({ ...current, booking: data }));
-      setStatus(data.status || "BOOKED");
-    }).catch(() => {});
+    if (!selectedBooking?.booking?.id) return;
+    setStatus(selectedBooking.booking.status || "BOOKED");
 
-    api.getProcurement(booking.booking.id).then((data) => {
+    api.getProcurement(selectedBooking.booking.id).then((data) => {
       const record = Array.isArray(data) ? data[0] : data;
       setProcurement(record || null);
       if (record?.id) {
         api.getPayment(record.id).then((payData) => setPayment(Array.isArray(payData) ? payData[0] : payData)).catch(() => {});
       }
     }).catch(() => {});
-  }, [booking?.booking?.id]);
+  }, [selectedBooking?.booking?.id]);
 
   async function saveStatus() {
-    if (!booking?.booking?.id) return;
+    if (!selectedBooking?.booking?.id) return;
     try {
-      const updated = await api.updateBookingStatus(booking.booking.id, status);
-      setBooking((current) => ({ ...current, booking: updated }));
-      toast.success(`${t("statusUpdated")}: ${t(statusTranslationKeys[status])}`);
+      const updated = await api.updateBookingStatus(selectedBooking.booking.id, status);
+      const newBookings = allBookings.map(b => b.booking.id === selectedBooking.booking.id ? { ...b, booking: updated } : b);
+      setAllBookings(newBookings);
+      setSelectedBooking(newBookings.find(b => b.booking.id === selectedBooking.booking.id));
+      toast.success(`${t("statusUpdated")}: ${t(statusTranslationKeys[status]) || status}`);
     } catch (requestError) {
       toast.error(requestError.message || t("statusUpdateFailed"));
     }
   }
+
+  const inQueueBookings = allBookings.filter(b => b.booking.status !== "PAID" && b.booking.status !== "COMPLETED");
+  const processingBookings = allBookings.filter(b => b.booking.status === "QUALITY_CHECK" || b.booking.status === "WEIGHING" || b.booking.status === "ACCEPTED");
+
 
   const navItems = [
     { id: "dashboard", label: t("overview"), icon: LayoutDashboard },
@@ -483,7 +511,7 @@ function ActiveQueueTab() {
                    <Users className="w-6 h-6" />
                  </div>
                  <div>
-                   <p className="font-display text-2xl font-extrabold text-forest">78</p>
+                   <p className="font-display text-2xl font-extrabold text-forest">{allBookings.length}</p>
                    <p className="text-xs text-muted font-bold uppercase tracking-widest mt-1">{t("totalBookings")}</p>
                  </div>
               </Card>
@@ -492,7 +520,7 @@ function ActiveQueueTab() {
                    <Activity className="w-6 h-6" />
                  </div>
                  <div>
-                   <p className="font-display text-2xl font-extrabold text-forest">{booking ? "23" : "0"}</p>
+                   <p className="font-display text-2xl font-extrabold text-forest">{inQueueBookings.length}</p>
                    <p className="text-xs text-muted font-bold uppercase tracking-widest mt-1">{t("inQueue")}</p>
                  </div>
               </Card>
@@ -501,7 +529,7 @@ function ActiveQueueTab() {
                    <FileText className="w-6 h-6" />
                  </div>
                  <div>
-                   <p className="font-display text-2xl font-extrabold text-forest">{booking && procurement ? "4" : "0"}</p>
+                   <p className="font-display text-2xl font-extrabold text-forest">{processingBookings.length}</p>
                    <p className="text-xs text-muted font-bold uppercase tracking-widest mt-1">{t("processing")}</p>
                  </div>
               </Card>
@@ -524,14 +552,16 @@ function ActiveQueueTab() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-line">
-                    {booking ? (
-                       <tr className="hover:bg-slate-50 transition-colors">
-                          <td className="px-6 py-4 font-bold text-forest">01</td>
-                          <td className="px-6 py-4 font-bold text-forest">Ramesh Kumar</td>
-                          <td className="px-6 py-4 font-mono text-muted">{booking?.token?.token_number || t("notAvailable")}</td>
-                          <td className="px-6 py-4 text-forest font-medium">{booking?.booking?.estimated_quantity || 0} {t("kilograms")}</td>
-                          <td className="px-6 py-4"><Badge tone="warning">{t("statusWeighing")}</Badge></td>
-                       </tr>
+                    {inQueueBookings.length > 0 ? (
+                       inQueueBookings.map((b, i) => (
+                         <tr key={b.booking.id} className={`hover:bg-slate-50 transition-colors cursor-pointer ${selectedBooking?.booking?.id === b.booking.id ? 'bg-brand/5' : ''}`} onClick={() => setSelectedBooking(b)}>
+                            <td className="px-6 py-4 font-bold text-forest">{(i+1).toString().padStart(2, '0')}</td>
+                            <td className="px-6 py-4 font-bold text-forest">{b.booking.farmer_name || "Unknown"}</td>
+                            <td className="px-6 py-4 font-mono text-muted">{b.token?.token_number || t("notAvailable")}</td>
+                            <td className="px-6 py-4 text-forest font-medium">{b.booking.estimated_quantity || 0} q</td>
+                            <td className="px-6 py-4"><Badge tone={b.booking.status === "PAID" ? "success" : "warning"}>{t(statusTranslationKeys[b.booking.status]) || b.booking.status}</Badge></td>
+                         </tr>
+                       ))
                     ) : (
                       <tr>
                         <td colSpan="5" className="px-6 py-8 text-center text-muted font-medium">{t("noFarmersInQueue")}</td>
@@ -543,9 +573,9 @@ function ActiveQueueTab() {
             </Card>
 
             {/* Workflow Control for Demo */}
-            {booking && (
+            {selectedBooking && (
               <Card>
-                <h3 className="font-bold text-forest mb-4">{t("manageActiveToken")}: {booking?.token?.token_number || t("notAvailable")}</h3>
+                <h3 className="font-bold text-forest mb-4">{t("manageActiveToken")}: {selectedBooking?.token?.token_number || t("notAvailable")} ({selectedBooking.booking.farmer_name})</h3>
                 <div className="flex items-end gap-4">
                    <div className="flex-1">
                      <label className="block text-xs font-bold text-muted uppercase tracking-widest mb-2">{t("stage")}</label>

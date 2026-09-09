@@ -8,6 +8,7 @@ import AdminPage from "./pages/AdminPage";
 import LoginPage from "./pages/LoginPage";
 import LandingPage from "./pages/LandingPage";
 import BuyerPage from "./pages/BuyerPage";
+import ContactPage from "./pages/ContactPage";
 
 function SmoothScroll({ children }) {
   useEffect(() => {
@@ -72,8 +73,8 @@ export default function App() {
     localStorage.removeItem("krishak-mitra-booking");
   };
 
-  const handleLogin = (role, mobile, farmerId, buyerId) => {
-    const next = { role, mobile, farmerId, buyerId };
+  const handleLogin = (role, mobile, farmerId, buyerId, name) => {
+    const next = { role, mobile, farmerId, buyerId, name };
     setSession(next);
     setView(role === "admin" ? "admin" : role === "buyer" ? "buyer" : "farmer");
     localStorage.setItem("krishak-mitra-session", JSON.stringify(next));
@@ -111,7 +112,16 @@ export default function App() {
       {view === "landing" && (
         <LandingPage
           onNavigateLogin={handleNavigateLogin}
+          onNavigateContact={() => setView("contact")}
           hasSession={!!session}
+          language={language}
+          onLanguageChange={changeLanguage}
+        />
+      )}
+
+      {view === "contact" && (
+        <ContactPage
+          onBack={() => setView("landing")}
           language={language}
           onLanguageChange={changeLanguage}
         />
@@ -129,9 +139,9 @@ export default function App() {
         />
       )}
 
-      {view === "farmer" && <FarmerPage language={language} onLanguageChange={changeLanguage} onLogout={logout} onHome={() => setView("landing")} farmerId={session?.farmerId} />}
-      {view === "admin" && <AdminPage language={language} onLanguageChange={changeLanguage} onLogout={logout} onHome={() => setView("landing")} />}
-      {view === "buyer" && <BuyerPage language={language} onLanguageChange={changeLanguage} onLogout={logout} onHome={() => setView("landing")} buyerId={session?.buyerId || "demo-buyer"} />}
+      {view === "farmer" && <FarmerPage language={language} onLanguageChange={changeLanguage} onLogout={logout} onHome={() => setView("landing")} farmerId={session?.farmerId} farmerName={session?.name} />}
+      {view === "admin" && <AdminPage language={language} onLanguageChange={changeLanguage} onLogout={logout} onHome={() => setView("landing")} adminName={session?.name} />}
+      {view === "buyer" && <BuyerPage language={language} onLanguageChange={changeLanguage} onLogout={logout} onHome={() => setView("landing")} buyerId={session?.buyerId || "demo-buyer"} buyerName={session?.name} />}
     </SmoothScroll>
   );
 }

@@ -9,7 +9,7 @@ import { Badge, Card, Button, Input, Select, SidebarLayout, CircularProgress, Pr
 import AuctionCard from "../components/AuctionCard";
 import { createAuctionDirectly, getFarmerAuctions, getFarmerBidNotifications } from "../services/biddingService";
 
-export default function FarmerPage({ language, onLanguageChange, onLogout, onHome, farmerId }) {
+export default function FarmerPage({ language, onLanguageChange, onLogout, onHome, farmerId, farmerName }) {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("dashboard");
   const [bookingStep, setBookingStep] = useState(0);
@@ -125,9 +125,11 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, onHom
     try {
       const result = await api.createBooking({
         farmer_id: farmerId,
+        farmer_name: farmerName || "Ramesh Kumar",
         centre_id: selectedCentre,
         slot_id: selectedSlot,
         crop_id: selectedCrop,
+        crop_name: crops.find(c => c.id === selectedCrop)?.name || "Unknown",
         estimated_quantity: Number(quantity),
       });
       setBooking(result);
@@ -169,20 +171,30 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, onHom
     { id: "bidding", label: t("liveBidding") || "Live Bidding", icon: Gavel },
   ];
 
-  const journeySteps = [
-    { title: "Booking", subtitle: booking?.booking?.date || "Pending" },
-    { title: "Arrival", subtitle: queueEntry ? "Completed" : "Pending" },
-    { title: "Quality & Weight", subtitle: procurement ? procurement.procurement_status : "Pending" },
-    { title: "Acceptance", subtitle: procurement?.procurement_status === "ACCEPTED" ? "Completed" : "Pending" },
-    { title: "Payment", subtitle: payment ? payment.payment_status : "Pending" },
-  ];
+  let currentStep = 0; 
+  if (booking) {
+    currentStep = 1;
+    if (queueEntry) {
+      currentStep = 2;
+      if (procurement) {
+        currentStep = 3;
+        if (procurement?.procurement_status === "ACCEPTED") {
+           currentStep = 4;
+           if (payment?.payment_status === "PAID" || payment?.payment_status === "COMPLETED" || payment?.payment_status === "SUCCESS") { 
+              currentStep = 5;
+           }
+        }
+      }
+    }
+  }
 
-  let currentStep = -1;
-  if (booking) currentStep = 0;
-  if (queueEntry && queueEntry.status !== "waiting") currentStep = 1;
-  if (procurement) currentStep = 2;
-  if (procurement?.procurement_status === "ACCEPTED") currentStep = 3;
-  if (payment) currentStep = 4;
+  const journeySteps = [
+    { title: "Booking", subtitle: booking ? "Confirmed" : "Not booked" },
+    { title: "Arrival", subtitle: queueEntry ? "In Queue" : "Expected" },
+    { title: "Quality", subtitle: procurement ? (procurement.quality_grade || "Graded") : "Pending" },
+    { title: "Acceptance", subtitle: procurement?.procurement_status === "ACCEPTED" ? "Accepted" : "Pending" },
+    { title: "Payment", subtitle: payment ? `₹${payment.amount}` : "Pending" },
+  ];
 
   const activeCrop = crops.find((c) => c.id === (booking?.booking?.crop_id || selectedCrop));
 
@@ -203,6 +215,15 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, onHom
     }
   };
 
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good morning";
+    if (hour < 17) return "Good afternoon";
+    return "Good evening";
+  };
+  const greeting = getGreeting();
+  const displayName = farmerName || "Ramesh Kumar";
+
   return (
     <SidebarLayout
       navItems={navItems}
@@ -211,13 +232,14 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, onHom
       onLogout={onLogout} onHome={onHome}
       language={language}
       onLanguageChange={onLanguageChange}
+      displayName={displayName}
     >
       {/* ── DASHBOARD ── */}
       {activeTab === "dashboard" && (
         <div className="grid min-w-0 grid-cols-1 gap-6 lg:grid-cols-3 max-w-6xl mx-auto">
           <div className="min-w-0 space-y-6 lg:col-span-2">
             <div>
-              <h1 className="font-display text-2xl font-bold text-forest">{t("greetingFarmer")} Ramesh Kumar</h1>
+              <h1 className="font-display text-2xl font-bold text-forest">{greeting}, {displayName}</h1>
               <p className="text-muted text-sm mt-1">{t("journeyIntro")}</p>
             </div>
 

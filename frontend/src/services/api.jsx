@@ -19,6 +19,24 @@ function saveCentres(centres) {
   localStorage.setItem("krishak-mitra-centres", JSON.stringify(centres));
 }
 
+function getStoredCrops() {
+  const saved = localStorage.getItem("krishak-mitra-crops");
+  if (saved) {
+    try { return JSON.parse(saved); } catch (e) {}
+  }
+  const defaultCrops = [
+      { id: "cr1", name: "Paddy (Grade A)", minimum_support_price: 2203 },
+      { id: "cr2", name: "Cotton (Long Staple)", minimum_support_price: 7020 },
+      { id: "cr3", name: "Maize", minimum_support_price: 2090 }
+  ];
+  localStorage.setItem("krishak-mitra-crops", JSON.stringify(defaultCrops));
+  return defaultCrops;
+}
+
+function saveCrops(crops) {
+  localStorage.setItem("krishak-mitra-crops", JSON.stringify(crops));
+}
+
 function getStoredNotifications() {
   const saved = localStorage.getItem("krishak-mitra-notifications");
   if (saved) {
@@ -52,6 +70,18 @@ function getStoredSlots() {
 
 function saveSlots(slots) {
   localStorage.setItem("krishak-mitra-slots", JSON.stringify(slots));
+}
+
+function getStoredBookings() {
+  const saved = localStorage.getItem("krishak-mitra-all-bookings");
+  if (saved) {
+    try { return JSON.parse(saved); } catch (e) {}
+  }
+  return [];
+}
+
+function saveBookings(bookings) {
+  localStorage.setItem("krishak-mitra-all-bookings", JSON.stringify(bookings));
 }
 
 export const api = {
@@ -122,11 +152,15 @@ export const api = {
   },
   getCrops: async () => {
     await delay(300);
-    return [
-      { id: "cr1", name: "Paddy (Grade A)", minimum_support_price: 2203 },
-      { id: "cr2", name: "Cotton (Long Staple)", minimum_support_price: 7020 },
-      { id: "cr3", name: "Maize", minimum_support_price: 2090 }
-    ];
+    return getStoredCrops();
+  },
+  addCrop: async (name, msp) => {
+    await delay(300);
+    const crops = getStoredCrops();
+    const newCrop = { id: "cr-" + Math.random().toString(36).substring(7), name, minimum_support_price: msp || 0 };
+    crops.push(newCrop);
+    saveCrops(crops);
+    return newCrop;
   },
   getFarmer: async (farmerId) => {
     await delay(300);
@@ -143,36 +177,58 @@ export const api = {
     return slots.sort((a, b) => a.start_time.localeCompare(b.start_time));
   },
   createBooking: async (payload) => {
-    await delay(1000);
-    return {
+    await delay(500);
+    const newBooking = {
       booking: {
         id: "b-" + Math.random().toString(36).substring(7),
         farmer_id: payload.farmer_id,
+        farmer_name: payload.farmer_name,
         centre_id: payload.centre_id,
         slot_id: payload.slot_id,
         crop_id: payload.crop_id,
+        crop_name: payload.crop_name,
         estimated_quantity: payload.estimated_quantity,
         status: "BOOKED",
-        date: "2026-09-10"
+        date: new Date().toISOString().split('T')[0]
       },
       token: {
         id: "t-" + Math.random().toString(36).substring(7),
         token_number: "A" + Math.floor(1000 + Math.random() * 9000)
       }
     };
+    const bookings = getStoredBookings();
+    bookings.push(newBooking);
+    saveBookings(bookings);
+    return newBooking;
+  },
+  getAllBookings: async () => {
+    await delay(300);
+    return getStoredBookings();
   },
   getBooking: async (bookingId) => {
-    await delay(400);
+    await delay(200);
+    const bookings = getStoredBookings();
+    const b = bookings.find(x => x.booking.id === bookingId);
+    if (b) return b.booking;
+    // Fallback for older format
     return {
       id: bookingId,
       status: "BOOKED",
       estimated_quantity: 40,
-      date: "2026-09-10"
+      date: new Date().toISOString().split('T')[0]
     };
   },
   updateBookingStatus: async (bookingId, status) => {
-    await delay(500);
-    return { id: bookingId, status };
+    await delay(300);
+    const bookings = getStoredBookings();
+    const idx = bookings.findIndex(x => x.booking.id === bookingId);
+    let updatedBooking = { id: bookingId, status };
+    if (idx > -1) {
+      bookings[idx].booking.status = status;
+      updatedBooking = bookings[idx].booking;
+      saveBookings(bookings);
+    }
+    return updatedBooking;
   },
   getQueueEntry: async (tokenId) => {
     await delay(400);

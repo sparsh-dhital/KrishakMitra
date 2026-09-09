@@ -8,13 +8,14 @@ import LanguagePicker from "../components/LanguagePicker";
 export default function LoginPage({ onBack, onLogin, t, language, onLanguageChange }) {
   const [role, setRole] = useState("farmer");
   const [mobile, setMobile] = useState("");
+  const [name, setName] = useState("");
   const [otp, setOtp] = useState("");
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSendOtp = (e) => {
     e.preventDefault();
-    if (!mobile || mobile.length < 10) return;
+    if (!mobile || mobile.length < 10 || !name.trim()) return;
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
@@ -27,12 +28,13 @@ export default function LoginPage({ onBack, onLogin, t, language, onLanguageChan
     if (otp.length < 6) return;
     setIsLoading(true);
     setTimeout(() => {
-      onLogin(role, mobile, role === "farmer" ? "12f3b7f6-5999-45e7-8811-3fd982a25345" : null, role === "buyer" ? `buyer-${mobile}` : null);
+      onLogin(role, mobile, role === "farmer" ? "12f3b7f6-5999-45e7-8811-3fd982a25345" : null, role === "buyer" ? `buyer-${mobile}` : null, name.trim());
     }, 800);
   };
 
   const handleDemoLogin = () => {
-    onLogin(role, "9876543210", role === "farmer" ? "12f3b7f6-5999-45e7-8811-3fd982a25345" : null, role === "buyer" ? "demo-buyer" : null);
+    const demoName = name.trim() || (role === "farmer" ? "Ramesh Kumar" : "Guest");
+    onLogin(role, "9876543210", role === "farmer" ? "12f3b7f6-5999-45e7-8811-3fd982a25345" : null, role === "buyer" ? "demo-buyer" : null, demoName);
   };
 
   return (
@@ -85,10 +87,14 @@ export default function LoginPage({ onBack, onLogin, t, language, onLanguageChan
             {step === 1 ? (
               <motion.form key="step1" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} onSubmit={handleSendOtp} className="space-y-6">
                 <div>
+                  <label className="block text-sm font-bold text-forest mb-2">Full Name</label>
+                  <Input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Enter your name" required />
+                </div>
+                <div>
                   <label className="block text-sm font-bold text-forest mb-2">Mobile Number</label>
                   <Input type="tel" value={mobile} onChange={(e) => setMobile(e.target.value.replace(/\D/g, "").slice(0, 10))} placeholder="Enter 10-digit number" required />
                 </div>
-                <Button type="submit" className="w-full h-12" disabled={mobile.length < 10 || isLoading}>
+                <Button type="submit" className="w-full h-12" disabled={mobile.length < 10 || !name.trim() || isLoading}>
                   {isLoading ? "Sending OTP..." : "Get OTP"}
                 </Button>
               </motion.form>

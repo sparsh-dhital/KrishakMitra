@@ -21,7 +21,7 @@ import {
 import Logo from "../components/Logo";
 import LanguagePicker from "../components/LanguagePicker";
 
-export default function LandingPage({ onNavigateLogin, hasSession, language, onLanguageChange }) {
+export default function LandingPage({ onNavigateLogin, onNavigateContact, hasSession, language, onLanguageChange }) {
   return (
     <div className="min-h-screen bg-[#F8F9FA] font-body text-forest selection:bg-brand selection:text-white">
       {/* Navbar */}
@@ -32,6 +32,7 @@ export default function LandingPage({ onNavigateLogin, hasSession, language, onL
           <a href="#how-it-works" className="hover:text-brand transition-colors">How it Works</a>
           <a href="#impact" className="hover:text-brand transition-colors">Impact</a>
           <a href="#testimonials" className="hover:text-brand transition-colors">Testimonials</a>
+          <button onClick={onNavigateContact} className="hover:text-brand transition-colors">Contact Us</button>
         </nav>
         <div className="flex shrink-0 items-center gap-2 sm:gap-5">
           <LanguagePicker value={language} onChange={onLanguageChange} />
@@ -291,7 +292,7 @@ export default function LandingPage({ onNavigateLogin, hasSession, language, onL
               <button onClick={onNavigateLogin} className="w-full sm:w-auto bg-brand text-white px-10 py-4 rounded-full text-lg font-bold flex items-center justify-center gap-3 hover:bg-brand-hover transition-colors shadow-lg shadow-brand/20">
                 Get Started Now <ArrowRight className="w-5 h-5" />
               </button>
-              <button className="w-full sm:w-auto bg-transparent text-white px-10 py-4 rounded-full text-lg font-bold flex items-center justify-center gap-3 hover:bg-white/5 transition-colors border border-white/20">
+              <button onClick={onNavigateContact} className="w-full sm:w-auto bg-transparent text-white px-10 py-4 rounded-full text-lg font-bold flex items-center justify-center gap-3 hover:bg-white/5 transition-colors border border-white/20">
                 <User className="w-5 h-5" /> Contact Support
               </button>
             </div>
@@ -321,7 +322,7 @@ export default function LandingPage({ onNavigateLogin, hasSession, language, onL
             <ul className="space-y-4 text-white/70 text-sm">
               <li><a href="#" className="hover:text-white transition-colors">About Us</a></li>
               <li><a href="#" className="hover:text-white transition-colors">Careers</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Contact</a></li>
+              <li><button onClick={onNavigateContact} className="hover:text-white transition-colors">Contact</button></li>
             </ul>
           </div>
           
