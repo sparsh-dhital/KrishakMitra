@@ -8,6 +8,7 @@ import AdminPage from "./pages/AdminPage";
 import LoginPage from "./pages/LoginPage";
 import LandingPage from "./pages/LandingPage";
 import BuyerPage from "./pages/BuyerPage";
+import ContactPage from "./pages/ContactPage";
 
 function SmoothScroll({ children }) {
   useEffect(() => {
@@ -111,12 +112,20 @@ export default function App() {
       {view === "landing" && (
         <LandingPage
           onNavigateLogin={handleNavigateLogin}
+          onNavigateContact={() => setView("contact")}
           hasSession={!!session}
           language={language}
           onLanguageChange={changeLanguage}
         />
       )}
 
+      {view === "contact" && (
+        <ContactPage
+          language={language}
+          onLanguageChange={changeLanguage}
+          onBack={() => setView("landing")}
+        />
+      )}
 
 
       {view === "login" && (

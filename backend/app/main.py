@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.database import supabase
 from app.routers.bookings import router as bookings_router
 from app.routers.centres import router as centres_router
+from app.routers.contact import router as contact_router
 from app.routers.crops import router as crops_router
 from app.routers.farmers import router as farmers_router
 from app.routers.queue import router as queue_router
@@ -31,6 +32,7 @@ app.add_middleware(
 
 
 app.include_router(centres_router)
+app.include_router(contact_router)
 app.include_router(crops_router)
 app.include_router(farmers_router)
 app.include_router(slots_router)
