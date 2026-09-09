@@ -304,7 +304,7 @@ export function SidebarLayout({ children, activeTab, onTabChange, navItems, onLo
       </aside>
 
       
-      <main className={cn("min-w-0 flex-1 pb-20 lg:pb-0 transition-all duration-300 ease-in-out", isExpanded ? "lg:pl-[260px]" : "lg:pl-[72px]")}>
+      <main className={cn("min-w-0 flex-1 pb-24 lg:pb-0 transition-all duration-300 ease-in-out", isExpanded ? "lg:pl-[260px]" : "lg:pl-[72px]")}>
         
         <header className="h-[72px] border-b border-line/50 bg-white/70 backdrop-blur-2xl sticky top-0 z-40">
           <div className="flex h-full items-center gap-4 px-4 sm:px-6 lg:px-8">

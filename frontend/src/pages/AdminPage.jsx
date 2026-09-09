@@ -255,7 +255,7 @@ function CentresTab() {
 
       <Card className="p-0 overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left">
+          <table className="w-full min-w-max text-sm text-left">
             <thead className="bg-slate-50 text-muted font-bold border-b border-line uppercase tracking-widest text-[10px]">
               <tr>
                  <th className="px-6 py-4">Centre Name</th>
@@ -448,7 +448,7 @@ function TodaysBookingsTab({ bookings, onRemove, onViewDetails }) {
 
       <Card className="overflow-hidden p-0 shadow-md">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full min-w-max text-left border-collapse">
             <thead>
               <tr className="bg-slate-50 border-b border-line text-sm font-bold text-slate-500 uppercase tracking-wider">
                 <th className="p-4 pl-6">Token ID</th>
@@ -617,72 +617,76 @@ function PaymentManagementTab({ bookings, onStatusChange }) {
         <div className="p-4 bg-slate-50 border-b border-line">
           <h3 className="font-bold text-forest">Pending Payment Requests</h3>
         </div>
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="bg-slate-50 border-b border-line text-sm font-bold text-slate-500 uppercase tracking-wider">
-              <th className="p-4 pl-6">Farmer</th>
-              <th className="p-4">Contact</th>
-              <th className="p-4">Crop (Qty)</th>
-              <th className="p-4">Fare (Rs)</th>
-              <th className="p-4 pr-6 text-right">Action</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-line">
-            {pendingPayments.map(p => (
-              <tr key={p.booking.id} className="hover:bg-slate-50 transition-colors">
-                <td className="p-4 pl-6 font-bold text-forest">{p.booking.farmer_name}</td>
-                <td className="p-4 text-muted">{p.booking.farmer_mobile || "+91 98765 43210"}</td>
-                <td className="p-4 text-muted">{(p.booking.crops || []).map(c => c.crop_name).join(', ')} ({p.booking.estimated_quantity}q)</td>
-                <td className="p-4 font-mono font-bold text-brand">₹ {p.booking.estimated_fare}</td>
-                <td className="p-4 pr-6 text-right">
-                  <Button variant="primary" size="sm" onClick={() => setSelectedPayment(p)}>
-                    Process Payment
-                  </Button>
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-max text-left border-collapse">
+            <thead>
+              <tr className="bg-slate-50 border-b border-line text-sm font-bold text-slate-500 uppercase tracking-wider">
+                <th className="p-4 pl-6">Farmer</th>
+                <th className="p-4">Contact</th>
+                <th className="p-4">Crop (Qty)</th>
+                <th className="p-4">Fare (Rs)</th>
+                <th className="p-4 pr-6 text-right">Action</th>
               </tr>
-            ))}
-            {pendingPayments.length === 0 && (
-              <tr>
-                <td colSpan="5" className="p-8 text-center text-muted">No pending payment requests.</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-line">
+              {pendingPayments.map(p => (
+                <tr key={p.booking.id} className="hover:bg-slate-50 transition-colors">
+                  <td className="p-4 pl-6 font-bold text-forest">{p.booking.farmer_name}</td>
+                  <td className="p-4 text-muted">{p.booking.farmer_mobile || "+91 98765 43210"}</td>
+                  <td className="p-4 text-muted">{(p.booking.crops || []).map(c => c.crop_name).join(', ')} ({p.booking.estimated_quantity}q)</td>
+                  <td className="p-4 font-mono font-bold text-brand">₹ {p.booking.estimated_fare}</td>
+                  <td className="p-4 pr-6 text-right">
+                    <Button variant="primary" size="sm" onClick={() => setSelectedPayment(p)}>
+                      Process Payment
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+              {pendingPayments.length === 0 && (
+                <tr>
+                  <td colSpan="5" className="p-8 text-center text-muted">No pending payment requests.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </Card>
 
       <Card className="p-0 overflow-hidden">
         <div className="p-4 bg-slate-50 border-b border-line">
           <h3 className="font-bold text-forest">Completed Payments</h3>
         </div>
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="bg-slate-50 border-b border-line text-sm font-bold text-slate-500 uppercase tracking-wider">
-              <th className="p-4 pl-6">Farmer</th>
-              <th className="p-4">Contact</th>
-              <th className="p-4">Crop (Qty)</th>
-              <th className="p-4">Fare (Rs)</th>
-              <th className="p-4 pr-6 text-right">Status</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-line">
-            {completedPayments.map(p => (
-              <tr key={p.booking.id} className="hover:bg-slate-50 transition-colors">
-                <td className="p-4 pl-6 font-bold text-forest">{p.booking.farmer_name}</td>
-                <td className="p-4 text-muted">{p.booking.farmer_mobile || "+91 98765 43210"}</td>
-                <td className="p-4 text-muted">{(p.booking.crops || []).map(c => c.crop_name).join(', ')} ({p.booking.estimated_quantity}q)</td>
-                <td className="p-4 font-mono font-bold text-brand">₹ {p.booking.estimated_fare}</td>
-                <td className="p-4 pr-6 text-right">
-                  <Badge variant="success">PAID</Badge>
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-max text-left border-collapse">
+            <thead>
+              <tr className="bg-slate-50 border-b border-line text-sm font-bold text-slate-500 uppercase tracking-wider">
+                <th className="p-4 pl-6">Farmer</th>
+                <th className="p-4">Contact</th>
+                <th className="p-4">Crop (Qty)</th>
+                <th className="p-4">Fare (Rs)</th>
+                <th className="p-4 pr-6 text-right">Status</th>
               </tr>
-            ))}
-            {completedPayments.length === 0 && (
-              <tr>
-                <td colSpan="5" className="p-8 text-center text-muted">No completed payments yet.</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-line">
+              {completedPayments.map(p => (
+                <tr key={p.booking.id} className="hover:bg-slate-50 transition-colors">
+                  <td className="p-4 pl-6 font-bold text-forest">{p.booking.farmer_name}</td>
+                  <td className="p-4 text-muted">{p.booking.farmer_mobile || "-"}</td>
+                  <td className="p-4 text-muted">{(p.booking.crops || []).map(c => c.crop_name).join(', ')} ({p.booking.estimated_quantity}q)</td>
+                  <td className="p-4 font-mono font-bold text-brand">₹ {p.booking.estimated_fare}</td>
+                  <td className="p-4 pr-6 text-right">
+                    <Badge tone="success" className="gap-1.5 px-3 py-1.5"><Check className="w-3.5 h-3.5" /> Paid</Badge>
+                  </td>
+                </tr>
+              ))}
+              {completedPayments.length === 0 && (
+                <tr>
+                  <td colSpan="5" className="p-8 text-center text-muted">No completed payments yet.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </Card>
 
       {selectedPayment && (
@@ -856,7 +860,7 @@ export default function AdminPage({ language, onLanguageChange, onLogout, onHome
                 <Badge tone="default">{t("viewAll")}</Badge>
               </div>
               <div className="overflow-x-auto">
-                <table className="w-full text-sm text-left">
+                <table className="w-full min-w-max text-sm text-left">
                   <thead className="bg-slate-50 text-muted font-bold border-b border-line">
                     <tr>
                        <th className="px-6 py-3">#</th>
@@ -1128,27 +1132,29 @@ function CropsTab() {
       )}
 
       <Card className="p-0 overflow-hidden">
-        <table className="w-full text-left">
-          <thead className="bg-slate-50 text-muted font-bold border-b border-line uppercase text-[10px] tracking-wider">
-            <tr>
-              <th className="p-4 pl-6">Crop Name</th>
-              <th className="p-4">Minimum Support Price (MSP)</th>
-              <th className="p-4 pr-6 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-line">
-            {crops.map(c => (
-              <tr key={c.id} className="hover:bg-slate-50">
-                <td className="p-4 pl-6 font-bold text-forest">{c.name}</td>
-                <td className="p-4 font-mono font-bold text-brand">₹ {c.minimum_support_price}</td>
-                <td className="p-4 pr-6 text-right space-x-2">
-                  <button onClick={() => { setEditingId(c.id); setFormData({ name: c.name, minimum_support_price: c.minimum_support_price }); }} className="p-2 text-slate-400 hover:text-brand rounded-full hover:bg-brand/10"><Edit2 className="w-4 h-4" /></button>
-                  <button onClick={() => handleDelete(c.id)} className="p-2 text-slate-400 hover:text-red-500 rounded-full hover:bg-red-50"><Trash2 className="w-4 h-4" /></button>
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-max text-left">
+            <thead className="bg-slate-50 text-muted font-bold border-b border-line uppercase text-[10px] tracking-wider">
+              <tr>
+                <th className="p-4 pl-6">Crop Name</th>
+                <th className="p-4">Minimum Support Price (MSP)</th>
+                <th className="p-4 pr-6 text-right">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-line">
+              {crops.map(c => (
+                <tr key={c.id} className="hover:bg-slate-50">
+                  <td className="p-4 pl-6 font-bold text-forest">{c.name}</td>
+                  <td className="p-4 font-mono font-bold text-brand">₹ {c.minimum_support_price}</td>
+                  <td className="p-4 pr-6 text-right space-x-2">
+                    <button onClick={() => { setEditingId(c.id); setFormData({ name: c.name, minimum_support_price: c.minimum_support_price }); }} className="p-2 text-slate-400 hover:text-brand rounded-full hover:bg-brand/10"><Edit2 className="w-4 h-4" /></button>
+                    <button onClick={() => handleDelete(c.id)} className="p-2 text-slate-400 hover:text-red-500 rounded-full hover:bg-red-50"><Trash2 className="w-4 h-4" /></button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </Card>
     </div>
   );
