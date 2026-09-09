@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import QRCode from "react-qr-code";
 import { LayoutDashboard, MapPin, CalendarDays, QrCode, ListOrdered, ShoppingCart, CreditCard, Bell, ChevronRight, Activity, Clock, ArrowRight, Gavel } from "lucide-react";
@@ -8,9 +9,10 @@ import { Badge, Card, Button, Input, Select, SidebarLayout, CircularProgress, Pr
 import AuctionCard from "../components/AuctionCard";
 import { createAuctionDirectly, getFarmerAuctions, getFarmerBidNotifications } from "../services/biddingService";
 
-export default function FarmerPage({ language, onLanguageChange, onLogout, farmerId }) {
+export default function FarmerPage({ language, onLanguageChange, onLogout, onHome, farmerId, farmerName }) {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("dashboard");
+  const [bookingStep, setBookingStep] = useState(0);
   const [centres, setCentres] = useState([]);
   const [farmer, setFarmer] = useState(null);
   const [crops, setCrops] = useState([]);
@@ -19,6 +21,7 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, farme
   const [selectedCentre, setSelectedCentre] = useState("");
   const [selectedSlot, setSelectedSlot] = useState("");
   const [quantity, setQuantity] = useState(40);
+  const [notifications, setNotifications] = useState([]);
 
   const [booking, setBooking] = useState(() => {
     try {
@@ -32,6 +35,8 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, farme
   const [queueEntry, setQueueEntry] = useState(null);
   const [procurement, setProcurement] = useState(null);
   const [payment, setPayment] = useState(null);
+
+  // Bidding states
   const [bidNotifications, setBidNotifications] = useState([]);
   const [notificationCount, setNotificationCount] = useState(0);
   const [auctionTab, setAuctionTab] = useState("listings");
@@ -46,12 +51,20 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, farme
   useEffect(() => {
     async function loadCentres() {
       try {
-        const [centreData, cropData] = await Promise.all([
+        const [centreData, cropData, notifs] = await Promise.all([
           api.getCentres(),
           api.getCrops(),
+          api.getNotifications()
         ]);
         setCentres(centreData);
         setCrops(cropData);
+        setNotifications(notifs);
+        
+        const unread = notifs.filter(n => !n.read);
+        if (unread.length > 0) {
+          toast(`You have ${unread.length} new notification(s)!`, { icon: '🔔' });
+        }
+
         setSelectedCrop((current) => current || booking?.booking?.crop_id || cropData?.[0]?.id || "");
         setSelectedCentre((current) => current || centreData?.[0]?.id || "");
         if (farmerId || config.farmerId) {
@@ -63,6 +76,23 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, farme
     }
     loadCentres();
   }, []);
+
+  useEffect(() => {
+    if (activeTab !== "notifications" || !farmerId) return;
+    api.getNotifications(farmerId).then(setNotifications).catch(() => {});
+    
+    // Bid notifications
+    let active = true;
+    getFarmerBidNotifications(farmerId).then((notifications) => {
+      if (active) setBidNotifications(notifications);
+    });
+    return () => { active = false; };
+  }, [activeTab, farmerId]);
+
+  useEffect(() => {
+    if (activeTab !== "bidding" || !farmerId) return;
+    getFarmerAuctions(farmerId).then(setAuctions).catch((error) => toast.error(error?.message || "Unable to load your listings."));
+  }, [activeTab, farmerId]);
 
   useEffect(() => {
     if (!selectedCentre) return;
@@ -124,6 +154,7 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, farme
         centre_id: selectedCentre,
         slot_id: selectedSlot,
         crop_id: selectedCrop,
+        crop_name: crops.find(c => c.id === selectedCrop)?.name || "Unknown",
         estimated_quantity: Number(quantity),
       });
       setBooking(result);
@@ -132,6 +163,7 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, farme
       setActiveTab("token");
     } catch (err) {
       toast.error(err.message);
+      setBooking(null);
     }
   }
 
@@ -168,38 +200,75 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, farme
     { id: "bidding", label: "Private Market Bidding", icon: Gavel },
   ];
 
+  let currentStep = 0; 
+  if (booking) {
+    currentStep = 1;
+    if (queueEntry) {
+      currentStep = 2;
+      if (procurement) {
+        currentStep = 3;
+        if (procurement?.procurement_status === "ACCEPTED") {
+           currentStep = 4;
+           if (payment?.payment_status === "PAID" || payment?.payment_status === "COMPLETED" || payment?.payment_status === "SUCCESS") { 
+              currentStep = 5;
+           }
+        }
+      }
+    }
+  }
+
   const journeySteps = [
-    { title: "Booking", subtitle: booking?.booking?.date || "Pending" },
-    { title: "Arrival", subtitle: queueEntry ? "Completed" : "Pending" },
-    { title: "Quality & Weight", subtitle: procurement ? procurement.procurement_status : "Pending" },
-    { title: "Acceptance", subtitle: procurement?.procurement_status === "ACCEPTED" ? "Completed" : "Pending" },
-    { title: "Payment", subtitle: payment ? payment.payment_status : "Pending" },
+    { title: "Booking", subtitle: booking ? "Confirmed" : "Not booked" },
+    { title: "Arrival", subtitle: queueEntry ? "In Queue" : "Expected" },
+    { title: "Quality", subtitle: procurement ? (procurement.quality_grade || "Graded") : "Pending" },
+    { title: "Acceptance", subtitle: procurement?.procurement_status === "ACCEPTED" ? "Accepted" : "Pending" },
+    { title: "Payment", subtitle: payment ? `₹${payment.amount}` : "Pending" },
   ];
 
-  let currentStep = -1;
-  if (booking) currentStep = 0;
-  if (queueEntry && queueEntry.status !== "waiting") currentStep = 1;
-  if (procurement) currentStep = 2;
-  if (procurement?.procurement_status === "ACCEPTED") currentStep = 3;
-  if (payment) currentStep = 4;
-
   const activeCrop = crops.find((c) => c.id === (booking?.booking?.crop_id || selectedCrop));
+
+  const availableCrops = crops.filter(c => {
+    const centre = centres.find(cen => cen.id === selectedCentre);
+    if (!centre || !centre.supported_crops || centre.supported_crops.length === 0) return true; // fallback
+    return centre.supported_crops.includes(c.id);
+  });
+
+  const handleTabChange = async (tabId) => {
+    setActiveTab(tabId);
+    if (tabId === "bookings") {
+      setBookingStep(0);
+    }
+    if (tabId === "notifications" && notifications.some(n => !n.read)) {
+      await api.markNotificationsRead();
+      setNotifications(notifications.map(n => ({...n, read: true})));
+    }
+  };
+
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good morning";
+    if (hour < 17) return "Good afternoon";
+    return "Good evening";
+  };
+  const greeting = getGreeting();
+  const displayName = farmerName || "Ramesh Kumar";
 
   return (
     <SidebarLayout
       navItems={navItems}
       activeTab={activeTab}
-      onTabChange={setActiveTab}
-      onLogout={onLogout}
+      onTabChange={handleTabChange}
+      onLogout={onLogout} onHome={onHome}
       language={language}
       onLanguageChange={onLanguageChange}
+      displayName={displayName}
     >
       {/* ── DASHBOARD ── */}
       {activeTab === "dashboard" && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-          <div className="lg:col-span-2 space-y-6">
+        <div className="grid min-w-0 grid-cols-1 gap-6 lg:grid-cols-3 max-w-6xl mx-auto">
+          <div className="min-w-0 space-y-6 lg:col-span-2">
             <div>
-              <h1 className="font-display text-2xl font-bold text-forest">{t("greetingFarmer")} Ramesh Kumar</h1>
+              <h1 className="font-display text-2xl font-bold text-forest">{greeting}, {displayName}</h1>
               <p className="text-muted text-sm mt-1">{t("journeyIntro")}</p>
             </div>
 
@@ -225,7 +294,7 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, farme
                       <div className="p-3 bg-white rounded-xl shadow-sm border border-line">
                         {booking?.token?.token_number && <QRCode value={booking.token.token_number} size={64} />}
                       </div>
-                      <div>
+                      <div className="min-w-0">
                         <p className="text-sm font-bold text-muted">{t("yourToken")} <span className="text-forest font-extrabold text-xl">#{booking?.token?.token_number || "N/A"}</span></p>
                         <p className="text-sm font-medium text-forest">{activeCrop?.name} &bull; {booking?.booking?.estimated_quantity || 0} q</p>
                       </div>
@@ -242,13 +311,13 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, farme
                   </>
                 ) : (
                   <div className="text-center py-8">
-                    <p className="text-sm text-muted font-medium mb-4">{t("nextStep")}</p>
+                    <p className="text-sm text-muted font-medium mb-4">{t("bookSlot")}</p>
                     <Button onClick={() => setActiveTab("bookings")}>{t("bookSlot")}</Button>
                   </div>
                 )}
               </div>
 
-              <div className="flex-1 border-t sm:border-t-0 sm:border-l border-line pt-6 sm:pt-0 sm:pl-6 flex flex-col items-center justify-center">
+              <div className="min-w-0 flex-1 border-t border-line pt-6 flex flex-col items-center justify-center sm:border-l sm:border-t-0 sm:pl-6 sm:pt-0">
                 <h3 className="text-xs font-bold text-muted uppercase tracking-widest mb-4 self-start">{t("capacityUsed")}</h3>
                 <Badge tone="success" className="mb-4 self-start"><span className="w-1.5 h-1.5 bg-green-500 rounded-full mr-2" /> {t("open")}</Badge>
                 <div className="flex items-center justify-between w-full mt-2">
@@ -280,7 +349,7 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, farme
                   <MapPin className="w-6 h-6 text-brand" />
                 </div>
                 <div>
-                  <p className="font-bold text-forest text-sm">Mangalagiri Procurement Centre</p>
+                  <p className="font-bold text-forest text-sm">{centres.find(c => c.id === selectedCentre)?.name || "Unknown Centre"}</p>
                   <p className="text-xs text-muted font-medium mt-1">{t("open")}</p>
                 </div>
               </div>
@@ -288,7 +357,7 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, farme
             </Card>
           </div>
 
-          <div className="space-y-6">
+          <div className="min-w-0 space-y-6">
             <Card className="bg-forest text-white border-transparent">
               <h3 className="text-xs font-bold text-white/50 uppercase tracking-widest mb-4">{t("liveQueue")}</h3>
               {queueEntry ? (
@@ -330,20 +399,25 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, farme
 
       {/* ── CENTRES ── */}
       {activeTab === "centres" && (
-        <div className="max-w-4xl mx-auto space-y-4">
+        <div className="min-w-0 max-w-4xl mx-auto space-y-4">
           <h1 className="font-display text-2xl font-bold text-forest mb-6">{t("centre")}</h1>
           {centres.map((c) => (
-            <Card key={c.id} className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-4">
+            <Card key={c.id} className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+              <div className="flex min-w-0 items-center gap-4">
                 <div className="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center border border-green-100">
                   <MapPin className="w-5 h-5 text-brand" />
                 </div>
-                <div>
-                  <p className="font-bold text-forest">{c.name}</p>
-                  <p className="text-xs text-muted font-medium mt-1">{c.district} &bull; Capacity: {c.daily_capacity} q/day</p>
+                <div className="min-w-0">
+                  <p className="break-words font-bold text-forest">{c.name}</p>
+                  <p className="break-words text-xs text-muted font-medium mt-1">{c.district} &bull; Capacity: {c.daily_capacity} q/day</p>
                 </div>
               </div>
-              <Badge tone="success">{t("open")}</Badge>
+              <div className="flex items-center gap-3">
+                <Badge tone="success">{t("open")}</Badge>
+                <Button variant={selectedCentre === c.id ? "primary" : "outline"} size="sm" onClick={() => { setSelectedCentre(c.id); setActiveTab("bookings"); }}>
+                  {selectedCentre === c.id ? "Selected" : "Book Here"}
+                </Button>
+              </div>
             </Card>
           ))}
         </div>
@@ -351,97 +425,225 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, farme
 
       {/* ── BOOKINGS ── */}
       {activeTab === "bookings" && (
-        <div className="max-w-4xl mx-auto">
-          <Card className="p-0 overflow-hidden">
-            <div className="p-6 border-b border-line bg-slate-50/50 flex items-center gap-4 overflow-x-auto">
-              {["Centre", "Date", "Slot", "Quantity", "Confirm"].map((step, idx) => (
-                <div key={idx} className={`flex items-center gap-2 whitespace-nowrap text-sm font-bold ${idx === 2 ? "text-brand" : "text-muted"}`}>
-                  <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs text-white ${idx === 2 ? "bg-brand" : "bg-slate-300"}`}>{idx + 1}</span>
-                  {step}
-                </div>
-              ))}
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="max-w-4xl mx-auto"
+        >
+          <Card className="min-w-0 overflow-hidden p-0 shadow-lg">
+            <div className="flex items-center gap-4 overflow-x-auto border-b border-line bg-slate-50/50 p-4 sm:p-6">
+              {["Centre", "Crop", "Quantity", "Slot", "Confirm"].map((step, idx) => {
+                const isActive = bookingStep === idx;
+                const isCompleted = bookingStep > idx;
+                // Allow clicking if it's a completed step or the very next step we can access
+                const canClick = idx <= bookingStep || (idx === bookingStep + 1 && ((bookingStep === 0 && selectedCentre) || (bookingStep === 1 && selectedCrop) || (bookingStep === 2 && quantity) || (bookingStep === 3 && selectedSlot)));
+                
+                return (
+                  <button 
+                    key={idx} 
+                    onClick={() => canClick && setBookingStep(idx)}
+                    disabled={!canClick}
+                    className={`flex items-center gap-2 whitespace-nowrap text-sm font-bold focus:outline-none transition-colors ${isActive ? "text-brand" : isCompleted ? "text-forest cursor-pointer" : "text-muted opacity-60 cursor-not-allowed"}`}
+                  >
+                    <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs text-white transition-colors ${isActive ? "bg-brand shadow-md" : isCompleted ? "bg-forest" : "bg-slate-300"}`}>
+                      {idx + 1}
+                    </span>
+                    {step}
+                  </button>
+                );
+              })}
             </div>
-            <div className="p-8 space-y-8">
-              <div>
-                <h2 className="font-display text-2xl font-bold text-forest mb-2">Choose a Time Slot</h2>
-                <div className="flex items-center gap-3 mb-6 p-4 bg-green-50 rounded-xl border border-green-100">
-                  <MapPin className="w-5 h-5 text-brand" />
-                  <div>
-                    <p className="font-bold text-forest text-sm">Mangalagiri Procurement Centre</p>
-                    <p className="text-xs text-brand font-medium">Operating normally</p>
-                  </div>
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-forest mb-4">{t("crop")}</label>
-                <Select value={selectedCrop} onChange={(e) => setSelectedCrop(e.target.value)}>
-                  {crops.map((c) => <option value={c.id} key={c.id}>{c.name}</option>)}
-                </Select>
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-forest mb-4">{t("quantity")}</label>
-                <Input type="number" min="1" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-forest mb-4">{t("availableSlots")}</label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {slots.map((slot) => {
-                    const isAvailable = slot.tone === "green";
-                    return (
-                      <button key={slot.id} onClick={() => isAvailable && setSelectedSlot(slot.id)} disabled={!isAvailable}
-                        className={`flex items-center justify-between p-4 rounded-xl border-2 transition-all text-left ${
-                          selectedSlot === slot.id ? "border-brand bg-green-50 ring-2 ring-brand/10"
-                            : isAvailable ? "border-line bg-surface hover:border-brand/30" : "border-slate-100 bg-slate-50 opacity-60 cursor-not-allowed"
-                        }`}>
-                        <div>
-                          <p className="font-bold text-forest text-sm">{slot.time}</p>
-                          <p className="text-xs text-muted font-medium mt-1">{slot.remaining} q available</p>
+            <div className="p-4 sm:p-8 min-h-[300px]">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={`step-${bookingStep}`}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 10 }}
+                  transition={{ duration: 0.2 }}
+                  className="space-y-6"
+                >
+                  {bookingStep === 0 && (
+                    <div>
+                      <h2 className="font-display text-xl font-bold text-forest mb-4">Select a Centre</h2>
+                      <Select value={selectedCentre} onChange={(e) => setSelectedCentre(e.target.value)} className="shadow-sm">
+                        <option value="" disabled>Select Centre</option>
+                        {centres.map((c) => <option value={c.id} key={c.id}>{c.name}</option>)}
+                      </Select>
+                      <div className="mt-8 flex justify-end">
+                        <Button onClick={() => setBookingStep(1)} disabled={!selectedCentre}>Next step</Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {bookingStep === 1 && (
+                    <div>
+                      <h2 className="font-display text-xl font-bold text-forest mb-4">Select your Crop</h2>
+                      <Select value={selectedCrop} onChange={(e) => setSelectedCrop(e.target.value)} className="shadow-sm">
+                        <option value="" disabled>Select Crop</option>
+                        {availableCrops.map((c) => <option value={c.id} key={c.id}>{c.name}</option>)}
+                      </Select>
+                      <div className="mt-8 flex justify-between">
+                        <Button variant="ghost" onClick={() => setBookingStep(0)}>Back</Button>
+                        <Button onClick={() => setBookingStep(2)} disabled={!selectedCrop}>Next step</Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {bookingStep === 2 && (
+                    <div>
+                      <h2 className="font-display text-xl font-bold text-forest mb-4">Estimated Quantity (Quintals)</h2>
+                      <Input type="number" min="1" value={quantity} onChange={(e) => setQuantity(e.target.value)} className="shadow-sm" />
+                      <div className="mt-8 flex justify-between">
+                        <Button variant="ghost" onClick={() => setBookingStep(1)}>Back</Button>
+                        <Button onClick={() => setBookingStep(3)} disabled={!quantity || quantity <= 0}>Next step</Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {bookingStep === 3 && (
+                    <div>
+                      <h2 className="font-display text-xl font-bold text-forest mb-4">Choose a Time Slot</h2>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[400px] overflow-y-auto pr-2">
+                        {slots.length > 0 ? slots.map((slot, i) => {
+                          const isAvailable = slot.tone === "green";
+                          return (
+                            <motion.button 
+                              whileHover={isAvailable ? { scale: 1.02 } : {}}
+                              whileTap={isAvailable ? { scale: 0.98 } : {}}
+                              key={slot.id} 
+                              onClick={() => isAvailable && setSelectedSlot(slot.id)} 
+                              disabled={!isAvailable}
+                              className={`flex items-center justify-between p-4 rounded-xl border-2 transition-all text-left shadow-sm ${
+                                selectedSlot === slot.id ? "border-brand bg-green-50 ring-2 ring-brand/10 shadow-md"
+                                  : isAvailable ? "border-line bg-surface hover:border-brand/30" : "border-slate-100 bg-slate-50 opacity-60 cursor-not-allowed"
+                              }`}>
+                              <div>
+                                <p className="font-bold text-forest text-sm">{slot.date} &bull; {slot.time}</p>
+                                <p className="text-xs text-muted font-medium mt-1">{slot.remaining} q available</p>
+                              </div>
+                              <Badge tone={isAvailable ? "success" : "default"}>{isAvailable ? "Available" : "Full"}</Badge>
+                            </motion.button>
+                          );
+                        }) : (
+                          <p className="text-muted py-4 col-span-2 text-center">No slots available for this centre.</p>
+                        )}
+                      </div>
+                      <div className="mt-8 flex justify-between">
+                        <Button variant="ghost" onClick={() => setBookingStep(2)}>Back</Button>
+                        <Button onClick={() => setBookingStep(4)} disabled={!selectedSlot}>Review Booking</Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {bookingStep === 4 && (
+                    <div>
+                      <h2 className="font-display text-xl font-bold text-forest mb-4">Review & Confirm</h2>
+                      <div className="bg-slate-50 rounded-xl p-6 space-y-4 border border-line">
+                        <div className="flex justify-between border-b border-line pb-4">
+                          <span className="text-muted font-medium">Centre</span>
+                          <span className="font-bold text-forest">{centres.find(c => c.id === selectedCentre)?.name || "N/A"}</span>
                         </div>
-                        <Badge tone={isAvailable ? "success" : "default"}>{isAvailable ? "Available" : "Full"}</Badge>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-              <div className="flex justify-between items-center pt-6 border-t border-line">
-                <Button variant="ghost" onClick={() => setActiveTab("dashboard")}>{t("overview")}</Button>
-                <Button onClick={createBooking} disabled={!selectedSlot || !selectedCrop}>{t("confirmBooking")} <ArrowRight className="w-4 h-4 ml-2" /></Button>
-              </div>
+                        <div className="flex justify-between border-b border-line pb-4">
+                          <span className="text-muted font-medium">Crop</span>
+                          <span className="font-bold text-forest">{crops.find(c => c.id === selectedCrop)?.name || "N/A"}</span>
+                        </div>
+                        <div className="flex justify-between border-b border-line pb-4">
+                          <span className="text-muted font-medium">Quantity</span>
+                          <span className="font-bold text-forest">{quantity} q</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted font-medium">Slot</span>
+                          <span className="font-bold text-forest">
+                            {slots.find(s => s.id === selectedSlot)?.date || "N/A"} &bull; {slots.find(s => s.id === selectedSlot)?.time || "N/A"}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-stretch gap-3 pt-6 mt-4 sm:flex-row sm:items-center sm:justify-between">
+                        <Button className="w-full sm:w-auto" variant="ghost" onClick={() => setBookingStep(3)}>Back</Button>
+                        <Button className="w-full sm:w-auto shadow-md hover:shadow-lg transition-shadow" onClick={createBooking} disabled={!selectedSlot || !selectedCrop}>{t("confirmBooking")} <ArrowRight className="w-4 h-4 ml-2" /></Button>
+                      </div>
+                    </div>
+                  )}
+                </motion.div>
+              </AnimatePresence>
             </div>
           </Card>
-        </div>
+        </motion.div>
       )}
 
       {/* ── TOKEN ── */}
       {activeTab === "token" && (
-        <div className="max-w-md mx-auto">
-          <h1 className="font-display text-2xl font-bold text-forest mb-6">Your Digital Token</h1>
-          <Card className="flex flex-col items-center gap-6 text-center">
-            {booking?.token?.token_number ? (
-              <>
-                <div className="p-6 bg-white rounded-2xl border border-line shadow-sm">
-                  <QRCode value={booking.token.token_number} size={180} />
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="min-w-0 max-w-md mx-auto"
+        >
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="font-display text-2xl font-bold text-forest">Your Digital Token</h1>
+          </div>
+          {booking?.token?.token_number ? (
+            <div className="relative overflow-hidden bg-white rounded-3xl border border-line shadow-2xl drop-shadow-xl">
+              {/* Premium Ticket Header */}
+              <div className="bg-forest p-6 text-white text-center relative overflow-hidden">
+                <div className="absolute top-0 right-0 -mt-10 -mr-10 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+                <div className="absolute bottom-0 left-0 -mb-10 -ml-10 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+                <p className="text-xs font-bold text-brand uppercase tracking-widest mb-1 relative z-10">Confirmed Booking</p>
+                <h2 className="font-display text-3xl font-extrabold relative z-10">{booking?.booking?.date || "TBD"}</h2>
+              </div>
+              
+              {/* Perforated edge */}
+              <div className="relative flex items-center justify-between -mt-3 z-20">
+                 <div className="w-6 h-6 bg-[#F8F9FA] rounded-full -ml-3 shadow-inner"></div>
+                 <div className="flex-1 border-t-2 border-dashed border-slate-200 mx-2"></div>
+                 <div className="w-6 h-6 bg-[#F8F9FA] rounded-full -mr-3 shadow-inner"></div>
+              </div>
+
+              {/* Ticket Body */}
+              <div className="p-8 flex flex-col items-center text-center">
+                <div className="max-w-full p-4 bg-white rounded-2xl border-4 border-slate-50 shadow-sm mb-6">
+                  <QRCode value={booking.token.token_number} size={200} style={{ maxWidth: "100%", height: "auto" }} />
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-muted uppercase tracking-widest mb-1">Token Number</p>
-                  <p className="font-display text-4xl font-extrabold text-forest">#{booking.token.token_number}</p>
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Token Number</p>
+                  <p className="font-display text-5xl font-extrabold text-forest tracking-tight">#{booking.token.token_number}</p>
                 </div>
-                <p className="text-sm text-muted">Show this QR code at the procurement centre gate</p>
-                <Badge tone="success" className="text-sm px-4 py-2">Valid for {booking?.booking?.date || "TBD"}</Badge>
-              </>
-            ) : (
-              <>
-                <p className="text-muted font-medium py-8">No token yet. Book a slot first.</p>
-                <Button onClick={() => setActiveTab("bookings")}>Book a Slot</Button>
-              </>
-            )}
-          </Card>
-        </div>
+                
+                <div className="w-full mt-8 bg-slate-50 rounded-2xl p-4 flex justify-between items-center text-left">
+                   <div>
+                     <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5">Crop</p>
+                     <p className="font-bold text-forest">{crops.find((c) => c.id === booking?.booking?.crop_id)?.name || "Unknown"}</p>
+                   </div>
+                   <div className="text-right">
+                     <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5">Quantity</p>
+                     <p className="font-bold text-forest">{booking?.booking?.estimated_quantity || 0} Quintals</p>
+                   </div>
+                </div>
+              </div>
+              
+              {/* Footer */}
+              <div className="bg-slate-50 border-t border-line p-4 text-center">
+                 <p className="text-xs text-slate-500 font-medium">Please present this QR code at the gate</p>
+              </div>
+            </div>
+          ) : (
+            <Card className="flex flex-col items-center gap-6 text-center py-12">
+              <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center text-slate-300">
+                <QrCode className="w-10 h-10" />
+              </div>
+              <div>
+                <p className="text-forest font-bold text-lg mb-1">No token yet</p>
+                <p className="text-muted font-medium">Book a slot to generate your gate pass.</p>
+              </div>
+              <Button onClick={() => setActiveTab("bookings")} className="mt-2">Book a Slot</Button>
+            </Card>
+          )}
+        </motion.div>
       )}
 
       {/* ── QUEUE ── */}
       {activeTab === "queue" && (
-        <div className="max-w-2xl mx-auto">
+        <div className="min-w-0 max-w-2xl mx-auto">
           <h1 className="font-display text-2xl font-bold text-forest mb-6">Live Queue Status</h1>
           {queueEntry ? (
             <Card className="bg-forest text-white border-transparent text-center">
@@ -461,20 +663,20 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, farme
 
       {/* ── PROCUREMENT ── */}
       {activeTab === "procurement" && (
-        <div className="max-w-2xl mx-auto space-y-4">
+        <div className="min-w-0 max-w-2xl mx-auto space-y-4">
           <h1 className="font-display text-2xl font-bold text-forest mb-6">Procurement Details</h1>
           {procurement ? (
             <Card>
               <div className="space-y-4">
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <span className="text-sm font-bold text-muted">Status</span>
                   <Badge tone="warning">{procurement.procurement_status}</Badge>
                 </div>
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <span className="text-sm font-bold text-muted">Actual Quantity</span>
                   <span className="text-sm font-bold text-forest">{procurement.actual_quantity} q</span>
                 </div>
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <span className="text-sm font-bold text-muted">Quality Grade</span>
                   <span className="text-sm font-bold text-forest">{procurement.quality_grade}</span>
                 </div>
@@ -490,20 +692,20 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, farme
 
       {/* ── PAYMENT ── */}
       {activeTab === "payment" && (
-        <div className="max-w-2xl mx-auto">
+        <div className="min-w-0 max-w-2xl mx-auto">
           <h1 className="font-display text-2xl font-bold text-forest mb-6">Payment Status</h1>
           {payment ? (
             <Card>
               <div className="space-y-4">
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <span className="text-sm font-bold text-muted">Amount</span>
                   <span className="text-lg font-extrabold text-forest">&#8377;{payment.amount?.toLocaleString("en-IN")}</span>
                 </div>
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <span className="text-sm font-bold text-muted">Status</span>
                   <Badge tone="warning">{payment.payment_status}</Badge>
                 </div>
-                <div className="flex justify-between items-center">
+                <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <span className="text-sm font-bold text-muted">Ref</span>
                   <span className="text-sm font-mono text-muted">{payment.transaction_ref}</span>
                 </div>
@@ -595,7 +797,7 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, farme
 
       {/* ── NOTIFICATIONS ── */}
       {activeTab === "notifications" && (
-        <div className="max-w-2xl mx-auto">
+        <div className="min-w-0 max-w-2xl mx-auto">
           <h1 className="font-display text-2xl font-bold text-forest mb-6">Notifications</h1>
           <Card>
             {bidNotifications.length > 0 ? (
@@ -607,22 +809,17 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, farme
                   </div>
                 ))}
               </div>
-            ) : booking ? (
+            ) : notifications.length > 0 ? (
               <div className="space-y-4">
-                <div className="flex items-start gap-3 p-4 bg-green-50 rounded-xl border border-green-100">
-                  <span className="w-2 h-2 mt-1.5 rounded-full bg-brand shrink-0" />
-                  <div>
-                    <p className="text-sm font-bold text-forest">Slot Booked Successfully</p>
-                    <p className="text-xs text-muted mt-0.5">Your slot at Mangalagiri Centre on {booking?.booking?.date} is confirmed.</p>
+                {notifications.map(n => (
+                  <div key={n.id} className="flex items-start gap-3 p-4 bg-green-50 rounded-xl border border-green-100">
+                    <span className={`w-2 h-2 mt-1.5 rounded-full shrink-0 ${n.read ? 'bg-slate-300' : 'bg-brand'}`} />
+                    <div>
+                      <p className="text-sm font-bold text-forest">{n.message}</p>
+                      <p className="text-xs text-muted mt-0.5">{new Date(n.date).toLocaleString()}</p>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-start gap-3 p-4 bg-blue-50 rounded-xl border border-blue-100">
-                  <span className="w-2 h-2 mt-1.5 rounded-full bg-blue-500 shrink-0" />
-                  <div>
-                    <p className="text-sm font-bold text-forest">Centre Update</p>
-                    <p className="text-xs text-muted mt-0.5">The centre is operating normally. Expected wait time: 35-45 min.</p>
-                  </div>
-                </div>
+                ))}
               </div>
             ) : (
               <p className="text-muted font-medium text-center py-8">No notifications yet.</p>

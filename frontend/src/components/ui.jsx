@@ -1,8 +1,8 @@
-import { forwardRef } from "react";
+import { forwardRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { LogOut, Check } from "lucide-react";
+import { LogOut, Check, MoreHorizontal, Home, ChevronLeft, ChevronRight, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { motion } from "framer-motion";
 import Logo from "./Logo";
 import LanguagePicker from "./LanguagePicker";
@@ -18,9 +18,9 @@ export const Button = forwardRef(({ className, variant = "primary", size = "defa
       className={cn(
         "inline-flex items-center justify-center rounded-full font-bold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 active:scale-95 disabled:pointer-events-none disabled:opacity-50",
         {
-          "bg-brand text-white hover:bg-brand-hover": variant === "primary",
-          "bg-white text-forest border border-line hover:border-brand/30 hover:bg-slate-50": variant === "outline",
-          "bg-forest text-white hover:bg-forest-dark": variant === "dark",
+          "bg-brand text-white hover:bg-brand-hover hover:shadow-md shadow-sm": variant === "primary",
+          "bg-white text-forest border border-line hover:border-brand/30 hover:bg-slate-50 hover:shadow-sm": variant === "outline",
+          "bg-forest text-white hover:bg-forest-dark hover:shadow-md shadow-sm": variant === "dark",
           "bg-transparent text-muted hover:text-forest hover:bg-slate-100": variant === "ghost",
           "h-8 px-4 text-xs": size === "sm",
           "h-12 px-6 text-sm": size === "default",
@@ -42,7 +42,7 @@ export const Input = forwardRef(({ className, ...props }, ref) => {
     <input
       ref={ref}
       className={cn(
-        "flex h-12 w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm text-forest transition-all placeholder:text-slate-400 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand disabled:cursor-not-allowed disabled:opacity-50",
+        "flex h-12 w-full rounded-xl border border-line bg-surface px-4 py-3 text-sm text-forest transition-all placeholder:text-slate-400 hover:border-brand/40 focus:border-brand focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 focus-visible:ring-offset-1 focus:shadow-[0_0_0_3px_rgba(24,121,72,0.12)] disabled:cursor-not-allowed disabled:opacity-50",
         className
       )}
       {...props}
@@ -56,7 +56,7 @@ export const Select = forwardRef(({ className, children, ...props }, ref) => {
     <select
       ref={ref}
       className={cn(
-        "flex h-12 w-full cursor-pointer appearance-none rounded-xl border border-line bg-surface px-4 py-3 text-sm font-medium text-forest transition-all focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand disabled:cursor-not-allowed disabled:opacity-50",
+        "flex h-12 w-full cursor-pointer appearance-none rounded-xl border border-line bg-surface px-4 py-3 text-sm font-medium text-forest transition-all hover:border-brand/40 focus:border-brand focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 focus-visible:ring-offset-1 focus:shadow-[0_0_0_3px_rgba(24,121,72,0.12)] disabled:cursor-not-allowed disabled:opacity-50",
         className
       )}
       {...props}
@@ -95,7 +95,7 @@ export const Card = forwardRef(({ className, ...props }, ref) => {
   return (
     <div
       ref={ref}
-      className={cn("bg-surface border border-line rounded-3xl p-6 transition-all duration-300", className)}
+      className={cn("bg-surface border border-line rounded-3xl p-6 shadow-sm hover:shadow-md transition-all duration-300", className)}
       {...props}
     />
   );
@@ -131,22 +131,47 @@ export function CircularProgress({ value, label, subLabel }) {
 
 export function ProgressTimeline({ steps, currentStep }) {
   return (
-    <div className="w-full flex items-center justify-between relative mt-4 mb-2">
-      <div className="absolute left-4 right-4 top-4 h-0.5 bg-slate-100 -z-10" />
-      <div 
-        className="absolute left-4 top-4 h-0.5 bg-brand -z-10 transition-all duration-500" 
-        style={{ width: `calc(${(currentStep / (steps.length - 1)) * 100}% - 2rem)` }}
-      />
+    <div className="flex w-full mt-2 mb-4">
       {steps.map((step, idx) => {
-        const isCompleted = idx <= currentStep;
+        const isCompleted = idx < currentStep;
+        const isCurrent = idx === currentStep;
+        
         return (
-          <div key={idx} className="flex flex-col items-center gap-2">
-            <div className={cn("w-8 h-8 rounded-full flex items-center justify-center transition-colors border-4 border-surface", isCompleted ? "bg-brand text-white" : "bg-slate-200 text-slate-400")}>
-              {isCompleted ? <Check className="w-4 h-4" /> : <span className="w-2 h-2 rounded-full bg-current" />}
+          <div key={idx} className="relative flex-1 flex flex-col items-center">
+            {/* Line to previous node */}
+            {idx !== 0 && (
+              <div className="absolute top-4 -left-1/2 w-full h-[3px] bg-slate-100 -z-0">
+                <div 
+                  className="h-full bg-brand transition-all duration-700 ease-out"
+                  style={{ width: isCompleted || isCurrent ? "100%" : "0%" }}
+                />
+              </div>
+            )}
+            
+            <div className={cn(
+              "w-8 h-8 rounded-full flex items-center justify-center transition-all duration-500 border-[3px] bg-surface z-10 relative",
+              isCompleted ? "border-brand bg-brand text-white shadow-md shadow-brand/30" : 
+              isCurrent ? "border-brand text-brand ring-4 ring-brand/10 shadow-sm" : 
+              "border-slate-200 text-slate-300"
+            )}>
+              {isCompleted ? <Check className="w-4 h-4 font-bold" /> : 
+               isCurrent ? <div className="w-2.5 h-2.5 rounded-full bg-brand animate-pulse" /> :
+               <div className="w-2 h-2 rounded-full bg-slate-200" />}
             </div>
-            <div className="text-center">
-              <span className="block text-xs font-bold text-forest">{step.title}</span>
-              <span className="block text-[10px] text-muted">{step.subtitle || (isCompleted ? "Completed" : "Pending")}</span>
+            
+            <div className="text-center mt-3 px-1 w-full">
+              <span className={cn(
+                "block text-[11px] sm:text-xs font-bold transition-colors duration-300 leading-tight",
+                isCompleted || isCurrent ? "text-forest" : "text-slate-400"
+              )}>
+                {step.title}
+              </span>
+              <span className={cn(
+                "block text-[10px] font-medium transition-colors duration-300 mt-1 truncate",
+                isCurrent ? "text-brand font-bold" : "text-muted"
+              )}>
+                {step.subtitle || (isCompleted ? "Done" : isCurrent ? "In Progress" : "Pending")}
+              </span>
             </div>
           </div>
         );
@@ -157,19 +182,56 @@ export function ProgressTimeline({ steps, currentStep }) {
 
 export function SidebarLayout({ children, activeTab, onTabChange, navItems, onLogout, language, onLanguageChange }) {
   const { t } = useTranslation();
+  const [moreOpen, setMoreOpen] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true);
+  const primaryNavItems = navItems.slice(0, 4);
+  const secondaryNavItems = navItems.slice(4);
+
+  function selectMobileTab(tabId) {
+    onTabChange(tabId);
+    setMoreOpen(false);
+  }
 
   return (
-    <div className="flex min-h-screen bg-cream">
+    <div className="flex min-h-screen min-w-0 overflow-x-hidden bg-cream">
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex w-[260px] bg-forest flex-col fixed inset-y-0 left-0 z-50">
-        {/* Sidebar logo — full logo in white pill so it reads on dark green */}
-        <div className="px-5 py-4 flex flex-col items-center border-b border-white/5">
-          <div className="bg-white rounded-2xl px-4 py-2 shadow-md">
-            <Logo variant="full" className="h-12 w-auto" />
+      <aside 
+        className={cn("hidden lg:flex bg-forest flex-col fixed inset-y-0 left-0 z-50 transition-all duration-300 ease-in-out shadow-2xl overflow-hidden", isExpanded ? "w-[260px]" : "w-[72px]")}
+      >
+        {/* Sidebar header */}
+        <div className={cn("px-3 py-4 flex items-center border-b border-white/10 transition-all duration-300", isExpanded ? "justify-between px-4" : "justify-center")}>
+          {/* Text logo — visible only when expanded */}
+          <div className={cn("transition-all duration-300 overflow-hidden", isExpanded ? "opacity-100 max-w-full" : "opacity-0 max-w-0 pointer-events-none")}>
+            <Logo variant="text" className="h-7 w-auto" />
           </div>
+          {/* Emblem — visible only when collapsed */}
+          <div className={cn("transition-all duration-300 shrink-0", !isExpanded ? "opacity-100" : "opacity-0 w-0 overflow-hidden pointer-events-none")}>
+            <Logo variant="emblem" className="h-10 w-10" />
+          </div>
+          {/* Collapse button — only when expanded */}
+          <button
+            onClick={() => setIsExpanded(false)}
+            className={cn("ml-2 w-8 h-8 rounded-lg flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition-all shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60", isExpanded ? "opacity-100" : "opacity-0 pointer-events-none")}
+            title="Collapse sidebar"
+          >
+            <PanelLeftClose className="w-4 h-4" />
+          </button>
         </div>
+
+        {/* Expand button — only when collapsed */}
+        {!isExpanded && (
+          <div className="flex justify-center py-2.5 border-b border-white/10">
+            <button
+              onClick={() => setIsExpanded(true)}
+              className="w-9 h-9 rounded-xl flex items-center justify-center text-white/60 hover:text-white hover:bg-white/15 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+              title="Expand sidebar"
+            >
+              <PanelLeftOpen className="w-4 h-4" />
+            </button>
+          </div>
+        )}
         
-        <div className="p-6 pb-2 border-b border-white/5 flex items-center justify-between">
+        <div className={cn("px-4 py-4 border-b border-white/10 flex items-center transition-all duration-300", isExpanded ? "justify-between" : "justify-center px-2")}>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white font-bold">SM</div>
             <div>
@@ -179,7 +241,7 @@ export function SidebarLayout({ children, activeTab, onTabChange, navItems, onLo
           </div>
         </div>
 
-        <nav className="flex-1 p-4 space-y-1">
+        <nav className={cn("flex-1 p-3 space-y-1 overflow-y-auto scrollbar-hide overflow-x-hidden", isExpanded ? "" : "px-2")}>
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
@@ -188,40 +250,49 @@ export function SidebarLayout({ children, activeTab, onTabChange, navItems, onLo
                 key={item.id}
                 onClick={() => onTabChange(item.id)}
                 className={cn(
-                  "flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-bold transition-all",
-                  isActive ? "bg-brand/20 text-white" : "text-slate-400 hover:text-white hover:bg-white/5"
+                  "flex items-center w-full py-3 rounded-xl text-sm font-bold transition-all relative group focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-1 focus-visible:ring-offset-forest",
+                  isActive ? "bg-brand text-white shadow-md" : "text-slate-300 hover:text-white hover:bg-white/10",
+                  isExpanded ? "gap-3 px-4" : "justify-center px-0"
                 )}
+                title={!isExpanded ? item.label : undefined}
               >
-                <Icon className={cn("w-5 h-5", isActive ? "text-brand" : "")} />
-                {item.label}
+                <Icon className={cn("w-5 h-5 shrink-0 transition-colors", isActive ? "text-white" : "text-slate-400 group-hover:text-white")} />
+                <span className={cn("whitespace-nowrap transition-all duration-300", isExpanded ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4 absolute")}>{item.label}</span>
               </button>
             );
           })}
         </nav>
 
-        <div className="p-4 border-t border-white/5">
-          <button onClick={onLogout} className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-bold text-slate-400 hover:text-white hover:bg-white/5 transition-all">
-            <LogOut className="w-5 h-5" /> {t("logout")}
+        <div className={cn("p-3 border-t border-white/10", isExpanded ? "" : "px-2")}>
+          <button 
+            onClick={onHome} 
+            className={cn("flex items-center w-full py-3 rounded-xl text-sm font-bold text-white bg-white/10 border border-white/20 hover:bg-white/20 hover:scale-[1.02] active:scale-[0.98] shadow-sm transition-all group focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-1 focus-visible:ring-offset-forest", isExpanded ? "gap-3 px-4" : "justify-center px-0")} 
+            title={!isExpanded ? "Home" : undefined}
+          >
+            <Home className="w-5 h-5 shrink-0 text-white" />
+            <span className={cn("whitespace-nowrap transition-all duration-300 capitalize", isExpanded ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4 absolute")}>
+              Home
+            </span>
           </button>
         </div>
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 lg:pl-[260px] pb-20 lg:pb-0">
+      <main className={cn("min-w-0 flex-1 pb-20 lg:pb-0 transition-all duration-300 ease-in-out", isExpanded ? "lg:pl-[260px]" : "lg:pl-[72px]")}>
         {/* Top Header */}
-        <header className="h-16 border-b border-line bg-surface flex items-center px-6 sm:px-8 sticky top-0 z-40">
+        <header className="h-16 border-b border-line bg-surface flex items-center px-4 sm:px-6 lg:px-8 sticky top-0 z-40">
           {/* Mobile: show emblem (hidden on desktop since sidebar shows full logo) */}
           <div className="flex items-center gap-2 lg:hidden">
             <Logo variant="emblem" className="w-9 h-9" />
           </div>
 
           {/* Controls — always pinned to the right */}
-          <div className="ml-auto flex items-center gap-3">
+          <div className="ml-auto flex min-w-0 items-center gap-2 sm:gap-3">
             <LanguagePicker value={language} onChange={onLanguageChange} />
 
             <button
               onClick={onLogout}
-              className="flex items-center gap-2 h-9 px-4 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 text-sm font-bold transition-all border border-red-100"
+              className="flex items-center gap-2 h-9 px-4 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 hover:shadow-sm text-sm font-bold transition-all border border-red-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-2"
             >
               <LogOut className="w-4 h-4" />
               <span className="hidden sm:inline">{t("logout")}</span>
@@ -229,7 +300,7 @@ export function SidebarLayout({ children, activeTab, onTabChange, navItems, onLo
           </div>
         </header>
         
-        <div className="p-4 sm:p-8">
+        <div className="min-w-0 p-4 sm:p-6 lg:p-8">
           {children}
         </div>
       </main>
@@ -244,15 +315,29 @@ export function SidebarLayout({ children, activeTab, onTabChange, navItems, onLo
                 key={item.id}
                 onClick={() => onTabChange(item.id)}
                 className={cn(
-                  "flex flex-col items-center gap-1 p-2 min-w-[64px] rounded-xl transition-all",
+                  "flex min-w-0 flex-1 flex-col items-center gap-1 p-2 rounded-xl transition-all",
                   isActive ? "text-brand" : "text-muted"
                 )}
               >
                 <Icon className={cn("w-6 h-6", isActive ? "text-brand" : "")} />
-                <span className="text-[10px] font-bold">{item.label}</span>
+                <span className="max-w-full break-words text-center text-[10px] leading-tight font-bold">{item.label}</span>
               </button>
             );
           })}
+        {secondaryNavItems.length > 0 && (
+          <button
+            type="button"
+            onClick={() => setMoreOpen((open) => !open)}
+            aria-expanded={moreOpen}
+            className={cn(
+              "flex min-w-0 flex-1 flex-col items-center gap-1 rounded-xl p-2 transition-all",
+              moreOpen || secondaryNavItems.some((item) => item.id === activeTab) ? "text-brand" : "text-muted"
+            )}
+          >
+            <MoreHorizontal className="h-6 w-6" />
+            <span className="max-w-full break-words text-center text-[10px] leading-tight font-bold">More</span>
+          </button>
+        )}
       </nav>
     </div>
   );

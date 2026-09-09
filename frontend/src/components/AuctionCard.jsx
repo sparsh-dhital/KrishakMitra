@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { Gavel, Package, IndianRupee, CheckCircle2, Clock3, TrendingUp, Trash2 } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 import { Badge, Button, Card } from "./ui";
 import { acceptHighestBidDirectly, getAuctionBids, getHighestBid, removeAuctionDirectly, supabase } from "../services/biddingService";
 
@@ -17,12 +18,17 @@ export function AuctionCard({ auction, role, buyerId, onBid, onUpdated, onRemove
   useEffect(() => {
     if (!auctionId) return undefined;
     let active = true;
+
     Promise.all([getHighestBid(auctionId), getAuctionBids(auctionId)]).then(([bid, bids]) => {
       if (!active) return;
       setHighestBid(bid);
       setBidHistory(bids || []);
     }).catch(() => {});
-    if (!supabase) return () => { active = false; };
+
+    // No realtime without supabase — still need to return a valid cleanup
+    if (!supabase) {
+      return () => { active = false; };
+    }
 
     const channel = supabase
       .channel(`auction-${auctionId}`)
@@ -88,46 +94,75 @@ export function AuctionCard({ auction, role, buyerId, onBid, onUpdated, onRemove
   const currentPrice = highestBid?.offered_price || auction?.base_price || 0;
 
   return (
-    <Card className="flex flex-col gap-5">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <Gavel className="w-5 h-5 text-brand" />
-            <h3 className="font-display text-lg font-bold text-forest">{cropName}</h3>
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={{ scale: 1.01, boxShadow: "0 8px 30px rgba(0,0,0,0.09)" }}
+      transition={{ duration: 0.2 }}
+      className="bg-surface border border-line rounded-3xl p-6 shadow-sm"
+    >
+      <div className="flex flex-col gap-5">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <Gavel className="w-5 h-5 text-brand" />
+              <h3 className="font-display text-lg font-bold text-forest">{cropName}</h3>
+            </div>
+            <Badge tone={auction?.status === "open" ? "success" : "default"}>{auction?.status || "open"}</Badge>
           </div>
-          <Badge tone={auction?.status === "open" ? "success" : "default"}>{auction?.status || "open"}</Badge>
+          <div className="text-right">
+            <p className="text-xs font-bold text-muted uppercase tracking-widest">Current highest</p>
+            <AnimatePresence mode="wait">
+              <motion.p
+                key={currentPrice}
+                initial={{ y: -10, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                className="font-display text-2xl font-extrabold text-brand"
+              >
+                {money(currentPrice)}
+              </motion.p>
+            </AnimatePresence>
+          </div>
         </div>
-        <div className="text-right">
-          <p className="text-xs font-bold text-muted uppercase tracking-widest">Current highest</p>
-          <p className="font-display text-2xl font-extrabold text-brand">{money(currentPrice)}</p>
+
+        <div className="grid grid-cols-2 gap-3 border-y border-line py-4">
+          <div className="flex items-center gap-2 text-sm text-muted"><Package className="w-4 h-4" /> {quantity} q</div>
+          <div className="flex items-center gap-2 text-sm text-muted"><IndianRupee className="w-4 h-4" /> Base {money(auction?.base_price)}</div>
         </div>
-      </div>
 
-      <div className="grid grid-cols-2 gap-3 border-y border-line py-4">
-        <div className="flex items-center gap-2 text-sm text-muted"><Package className="w-4 h-4" /> {quantity} q</div>
-        <div className="flex items-center gap-2 text-sm text-muted"><IndianRupee className="w-4 h-4" /> Base {money(auction?.base_price)}</div>
-      </div>
-
-      <div className="flex items-center justify-between gap-3 text-xs font-bold">
-        <span className="flex items-center gap-1.5 text-amber-700"><Clock3 className="w-4 h-4" /> {timeLeft}</span>
-        <span className="flex items-center gap-1.5 text-brand"><TrendingUp className="w-4 h-4" /> {bidHistory.length} bid{bidHistory.length === 1 ? "" : "s"}</span>
-      </div>
-
-      {bidHistory.length > 0 && <div className="rounded-xl bg-slate-50 border border-line px-3 py-2 text-xs text-muted">Latest bid by <span className="font-bold text-forest">{bidHistory[0]?.buyer_id || "Buyer"}</span> at <span className="font-bold text-brand">{money(bidHistory[0]?.offered_price)}</span></div>}
-
-      {role === "farmer" ? (
-        <div className="flex flex-col sm:flex-row gap-2">
-          <Button variant="dark" className="flex-1 gap-2" onClick={acceptBid} disabled={accepting || removing || !highestBid || auction?.status !== "open"}>
-            <CheckCircle2 className="w-4 h-4" /> {accepting ? "Accepting..." : "Accept Top Bid"}
-          </Button>
-          <Button variant="outline" className="gap-2 border-red-200 text-red-600 hover:border-red-300 hover:bg-red-50" onClick={removeAuction} disabled={accepting || removing || auction?.status !== "open"}>
-            <Trash2 className="w-4 h-4" /> {removing ? "Removing..." : "Remove"}
-          </Button>
+        <div className="flex items-center justify-between gap-3 text-xs font-bold">
+          <span className="flex items-center gap-1.5 text-amber-700"><Clock3 className="w-4 h-4" /> {timeLeft}</span>
+          <span className="flex items-center gap-1.5 text-brand">
+            {auction?.status === "open" && (
+              <span className="relative flex h-2 w-2 mr-1">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-brand"></span>
+              </span>
+            )}
+            <TrendingUp className="w-4 h-4" /> {bidHistory.length} bid{bidHistory.length === 1 ? "" : "s"}
+          </span>
         </div>
-      ) : (
-        <Button className="w-full" onClick={() => onBid?.(auction, currentPrice)}>Place Higher Bid</Button>
-      )}
-    </Card>
+
+        {bidHistory.length > 0 && (
+          <div className="rounded-xl bg-slate-50 border border-line px-3 py-2 text-xs text-muted">
+            Latest bid by <span className="font-bold text-forest">{bidHistory[0]?.buyer_id || "Buyer"}</span> at <span className="font-bold text-brand">{money(bidHistory[0]?.offered_price)}</span>
+          </div>
+        )}
+
+        {role === "farmer" ? (
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Button variant="dark" className="flex-1 gap-2" onClick={acceptBid} disabled={accepting || removing || !highestBid || auction?.status !== "open"}>
+              <CheckCircle2 className="w-4 h-4" /> {accepting ? "Accepting..." : "Accept Top Bid"}
+            </Button>
+            <Button variant="outline" className="gap-2 border-red-200 text-red-600 hover:border-red-300 hover:bg-red-50" onClick={removeAuction} disabled={accepting || removing || auction?.status !== "open"}>
+              <Trash2 className="w-4 h-4" /> {removing ? "Removing..." : "Remove"}
+            </Button>
+          </div>
+        ) : (
+          <Button className="w-full" onClick={() => onBid?.(auction, currentPrice)}>Place Higher Bid</Button>
+        )}
+      </div>
+    </motion.div>
   );
 }
 

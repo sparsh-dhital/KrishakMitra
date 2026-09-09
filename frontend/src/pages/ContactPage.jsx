@@ -22,7 +22,7 @@ export default function ContactPage({ onBack, language, onLanguageChange }) {
           >
             <ArrowLeft className="w-5 h-5 text-forest" />
           </button>
-          <Logo variant="full" className="h-[4.5rem] w-auto mix-blend-multiply cursor-pointer" onClick={onBack} />
+          <Logo variant="full" className="h-10 cursor-pointer" onClick={onBack} />
         </div>
         <LanguagePicker value={language} onChange={onLanguageChange} />
       </header>
