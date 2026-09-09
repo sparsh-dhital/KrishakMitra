@@ -56,11 +56,11 @@ export default function LoginPage({ onBack, onLogin, t, language, onLanguageChan
             <p className="text-sm text-muted font-medium text-center mt-2">{t("login.accessDashboard")}</p>
           </div>
 
-          <div className="flex p-1 bg-slate-100 rounded-xl mb-8">
+          <div className="flex p-1 bg-[#f7f9f4] border border-line rounded-xl mb-8">
             <button
               onClick={() => { setRole("farmer"); setStep(1); }}
               className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${
-                role === "farmer" ? "bg-white text-forest shadow-sm" : "text-muted hover:text-forest"
+                role === "farmer" ? "bg-harvest text-forest shadow-sm border border-harvest-hover" : "text-muted hover:text-forest"
               }`}
             >
               {t("login.farmer")}
@@ -68,7 +68,7 @@ export default function LoginPage({ onBack, onLogin, t, language, onLanguageChan
             <button
               onClick={() => { setRole("admin"); setStep(1); }}
               className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${
-                role === "admin" ? "bg-white text-forest shadow-sm" : "text-muted hover:text-forest"
+                role === "admin" ? "bg-harvest text-forest shadow-sm border border-harvest-hover" : "text-muted hover:text-forest"
               }`}
             >
               {t("login.officerAdmin")}
@@ -76,7 +76,7 @@ export default function LoginPage({ onBack, onLogin, t, language, onLanguageChan
             <button
               onClick={() => { setRole("buyer"); setStep(1); }}
               className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${
-                role === "buyer" ? "bg-white text-forest shadow-sm" : "text-muted hover:text-forest"
+                role === "buyer" ? "bg-harvest text-forest shadow-sm border border-harvest-hover" : "text-muted hover:text-forest"
               }`}
             >
               {t("login.buyerInstitution")}

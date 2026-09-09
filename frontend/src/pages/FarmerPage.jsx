@@ -5,13 +5,17 @@ import { useTranslation } from "react-i18next";
 import QRCode from "react-qr-code";
 import { LayoutDashboard, MapPin, CalendarDays, QrCode, ListOrdered, ShoppingCart, CreditCard, Bell, ChevronRight, Activity, Clock, ArrowRight, Gavel } from "lucide-react";
 import { api, config, toUiSlot } from "../services/api";
-import { Badge, Card, Button, Input, Select, SidebarLayout, CircularProgress, ProgressTimeline } from "../components/ui";
+import { Badge, Card, Button, Input, Select, SidebarLayout, CircularProgress, ProgressTimeline, Eyebrow } from "../components/ui";
 import AuctionCard from "../components/AuctionCard";
 import { createAuctionDirectly, getFarmerAuctions, getFarmerBidNotifications } from "../services/biddingService";
 
 export default function FarmerPage({ language, onLanguageChange, onLogout, onHome, farmerId, farmerName }) {
   const { t } = useTranslation();
-  const [activeTab, setActiveTab] = useState("dashboard");
+  const [activeTab, setActiveTab] = useState(() => sessionStorage.getItem("krishak-mitra-farmer-tab") || "dashboard");
+  
+  useEffect(() => {
+    sessionStorage.setItem("krishak-mitra-farmer-tab", activeTab);
+  }, [activeTab]);
   const [bookingStep, setBookingStep] = useState(0);
   const [centres, setCentres] = useState([]);
   const [farmer, setFarmer] = useState(null);
@@ -238,14 +242,15 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, onHom
       {activeTab === "dashboard" && (
         <div className="grid min-w-0 grid-cols-1 gap-6 lg:grid-cols-3 max-w-6xl mx-auto">
           <div className="min-w-0 space-y-6 lg:col-span-2">
-            <div>
-              <h1 className="font-display text-2xl font-bold text-forest">{greeting}, {displayName}</h1>
-              <p className="text-muted text-sm mt-1">{t("journeyIntro")}</p>
+            <div className="mb-6">
+              <Eyebrow>OVERVIEW</Eyebrow>
+              <h1 className="font-display text-4xl font-extrabold text-forest mt-2">{greeting}, {displayName}</h1>
+              <p className="text-muted text-base mt-2">{t("journeyIntro")}</p>
             </div>
 
             <div className="bg-surface border border-line rounded-3xl p-4 sm:p-6 flex flex-col gap-6 shadow-sm sm:flex-row">
               <div className="min-w-0 flex-1">
-                <h3 className="text-xs font-bold text-muted uppercase tracking-widest mb-4">{booking ? t("bookingConfirmed") : t("nextStep")}</h3>
+                <Eyebrow className="mb-4">{booking ? t("bookingConfirmed") : t("nextStep")}</Eyebrow>
                 {booking ? (
                   <>
                     <div className="flex items-center gap-4 mb-6">
@@ -276,8 +281,10 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, onHom
               </div>
 
               <div className="min-w-0 flex-1 border-t border-line pt-6 flex flex-col items-center justify-center sm:border-l sm:border-t-0 sm:pl-6 sm:pt-0">
-                <h3 className="text-xs font-bold text-muted uppercase tracking-widest mb-4 self-start">{t("capacityUsed")}</h3>
-                <Badge tone="success" className="mb-4 self-start"><span className="w-1.5 h-1.5 bg-green-500 rounded-full mr-2" /> {t("open")}</Badge>
+                <div className="w-full flex justify-between items-center mb-4">
+                  <Eyebrow>{t("capacityUsed")}</Eyebrow>
+                  <Badge tone="success"><span className="w-1.5 h-1.5 bg-green-500 rounded-full mr-2" /> {t("open")}</Badge>
+                </div>
                 <div className="flex items-center justify-between w-full mt-2">
                   <div className="text-center">
                     <p className="text-xs text-muted font-bold">{t("liveQueue")}</p>
@@ -293,13 +300,13 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, onHom
             </div>
 
             <Card>
-              <h3 className="text-xs font-bold text-muted uppercase tracking-widest mb-6">{t("procurementJourney")}</h3>
+              <Eyebrow className="mb-6">{t("procurementJourney")}</Eyebrow>
               <ProgressTimeline steps={journeySteps} currentStep={currentStep} />
             </Card>
 
             <Card>
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xs font-bold text-muted uppercase tracking-widest">{t("centre")}</h3>
+                <Eyebrow>{t("centre")}</Eyebrow>
                 <span className="text-xs text-brand font-bold">2.4 km</span>
               </div>
               <div className="flex items-center gap-4">
@@ -316,8 +323,8 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, onHom
           </div>
 
           <div className="min-w-0 space-y-6">
-            <Card className="bg-forest text-white border-transparent">
-              <h3 className="text-xs font-bold text-white/50 uppercase tracking-widest mb-4">{t("liveQueue")}</h3>
+            <Card className="bg-forest text-white border-transparent shadow-xl">
+              <Eyebrow dark className="mb-4">{t("liveQueue")}</Eyebrow>
               {queueEntry ? (
                 <>
                   <div className="flex items-center justify-between mb-6">
@@ -338,7 +345,7 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, onHom
             </Card>
 
             <Card>
-              <h3 className="text-xs font-bold text-muted uppercase tracking-widest mb-4">{t("recentUpdates")}</h3>
+              <Eyebrow className="mb-4">{t("recentUpdates")}</Eyebrow>
               {booking ? (
                 <div className="flex items-start gap-3">
                   <div className="w-2 h-2 mt-1.5 rounded-full bg-brand shrink-0" />
@@ -358,7 +365,8 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, onHom
       {/* ── CENTRES ── */}
       {activeTab === "centres" && (
         <div className="min-w-0 max-w-4xl mx-auto space-y-4">
-          <h1 className="font-display text-2xl font-bold text-forest mb-6">{t("centre")}</h1>
+          <Eyebrow className="mb-2">{t("centre")}</Eyebrow>
+          <h1 className="font-display text-4xl font-extrabold text-forest mb-8">Select a Procurement Centre</h1>
           {centres.map((c) => (
             <Card key={c.id} className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
               <div className="flex min-w-0 items-center gap-4">

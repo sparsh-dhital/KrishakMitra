@@ -3,7 +3,7 @@ import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import { LayoutDashboard, Users, Activity, FileText, Bell, DatabaseZap, ShieldAlert, CheckCircle2, Gavel, Clock } from "lucide-react";
 import { api } from "../services/api";
-import { SidebarLayout, Card, Badge, Button, Select, Input } from "../components/ui";
+import { SidebarLayout, Card, Badge, Button, Select, Input, Eyebrow } from "../components/ui";
 import { Plus, Trash2, Edit2 } from "lucide-react";
 import BuyerMarketplace from "./BuyerMarketplace";
 
@@ -159,7 +159,10 @@ function CentresTab() {
   return (
     <div className="space-y-6 max-w-[1000px] mx-auto">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold font-display text-forest">Procurement Centres</h2>
+        <div>
+          <Eyebrow className="mb-2">MANAGEMENT</Eyebrow>
+          <h2 className="text-4xl font-bold font-display text-forest">Procurement Centres</h2>
+        </div>
         {!isAdding && (
           <Button onClick={() => setIsAdding(true)} className="gap-2 shadow-lg shadow-brand/20">
             <Plus className="w-4 h-4" /> Add Centre
@@ -308,8 +311,9 @@ function TodaysBookingsTab() {
     <div className="max-w-[1400px] mx-auto space-y-6">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h2 className="text-2xl font-display font-extrabold text-forest">{t("todaysBookings") || "Today's Bookings"}</h2>
-          <p className="text-muted mt-1">Manage scheduled arrivals for today.</p>
+          <Eyebrow className="mb-2">DAILY OPERATIONS</Eyebrow>
+          <h2 className="text-4xl font-display font-extrabold text-forest">{t("todaysBookings") || "Today's Bookings"}</h2>
+          <p className="text-muted mt-2">Manage scheduled arrivals for today.</p>
         </div>
         <Button variant="primary" className="gap-2">
           <FileText className="w-4 h-4" /> Export Report
@@ -374,8 +378,9 @@ function ActiveQueueTab() {
     <div className="max-w-[1400px] mx-auto space-y-6">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h2 className="text-2xl font-display font-extrabold text-forest">{t("liveQueue") || "Active Queue"}</h2>
-          <p className="text-muted mt-1">Real-time status of farmers currently at the centre.</p>
+          <Eyebrow className="mb-2">LIVE STATUS</Eyebrow>
+          <h2 className="text-4xl font-display font-extrabold text-forest">{t("liveQueue") || "Active Queue"}</h2>
+          <p className="text-muted mt-2">Real-time status of farmers currently at the centre.</p>
         </div>
         <div className="flex gap-3">
            <Badge variant="primary" className="bg-green-100 text-green-700">3 Currently Active</Badge>
@@ -424,7 +429,11 @@ function ActiveQueueTab() {
   export default function AdminPage({ language, onLanguageChange, onLogout, onHome }) {
   const { t } = useTranslation();
   const [centre, setCentre] = useState(null);
-  const [activeTab, setActiveTab] = useState("dashboard");
+  const [activeTab, setActiveTab] = useState(() => sessionStorage.getItem("krishak-mitra-admin-tab") || "dashboard");
+
+  useEffect(() => {
+    sessionStorage.setItem("krishak-mitra-admin-tab", activeTab);
+  }, [activeTab]);
 
   const [allBookings, setAllBookings] = useState([]);
   const [selectedBooking, setSelectedBooking] = useState(null);
@@ -503,7 +512,10 @@ function ActiveQueueTab() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 max-w-[1400px] mx-auto">
           {/* Main Content Area */}
           <div className="lg:col-span-8 space-y-6">
-            <h1 className="font-display text-2xl font-bold text-forest mb-6">{t("adminPortal")}</h1>
+            <div className="mb-6">
+               <Eyebrow className="mb-2">OVERVIEW</Eyebrow>
+               <h1 className="font-display text-4xl font-bold text-forest">{t("adminPortal")}</h1>
+            </div>
             
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <Card className="flex items-center gap-4">
@@ -537,7 +549,7 @@ function ActiveQueueTab() {
 
             <Card className="p-0 overflow-hidden">
               <div className="px-6 py-4 border-b border-line flex items-center justify-between">
-                <h2 className="font-bold text-forest text-lg">{t("liveQueue")}</h2>
+                <Eyebrow>{t("liveQueue")}</Eyebrow>
                 <Badge tone="default">{t("viewAll")}</Badge>
               </div>
               <div className="overflow-x-auto">
