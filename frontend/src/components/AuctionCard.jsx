@@ -5,7 +5,7 @@ import { Gavel, Package, IndianRupee, CheckCircle2, Clock3, TrendingUp } from "l
 import { Badge, Button } from "./ui";
 import { acceptHighestBidDirectly, getAuctionBids, getHighestBid, supabase } from "../services/biddingService";
 
-const money = (value) => `₹${Number(value || 0).toLocaleString("en-IN")}`;
+const money = (value) => `${Number(value || 0).toLocaleString("en-IN")}`;
 
 export function AuctionCard({ auction, role, onBid, onUpdated }) {
   const [highestBid, setHighestBid] = useState(null);
@@ -24,7 +24,7 @@ export function AuctionCard({ auction, role, onBid, onUpdated }) {
       setBidHistory(bids || []);
     }).catch(() => {});
 
-    // No realtime without supabase — still need to return a valid cleanup
+    // No realtime without supabase  still need to return a valid cleanup
     if (!supabase) {
       return () => { active = false; };
     }
@@ -136,7 +136,8 @@ export function AuctionCard({ auction, role, onBid, onUpdated }) {
 
         {role === "farmer" ? (
           <Button variant="dark" className="w-full gap-2" onClick={acceptBid} disabled={accepting || !highestBid || auction?.status !== "open"}>
-            <CheckCircle2 className="w-4 h-4" /> {accepting ? "Accepting..." : "Accept Top Bid"}
+            <CheckCircle2 className="w-4 h-4" /> 
+            {auction?.status === "awarded" ? "Bid Accepted" : (accepting ? "Accepting..." : (!highestBid ? "Waiting for bids..." : "Accept Top Bid"))}
           </Button>
         ) : (
           <Button className="w-full" onClick={() => onBid?.(auction, currentPrice)}>Place Higher Bid</Button>

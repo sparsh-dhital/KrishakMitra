@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { Toaster } from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import Lenis from "lenis";
@@ -83,7 +83,7 @@ export default function App() {
   // If user already has a session and clicks "Go to Dashboard" on landing page
   const handleNavigateLogin = () => {
     if (session) {
-      // Already logged in — go straight to their dashboard
+      // Already logged in  go straight to their dashboard
       setView(session.role === "admin" ? "admin" : session.role === "buyer" ? "buyer" : "farmer");
     } else {
       setView("login");

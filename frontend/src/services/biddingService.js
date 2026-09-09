@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
+﻿import { createClient } from "@supabase/supabase-js";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -101,7 +101,7 @@ export async function placeBidDirectly(auctionId, buyerId, offeredPrice) {
       farmer_id: auction.farmer_id,
       type: "bid",
       title: "New private-market bid",
-      message: `A buyer placed a bid of ₹${price.toLocaleString("en-IN")} per quintal on your ${auction.crops?.name || "crop"}.`,
+      message: `A buyer placed a bid of ${price.toLocaleString("en-IN")} per quintal on your ${auction.crops?.name || "crop"}.`,
       auction_id: auctionId,
       created_at: new Date().toISOString(),
       read: false,
@@ -140,7 +140,7 @@ export async function placeBidDirectly(auctionId, buyerId, offeredPrice) {
       auction_id: auctionId,
       bid_id: data?.id,
       title: "New private-market bid",
-      message: `A buyer placed a bid of ₹${price.toLocaleString("en-IN")} per quintal.`,
+      message: `A buyer placed a bid of ${price.toLocaleString("en-IN")} per quintal.`,
       is_read: false,
     }).catch(() => {});
   }

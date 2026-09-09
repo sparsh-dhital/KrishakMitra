@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+﻿import { motion } from "framer-motion";
 import { 
   ArrowRight, 
   Play, 
@@ -24,7 +24,7 @@ import LanguagePicker from "../components/LanguagePicker";
 export default function LandingPage({ onNavigateLogin, onNavigateContact, hasSession, language, onLanguageChange }) {
   return (
     <div className="min-h-screen bg-[#F8F9FA] font-body text-forest selection:bg-brand selection:text-white">
-      {/* Navbar */}
+      
       <header className="w-full py-4 px-4 sm:py-6 sm:px-6 max-w-7xl mx-auto flex items-center justify-between gap-3">
         <Logo variant="full" className="h-14" />
         <nav className="hidden md:flex items-center gap-10 text-base font-semibold">
@@ -42,7 +42,7 @@ export default function LandingPage({ onNavigateLogin, onNavigateContact, hasSes
         </div>
       </header>
 
-      {/* Hero */}
+      
       <section className="max-w-7xl mx-auto px-4 sm:px-6 pt-12 sm:pt-20 pb-20 sm:pb-28 grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
         <div className="min-w-0">
           <div className="inline-flex items-center text-sm font-bold text-brand bg-brand/10 px-4 py-1.5 rounded-full mb-8">
@@ -81,7 +81,7 @@ export default function LandingPage({ onNavigateLogin, onNavigateContact, hasSes
           </div>
         </div>
 
-        {/* Right side mockup */}
+        
         <div className="relative mt-16 min-w-0 md:mt-0">
           <div className="bg-forest rounded-[3rem] p-6 sm:p-10 md:p-14 aspect-square relative shadow-2xl flex flex-col justify-between max-w-lg mx-auto w-full">
             <div className="absolute top-8 sm:top-12 left-1/2 -translate-x-1/2 w-[85%] bg-white rounded-3xl p-3 sm:p-5 shadow-xl flex items-center gap-3 sm:gap-4 transform -rotate-1">
@@ -110,7 +110,7 @@ export default function LandingPage({ onNavigateLogin, onNavigateContact, hasSes
                   <p className="text-sm text-muted leading-tight">Payment Disbursed</p>
                   <span className="text-brand text-xs font-bold px-2 py-1 bg-brand/10 rounded uppercase">Verified</span>
                 </div>
-                <p className="text-2xl font-extrabold text-forest mt-2">₹45,200</p>
+                <p className="text-2xl font-extrabold text-forest mt-2">45,200</p>
               </div>
             </div>
 
@@ -132,7 +132,7 @@ export default function LandingPage({ onNavigateLogin, onNavigateContact, hasSes
         </div>
       </section>
 
-      {/* Metrics */}
+      
       <section className="border-y border-line bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16 grid grid-cols-2 md:grid-cols-4 gap-8 sm:gap-10 text-center divide-x-0 md:divide-x divide-line/50">
           <div>
@@ -148,13 +148,13 @@ export default function LandingPage({ onNavigateLogin, onNavigateContact, hasSes
             <p className="text-base font-medium text-muted">Fast-Tracked Sales</p>
           </div>
           <div>
-            <h3 className="text-xl sm:text-3xl lg:text-5xl font-display font-extrabold mb-3">₹100Cr+</h3>
+            <h3 className="text-xl sm:text-3xl lg:text-5xl font-display font-extrabold mb-3">100Cr+</h3>
             <p className="text-base font-medium text-muted">Payments Processed</p>
           </div>
         </div>
       </section>
 
-      {/* Features */}
+      
       <section id="features" className="py-28 bg-[#F8F9FA]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-20">
@@ -184,9 +184,9 @@ export default function LandingPage({ onNavigateLogin, onNavigateContact, hasSes
         </div>
       </section>
 
-      {/* How it Works */}
+      
       <section id="how-it-works" className="py-28 bg-forest relative overflow-hidden">
-        {/* Background grid pattern */}
+        
         <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '32px 32px' }} />
         
         <div className="max-w-6xl mx-auto px-6 relative z-10 text-center">
@@ -195,7 +195,7 @@ export default function LandingPage({ onNavigateLogin, onNavigateContact, hasSes
           <p className="text-white/60 mb-24 text-lg">From booking your slot to receiving your payment.</p>
 
           <div className="flex flex-col lg:flex-row items-center justify-between gap-8 relative">
-             {/* Desktop Connecting Line */}
+             
             <div className="hidden md:block absolute top-1/2 left-[10%] right-[10%] h-[2px] bg-white/10 -translate-y-1/2 z-0" />
             
             {[
@@ -220,7 +220,7 @@ export default function LandingPage({ onNavigateLogin, onNavigateContact, hasSes
         </div>
       </section>
 
-      {/* Impact */}
+      
       <section id="impact" className="py-28 bg-[#F8F9FA]">
         <div className="max-w-6xl mx-auto px-6">
           <div className="inline-block text-xs font-bold text-brand bg-brand/10 px-4 py-1.5 rounded-full mb-8 uppercase tracking-wider">Impact</div>
@@ -275,10 +275,10 @@ export default function LandingPage({ onNavigateLogin, onNavigateContact, hasSes
         </div>
       </section>
 
-      {/* CTA */}
+      
       <section className="py-28 px-6 bg-[#F8F9FA]">
         <div className="max-w-5xl mx-auto bg-forest rounded-[3rem] p-8 sm:p-16 md:p-24 text-center relative overflow-hidden">
-           {/* Background grid pattern */}
+           
           <div className="absolute inset-0 opacity-[0.05]" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '24px 24px' }} />
           
             <div className="relative z-10 flex w-full min-w-0 flex-col items-center">
@@ -300,7 +300,7 @@ export default function LandingPage({ onNavigateLogin, onNavigateContact, hasSes
         </div>
       </section>
 
-      {/* Footer */}
+      
       <footer className="bg-forest pt-20 pb-10 border-t border-white/10">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 sm:gap-12 mb-16 sm:mb-20">
           <div className="col-span-2 md:col-span-1">
@@ -337,7 +337,7 @@ export default function LandingPage({ onNavigateLogin, onNavigateContact, hasSes
         </div>
         
         <div className="text-center text-white/40 text-xs border-t border-white/10 pt-10 max-w-6xl mx-auto px-6 tracking-wide">
-          © {new Date().getFullYear()} KrishakMitra. All Rights Reserved.
+           {new Date().getFullYear()} KrishakMitra. All Rights Reserved.
         </div>
       </footer>
     </div>

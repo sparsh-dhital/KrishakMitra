@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ShieldCheck, Building2 } from "lucide-react";
 import { Button, Input, Card } from "../components/ui";
@@ -39,7 +39,7 @@ export default function LoginPage({ onBack, onLogin, t, language, onLanguageChan
 
   return (
     <div className="min-h-screen bg-cream flex items-center justify-center p-4 sm:p-6 selection:bg-brand selection:text-white">
-      {/* Language picker floating top-right */}
+      
       <div className="fixed top-3 right-3 z-50 sm:top-4 sm:right-4">
         <LanguagePicker value={language} onChange={onLanguageChange} />
       </div>
@@ -51,7 +51,7 @@ export default function LoginPage({ onBack, onLogin, t, language, onLanguageChan
         
         <Card className="shadow-xl shadow-brand/5 border-line p-5 sm:p-10">
           <div className="flex flex-col items-center mb-6">
-            {/* stacked variant: emblem on top, styled text below */}
+            
             <Logo variant="stacked" className="mb-1" />
             <p className="text-sm text-muted font-medium text-center mt-2">Access your procurement dashboard</p>
           </div>
@@ -102,7 +102,7 @@ export default function LoginPage({ onBack, onLogin, t, language, onLanguageChan
               <motion.form key="step2" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} onSubmit={handleVerifyOtp} className="space-y-6">
                 <div>
                   <label className="block text-sm font-bold text-forest mb-2">Enter 6-digit OTP</label>
-                  <Input type="text" value={otp} onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))} placeholder="• • • • • •" className="tracking-[0.5em] font-display text-center text-xl" autoFocus required />
+                  <Input type="text" value={otp} onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))} placeholder="     " className="tracking-[0.5em] font-display text-center text-xl" autoFocus required />
                   <p className="text-xs font-medium text-muted mt-3 text-center">
                     Sent to +91 {mobile}. <button type="button" onClick={() => setStep(1)} className="text-brand font-bold hover:underline">Edit</button>
                   </p>

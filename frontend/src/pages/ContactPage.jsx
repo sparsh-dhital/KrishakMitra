@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+﻿import { motion } from "framer-motion";
 import { ArrowLeft, Mail, Phone, MapPin, Send } from "lucide-react";
 import Logo from "../components/Logo";
 import LanguagePicker from "../components/LanguagePicker";
@@ -13,7 +13,7 @@ export default function ContactPage({ onBack, language, onLanguageChange }) {
 
   return (
     <div className="min-h-screen bg-[#F8F9FA] font-body text-forest selection:bg-brand selection:text-white flex flex-col">
-      {/* Header */}
+      
       <header className="w-full py-6 px-6 max-w-7xl mx-auto flex items-center justify-between border-b border-line">
         <div className="flex items-center gap-6">
           <button 
@@ -27,9 +27,9 @@ export default function ContactPage({ onBack, language, onLanguageChange }) {
         <LanguagePicker value={language} onChange={onLanguageChange} />
       </header>
 
-      {/* Main Content */}
+      
       <main className="flex-1 max-w-7xl mx-auto w-full px-6 py-12 md:py-20 grid md:grid-cols-2 gap-16 items-start">
-        {/* Left Side: Info */}
+        
         <div>
           <div className="inline-flex items-center text-sm font-bold text-brand bg-brand/10 px-4 py-1.5 rounded-full mb-6">
             Get In Touch
@@ -77,7 +77,7 @@ export default function ContactPage({ onBack, language, onLanguageChange }) {
           </div>
         </div>
 
-        {/* Right Side: Form */}
+        
         <div className="bg-white rounded-[2rem] p-8 md:p-12 shadow-xl border border-line">
           <h2 className="text-2xl font-bold mb-8">Send us a message</h2>
           <form onSubmit={handleSubmit} className="space-y-6">
