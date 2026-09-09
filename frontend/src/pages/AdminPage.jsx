@@ -298,7 +298,130 @@ function CentresTab() {
 
 function TodaysBookingsTab({ bookings, onRemove, onViewDetails }) {
   const { t } = useTranslation();
+  const [exportMenuOpen, setExportMenuOpen] = useState(false);
 
+  const escapeCsv = (value) => `"${String(value ?? "").replace(/"/g, '""')}"`;
+
+  const getExportFileName = (extension) => {
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, "0");
+    const dd = String(today.getDate()).padStart(2, "0");
+    return `todays-bookings-${yyyy}-${mm}-${dd}.${extension}`;
+  };
+
+  const downloadFile = (content, filename, mimeType) => {
+    const blob = new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const buildTableCsv = (rows) => {
+    const header = ["Token ID", "Farmer", "Crop & Quantity", "Time Slot", "Status"];
+    const dataRows = rows.map((row) => [row.id, row.farmer, `${row.crop} (${row.qty})`, row.slot, row.status]);
+    const csvRows = [header, ...dataRows].map((line) => line.map((cell) => escapeCsv(cell)).join(","));
+    return `\uFEFF${csvRows.join("\n")}`;
+  };
+
+  const buildPdfDocument = (rows) => {
+    const table = [
+      ["Token ID", "Farmer", "Crop & Quantity", "Time Slot", "Status"],
+      ...rows.map((row) => [row.id, row.farmer, `${row.crop} (${row.qty})`, row.slot, row.status]),
+    ];
+
+    const widths = [90, 120, 150, 120, 80];
+    const colSpacing = 10;
+    const rowHeight = 20;
+    let y = 760;
+    let contentStream = "BT /F1 11 Tf 50 760 Td (Today's Bookings Report) Tj ET\n";
+
+    table.forEach((row, rowIndex) => {
+      let x = 50;
+      row.forEach((cell, cellIndex) => {
+        const safeCell = String(cell).replace(/\\/g, "\\\\").replace(/\(/g, "\\(").replace(/\)/g, "\\)");
+        const cellWidth = widths[cellIndex] || 100;
+        contentStream += `BT /F1 9 Tf ${x} ${y - rowIndex * rowHeight} Td (${safeCell}) Tj ET\n`;
+        x += cellWidth + colSpacing;
+      });
+    });
+
+    const objects = [
+      "<< /Type /Catalog /Pages 2 0 R >>",
+      "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+      "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>",
+      `<< /Length ${contentStream.length} >>\nstream\n${contentStream}endstream`,
+      "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+    ];
+
+    let pdf = "%PDF-1.4\n";
+    const offsets = [0];
+    objects.forEach((obj) => {
+      offsets.push(pdf.length);
+      pdf += `${offsets.length - 1} 0 obj\n${obj}\nendobj\n`;
+    });
+
+    const xrefOffset = pdf.length;
+    pdf += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
+    offsets.slice(1).forEach((offset) => {
+      pdf += `${String(offset).padStart(10, "0")} 00000 n \n`;
+    });
+    pdf += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`;
+
+    return pdf;
+  };
+
+  const handleExport = (format) => {
+    const rows = bookings.map(b => ({
+      id: b.token?.token_number || "N/A",
+      farmer: b.booking.farmer_name,
+      crop: (b.booking.crops || []).map(c => c.crop_name).join(', '),
+      qty: b.booking.estimated_quantity + " q",
+      slot: b.booking.slot_time,
+      status: b.booking.status
+    }));
+
+    if (format === "pdf") {
+      downloadFile(buildPdfDocument(rows), getExportFileName("pdf"), "application/pdf");
+      return;
+    }
+
+    if (format === "word") {
+      const htmlTable = `
+        <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+          <body>
+            <table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse; width:100%; font-family:Arial; font-size:11pt;">
+              <tr>
+                <th>Token ID</th>
+                <th>Farmer</th>
+                <th>Crop & Quantity</th>
+                <th>Time Slot</th>
+                <th>Status</th>
+              </tr>
+              ${rows.map((row) => `
+                <tr>
+                  <td>${row.id}</td>
+                  <td>${row.farmer}</td>
+                  <td>${row.crop} (${row.qty})</td>
+                  <td>${row.slot}</td>
+                  <td>${row.status}</td>
+                </tr>
+              `).join("")}
+            </table>
+          </body>
+        </html>
+      `;
+      downloadFile(htmlTable, getExportFileName("doc"), "application/msword");
+      return;
+    }
+
+    downloadFile(buildTableCsv(rows), getExportFileName("csv"), "text/csv;charset=utf-8");
+  };
   return (
     <div className="max-w-[1400px] mx-auto space-y-6">
       <div className="flex justify-between items-center mb-6">
@@ -306,9 +429,18 @@ function TodaysBookingsTab({ bookings, onRemove, onViewDetails }) {
           <h2 className="text-2xl font-display font-extrabold text-forest">{t("todaysBookings") || "Today's Bookings"}</h2>
           <p className="text-muted mt-1">Manage scheduled arrivals for today.</p>
         </div>
-        <Button variant="primary" className="gap-2">
-          <FileText className="w-4 h-4" /> Export Report
-        </Button>
+        <div className="relative">
+          <Button variant="primary" className="gap-2" onClick={() => setExportMenuOpen((open) => !open)}>
+            <FileText className="w-4 h-4" /> Export Report
+          </Button>
+          {exportMenuOpen && (
+            <div className="absolute right-0 mt-2 w-44 rounded-xl border border-line bg-white shadow-xl z-20 overflow-hidden">
+              <button type="button" onClick={() => { handleExport("pdf"); setExportMenuOpen(false); }} className="block w-full px-4 py-3 text-left text-sm font-medium text-forest hover:bg-slate-50">PDF</button>
+              <button type="button" onClick={() => { handleExport("word"); setExportMenuOpen(false); }} className="block w-full px-4 py-3 text-left text-sm font-medium text-forest hover:bg-slate-50">Word Document</button>
+              <button type="button" onClick={() => { handleExport("excel"); setExportMenuOpen(false); }} className="block w-full px-4 py-3 text-left text-sm font-medium text-forest hover:bg-slate-50">Excel</button>
+            </div>
+          )}
+        </div>
       </div>
 
       <Card className="overflow-hidden p-0 shadow-md">
@@ -368,6 +500,8 @@ function TodaysBookingsTab({ bookings, onRemove, onViewDetails }) {
 
 function ActiveQueueTab({ bookings, onRemove, onViewDetails }) {
   const { t } = useTranslation();
+  const [showAllQueue, setShowAllQueue] = useState(false);
+  const queuePreview = showAllQueue || bookings.length <= 4 ? bookings : bookings.slice(0, 4);
 
   return (
     <div className="max-w-[1400px] mx-auto space-y-6">
@@ -376,13 +510,22 @@ function ActiveQueueTab({ bookings, onRemove, onViewDetails }) {
           <h2 className="text-2xl font-display font-extrabold text-forest">{t("liveQueue") || "Active Queue"}</h2>
           <p className="text-muted mt-1">Real-time status of farmers currently at the centre.</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex items-center gap-3">
            <Badge variant="primary" className="bg-green-100 text-green-700">{bookings.length} Currently Active</Badge>
+           {bookings.length > 4 && (
+             <button
+               type="button"
+               onClick={() => setShowAllQueue((current) => !current)}
+               className="text-xs font-bold uppercase tracking-wider text-brand hover:text-brand/80 transition-colors"
+             >
+               {showAllQueue ? "Show Less" : "View All"}
+             </button>
+           )}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4">
-        {bookings && bookings.length > 0 ? bookings.map((b, index) => {
+      <div className={`grid grid-cols-1 gap-4 ${showAllQueue ? "max-h-[500px] overflow-y-auto pr-2" : ""}`}>
+        {queuePreview && queuePreview.length > 0 ? queuePreview.map((b, index) => {
           const item = b.booking;
           return (
             <Card key={item.id} className="p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-l-4 hover:shadow-md transition-shadow" style={{ borderLeftColor: item.status === 'QUALITY_CHECK' ? '#F59E0B' : item.status === 'WEIGHING' ? '#3B82F6' : '#10B981' }}>
