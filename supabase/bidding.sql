@@ -54,6 +54,7 @@ DROP POLICY IF EXISTS "Public notification insert" ON public.auction_notificatio
 CREATE POLICY "Public auction read" ON public.auctions FOR SELECT USING (true);
 CREATE POLICY "Public auction insert" ON public.auctions FOR INSERT WITH CHECK (true);
 CREATE POLICY "Public auction update" ON public.auctions FOR UPDATE USING (true) WITH CHECK (true);
+CREATE POLICY "Public auction delete" ON public.auctions FOR DELETE USING (true);
 CREATE POLICY "Public bid read" ON public.bids FOR SELECT USING (true);
 CREATE POLICY "Public bid insert" ON public.bids FOR INSERT WITH CHECK (true);
 CREATE POLICY "Public notification read" ON public.auction_notifications FOR SELECT USING (true);

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * KrishakMitra Logo Component
  *
  * Variants:
@@ -52,7 +52,7 @@ export default function Logo({ variant = "full", className = "" }) {
     );
   }
 
-  // "full" — emblem + text side by side
+  // "full"  emblem + text side by side
   return (
     <div className={`flex items-center gap-2.5 ${className}`}>
       <img
