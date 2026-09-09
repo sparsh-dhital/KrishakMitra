@@ -3,9 +3,10 @@
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-export const supabase = supabaseUrl && supabaseAnonKey
-  ? createClient(supabaseUrl, supabaseAnonKey)
-  : null;
+export const supabase =
+  supabaseUrl && supabaseAnonKey
+    ? createClient(supabaseUrl, supabaseAnonKey)
+    : null;
 
 const demoAuctionsKey = "krishak-mitra-demo-auctions";
 const demoBidsKey = "krishak-mitra-demo-bids";
@@ -25,13 +26,36 @@ function writeDemo(key, value) {
 }
 
 function addDemoNotification(notification) {
-  writeDemo(demoNotificationsKey, [notification, ...readDemo(demoNotificationsKey, [])]);
+  writeDemo(demoNotificationsKey, [
+    notification,
+    ...readDemo(demoNotificationsKey, []),
+  ]);
 }
 
 function demoListings() {
   return readDemo(demoAuctionsKey, [
-    { id: "demo-auction-paddy", farmer_id: "12f3b7f6-5999-45e7-8811-3fd982a25345", crop_id: "cr1", quantity: 40, base_price: 2203, status: "open", crops: { name: "Paddy (Grade A)" }, created_at: new Date().toISOString(), expires_at: new Date(Date.now() + 1000 * 60 * 60 * 18).toISOString() },
-    { id: "demo-auction-maize", farmer_id: "demo-farmer-2", crop_id: "cr3", quantity: 25, base_price: 2090, status: "open", crops: { name: "Maize" }, created_at: new Date().toISOString(), expires_at: new Date(Date.now() + 1000 * 60 * 60 * 10).toISOString() },
+    {
+      id: "demo-auction-paddy",
+      farmer_id: "12f3b7f6-5999-45e7-8811-3fd982a25345",
+      crop_id: "cr1",
+      quantity: 40,
+      base_price: 2203,
+      status: "open",
+      crops: { name: "Paddy (Grade A)" },
+      created_at: new Date().toISOString(),
+      expires_at: new Date(Date.now() + 1000 * 60 * 60 * 18).toISOString(),
+    },
+    {
+      id: "demo-auction-maize",
+      farmer_id: "demo-farmer-2",
+      crop_id: "cr3",
+      quantity: 25,
+      base_price: 2090,
+      status: "open",
+      crops: { name: "Maize" },
+      created_at: new Date().toISOString(),
+      expires_at: new Date(Date.now() + 1000 * 60 * 60 * 10).toISOString(),
+    },
   ]);
 }
 
@@ -40,24 +64,39 @@ function useDemoFallback(error) {
 }
 
 function belongsToFarmer(auction, farmerId) {
-  return auction?.farmer_id === farmerId || (farmerId === "12f3b7f6-5999-45e7-8811-3fd982a25345" && auction?.farmer_id === "f-1234");
+  return (
+    auction?.farmer_id === farmerId ||
+    (farmerId === "12f3b7f6-5999-45e7-8811-3fd982a25345" &&
+      auction?.farmer_id === "f-1234")
+  );
 }
 
 function isMissingBiddingTable(error) {
-  const message = String(error?.message || error?.details || error || "").toLowerCase();
-  return message.includes("could not find the table") || message.includes("relation") || message.includes("404") || message.includes("schema cache");
+  const message = String(
+    error?.message || error?.details || error || "",
+  ).toLowerCase();
+  return (
+    message.includes("could not find the table") ||
+    message.includes("relation") ||
+    message.includes("404") ||
+    message.includes("schema cache")
+  );
 }
 
 function requireClient() {
   if (!supabase) {
-    throw new Error("Supabase bidding is not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.");
+    throw new Error(
+      "Supabase bidding is not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.",
+    );
   }
   return supabase;
 }
 
 export async function getHighestBid(auctionId) {
   if (!auctionId) return null;
-  const demoBid = readDemo(demoBidsKey, []).filter((bid) => bid.auction_id === auctionId).sort((a, b) => Number(b.offered_price) - Number(a.offered_price))[0];
+  const demoBid = readDemo(demoBidsKey, [])
+    .filter((bid) => bid.auction_id === auctionId)
+    .sort((a, b) => Number(b.offered_price) - Number(a.offered_price))[0];
   if (auctionId.startsWith("demo-")) return demoBid || null;
   const client = requireClient();
   const { data, error } = await client
@@ -75,26 +114,43 @@ export async function getHighestBid(auctionId) {
 export async function getAuctionBids(auctionId) {
   if (!auctionId) return [];
   if (auctionId.startsWith("demo-")) {
-    return readDemo(demoBidsKey, []).filter((bid) => bid.auction_id === auctionId).sort((a, b) => Number(b.offered_price) - Number(a.offered_price));
+    return readDemo(demoBidsKey, [])
+      .filter((bid) => bid.auction_id === auctionId)
+      .sort((a, b) => Number(b.offered_price) - Number(a.offered_price));
   }
   const client = requireClient();
-  const { data, error } = await client.from("bids").select("id, auction_id, buyer_id, offered_price, created_at").eq("auction_id", auctionId).order("offered_price", { ascending: false });
+  const { data, error } = await client
+    .from("bids")
+    .select("id, auction_id, buyer_id, offered_price, created_at")
+    .eq("auction_id", auctionId)
+    .order("offered_price", { ascending: false });
   if (error) throw error;
   return data || [];
 }
 
 export async function placeBidDirectly(auctionId, buyerId, offeredPrice) {
-  if (!auctionId || !buyerId) throw new Error("Auction and buyer details are required.");
+  if (!auctionId || !buyerId)
+    throw new Error("Auction and buyer details are required.");
   const price = Number(offeredPrice);
-  if (!Number.isFinite(price) || price <= 0) throw new Error("Enter a valid bid amount.");
+  if (!Number.isFinite(price) || price <= 0)
+    throw new Error("Enter a valid bid amount.");
 
   if (auctionId.startsWith("demo-")) {
     const auction = demoListings().find((item) => item.id === auctionId);
     const highestBid = await getHighestBid(auctionId);
-    if (!auction || auction.status !== "open") throw new Error("This auction is no longer open.");
-    if (price < Number(auction.base_price || 0)) throw new Error(`Bid must be at least ${auction.base_price}.`);
-    if (price <= Number(highestBid?.offered_price || 0)) throw new Error(`Bid must be higher than ${highestBid.offered_price}.`);
-    const bid = { id: `demo-bid-${Date.now()}`, auction_id: auctionId, buyer_id: buyerId, offered_price: price, created_at: new Date().toISOString() };
+    if (!auction || auction.status !== "open")
+      throw new Error("This auction is no longer open.");
+    if (price < Number(auction.base_price || 0))
+      throw new Error(`Bid must be at least ${auction.base_price}.`);
+    if (price <= Number(highestBid?.offered_price || 0))
+      throw new Error(`Bid must be higher than ${highestBid.offered_price}.`);
+    const bid = {
+      id: `demo-bid-${Date.now()}`,
+      auction_id: auctionId,
+      buyer_id: buyerId,
+      offered_price: price,
+      created_at: new Date().toISOString(),
+    };
     writeDemo(demoBidsKey, [...readDemo(demoBidsKey, []), bid]);
     addDemoNotification({
       id: `demo-notification-${Date.now()}`,
@@ -102,6 +158,16 @@ export async function placeBidDirectly(auctionId, buyerId, offeredPrice) {
       type: "bid",
       title: "New private-market bid",
       message: `A buyer placed a bid of ${price.toLocaleString("en-IN")} per quintal on your ${auction.crops?.name || "crop"}.`,
+      auction_id: auctionId,
+      created_at: new Date().toISOString(),
+      read: false,
+    });
+    addDemoNotification({
+      id: `demo-buyer-notification-${Date.now()}`,
+      buyer_id: buyerId,
+      type: "bid-placed",
+      title: "Bid placed successfully",
+      message: `Your bid of ${price.toLocaleString("en-IN")} was placed successfully.`,
       auction_id: auctionId,
       created_at: new Date().toISOString(),
       read: false,
@@ -118,13 +184,15 @@ export async function placeBidDirectly(auctionId, buyerId, offeredPrice) {
 
   if (auctionError) throw auctionError;
   if (!auction) throw new Error("This auction could not be found.");
-  if (auction.status !== "open") throw new Error("This auction is no longer open.");
+  if (auction.status !== "open")
+    throw new Error("This auction is no longer open.");
 
   const highestBid = await getHighestBid(auctionId);
   const basePrice = Number(auction.base_price || 0);
   const currentHighest = Number(highestBid?.offered_price || 0);
   if (price < basePrice) throw new Error(`Bid must be at least ${basePrice}.`);
-  if (price <= currentHighest) throw new Error(`Bid must be higher than ${currentHighest}.`);
+  if (price <= currentHighest)
+    throw new Error(`Bid must be higher than ${currentHighest}.`);
 
   const { data, error } = await client
     .from("bids")
@@ -133,16 +201,23 @@ export async function placeBidDirectly(auctionId, buyerId, offeredPrice) {
     .single();
 
   if (error) throw error;
-  const { data: auctionForNotification } = await client.from("auctions").select("farmer_id").eq("id", auctionId).maybeSingle();
+  const { data: auctionForNotification } = await client
+    .from("auctions")
+    .select("farmer_id")
+    .eq("id", auctionId)
+    .maybeSingle();
   if (auctionForNotification?.farmer_id) {
-    await client.from("auction_notifications").insert({
-      farmer_id: auctionForNotification.farmer_id,
-      auction_id: auctionId,
-      bid_id: data?.id,
-      title: "New private-market bid",
-      message: `A buyer placed a bid of ${price.toLocaleString("en-IN")} per quintal.`,
-      is_read: false,
-    }).catch(() => {});
+    await client
+      .from("auction_notifications")
+      .insert({
+        farmer_id: auctionForNotification.farmer_id,
+        auction_id: auctionId,
+        bid_id: data?.id,
+        title: "New private-market bid",
+        message: `A buyer placed a bid of ${price.toLocaleString("en-IN")} per quintal.`,
+        is_read: false,
+      })
+      .catch(() => {});
   }
   return data;
 }
@@ -150,7 +225,9 @@ export async function placeBidDirectly(auctionId, buyerId, offeredPrice) {
 export async function acceptHighestBidDirectly(auctionId) {
   if (!auctionId) throw new Error("Auction details are required.");
   if (auctionId.startsWith("demo-")) {
-    const listings = demoListings().map((auction) => auction.id === auctionId ? { ...auction, status: "awarded" } : auction);
+    const listings = demoListings().map((auction) =>
+      auction.id === auctionId ? { ...auction, status: "awarded" } : auction,
+    );
     writeDemo(demoAuctionsKey, listings);
     return listings.find((auction) => auction.id === auctionId);
   }
@@ -170,10 +247,20 @@ export async function acceptHighestBidDirectly(auctionId) {
 export async function removeAuctionDirectly(auctionId) {
   if (!auctionId) throw new Error("Auction details are required.");
   if (auctionId.startsWith("demo-")) {
-    const listings = demoListings().filter((auction) => auction.id !== auctionId);
+    const listings = demoListings().filter(
+      (auction) => auction.id !== auctionId,
+    );
     writeDemo(demoAuctionsKey, listings);
-    writeDemo(demoBidsKey, readDemo(demoBidsKey, []).filter((bid) => bid.auction_id !== auctionId));
-    writeDemo(demoNotificationsKey, readDemo(demoNotificationsKey, []).filter((notification) => notification.auction_id !== auctionId));
+    writeDemo(
+      demoBidsKey,
+      readDemo(demoBidsKey, []).filter((bid) => bid.auction_id !== auctionId),
+    );
+    writeDemo(
+      demoNotificationsKey,
+      readDemo(demoNotificationsKey, []).filter(
+        (notification) => notification.auction_id !== auctionId,
+      ),
+    );
     return { id: auctionId };
   }
 
@@ -189,7 +276,8 @@ export async function removeAuctionDirectly(auctionId) {
 }
 
 export async function getOpenAuctions() {
-  if (!supabase) return demoListings().filter((auction) => auction.status === "open");
+  if (!supabase)
+    return demoListings().filter((auction) => auction.status === "open");
   const client = requireClient();
   const { data, error } = await client
     .from("auctions")
@@ -198,22 +286,51 @@ export async function getOpenAuctions() {
     .order("created_at", { ascending: false });
 
   if (error) {
-    if (useDemoFallback(error) || isMissingBiddingTable(error)) return demoListings().filter((auction) => auction.status === "open");
+    if (useDemoFallback(error) || isMissingBiddingTable(error))
+      return demoListings().filter((auction) => auction.status === "open");
     throw error;
   }
-  return data?.map((auction) => ({ ...auction, crops: { name: auction.crop_name } })) || [];
+  return (
+    data?.map((auction) => ({
+      ...auction,
+      crops: { name: auction.crop_name },
+    })) || []
+  );
 }
 
-export async function createAuctionDirectly({ farmerId, cropId, cropName, quantity, basePrice }) {
-  if (!farmerId || !cropId) throw new Error("Farmer and crop details are required.");
+export async function createAuctionDirectly({
+  farmerId,
+  cropId,
+  cropName,
+  quantity,
+  basePrice,
+}) {
+  if (!farmerId || !cropId)
+    throw new Error("Farmer and crop details are required.");
   const parsedQuantity = Number(quantity);
   const parsedBasePrice = Number(basePrice);
-  if (!Number.isFinite(parsedQuantity) || parsedQuantity <= 0) throw new Error("Enter a valid quantity.");
-  if (!Number.isFinite(parsedBasePrice) || parsedBasePrice <= 0) throw new Error("Enter a valid base price.");
+  if (!Number.isFinite(parsedQuantity) || parsedQuantity <= 0)
+    throw new Error("Enter a valid quantity.");
+  if (!Number.isFinite(parsedBasePrice) || parsedBasePrice <= 0)
+    throw new Error("Enter a valid base price.");
 
   if (!supabase) {
-    const cropNames = { cr1: "Paddy (Grade A)", cr2: "Cotton (Long Staple)", cr3: "Maize" };
-    const listing = { id: `demo-auction-${Date.now()}`, farmer_id: farmerId, crop_id: cropId, quantity: parsedQuantity, base_price: parsedBasePrice, status: "open", crops: { name: cropName || cropNames[cropId] || "Crop listing" }, created_at: new Date().toISOString(), expires_at: new Date(Date.now() + 1000 * 60 * 60 * 24).toISOString() };
+    const cropNames = {
+      cr1: "Paddy (Grade A)",
+      cr2: "Cotton (Long Staple)",
+      cr3: "Maize",
+    };
+    const listing = {
+      id: `demo-auction-${Date.now()}`,
+      farmer_id: farmerId,
+      crop_id: cropId,
+      quantity: parsedQuantity,
+      base_price: parsedBasePrice,
+      status: "open",
+      crops: { name: cropName || cropNames[cropId] || "Crop listing" },
+      created_at: new Date().toISOString(),
+      expires_at: new Date(Date.now() + 1000 * 60 * 60 * 24).toISOString(),
+    };
     writeDemo(demoAuctionsKey, [listing, ...demoListings()]);
     return listing;
   }
@@ -221,21 +338,46 @@ export async function createAuctionDirectly({ farmerId, cropId, cropName, quanti
   const client = requireClient();
   const { data, error } = await client
     .from("auctions")
-    .insert({ farmer_id: farmerId, crop_id: cropId, crop_name: cropName || "Crop listing", quantity: parsedQuantity, base_price: parsedBasePrice, status: "open", expires_at: new Date(Date.now() + 1000 * 60 * 60 * 24).toISOString() })
+    .insert({
+      farmer_id: farmerId,
+      crop_id: cropId,
+      crop_name: cropName || "Crop listing",
+      quantity: parsedQuantity,
+      base_price: parsedBasePrice,
+      status: "open",
+      expires_at: new Date(Date.now() + 1000 * 60 * 60 * 24).toISOString(),
+    })
     .select("*")
     .single();
 
   if (!error) return { ...data, crops: { name: data.crop_name } };
   if (!isMissingBiddingTable(error)) throw error;
-  const cropNames = { cr1: "Paddy (Grade A)", cr2: "Cotton (Long Staple)", cr3: "Maize" };
-  const listing = { id: `demo-auction-${Date.now()}`, farmer_id: farmerId, crop_id: cropId, quantity: parsedQuantity, base_price: parsedBasePrice, status: "open", crops: { name: cropName || cropNames[cropId] || "Crop listing" }, created_at: new Date().toISOString(), expires_at: new Date(Date.now() + 1000 * 60 * 60 * 24).toISOString() };
+  const cropNames = {
+    cr1: "Paddy (Grade A)",
+    cr2: "Cotton (Long Staple)",
+    cr3: "Maize",
+  };
+  const listing = {
+    id: `demo-auction-${Date.now()}`,
+    farmer_id: farmerId,
+    crop_id: cropId,
+    quantity: parsedQuantity,
+    base_price: parsedBasePrice,
+    status: "open",
+    crops: { name: cropName || cropNames[cropId] || "Crop listing" },
+    created_at: new Date().toISOString(),
+    expires_at: new Date(Date.now() + 1000 * 60 * 60 * 24).toISOString(),
+  };
   writeDemo(demoAuctionsKey, [listing, ...demoListings()]);
   return listing;
 }
 
 export async function getFarmerAuctions(farmerId) {
   if (!farmerId) return [];
-  if (!supabase) return demoListings().filter((auction) => belongsToFarmer(auction, farmerId));
+  if (!supabase)
+    return demoListings().filter((auction) =>
+      belongsToFarmer(auction, farmerId),
+    );
   const client = requireClient();
   const { data, error } = await client
     .from("auctions")
@@ -244,15 +386,25 @@ export async function getFarmerAuctions(farmerId) {
     .order("created_at", { ascending: false });
 
   if (error) {
-    if (useDemoFallback(error) || isMissingBiddingTable(error)) return demoListings().filter((auction) => belongsToFarmer(auction, farmerId));
+    if (useDemoFallback(error) || isMissingBiddingTable(error))
+      return demoListings().filter((auction) =>
+        belongsToFarmer(auction, farmerId),
+      );
     throw error;
   }
-  return data?.map((auction) => ({ ...auction, crops: { name: auction.crop_name } })) || [];
+  return (
+    data?.map((auction) => ({
+      ...auction,
+      crops: { name: auction.crop_name },
+    })) || []
+  );
 }
 
 export async function getFarmerBidNotifications(farmerId) {
   if (!farmerId) return [];
-  const localNotifications = readDemo(demoNotificationsKey, []).filter((notification) => notification?.farmer_id === farmerId);
+  const localNotifications = readDemo(demoNotificationsKey, []).filter(
+    (notification) => notification?.farmer_id === farmerId,
+  );
   if (!supabase) return localNotifications;
 
   try {
@@ -265,4 +417,18 @@ export async function getFarmerBidNotifications(farmerId) {
   } catch {
     return localNotifications;
   }
+}
+
+export function getBuyerBidActivity(buyerId) {
+  if (!buyerId) return [];
+  return readDemo(demoBidsKey, [])
+    .filter((bid) => bid.buyer_id === buyerId)
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+}
+
+export function getBuyerNotifications(buyerId) {
+  if (!buyerId) return [];
+  return readDemo(demoNotificationsKey, [])
+    .filter((notification) => notification.buyer_id === buyerId)
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 }
