@@ -459,6 +459,7 @@ function ActiveQueueTab() {
     { id: "KM-8490", farmer: "Hari Krishna", crop: "Paddy Grade A", qty: "35 Quintals", status: "Quality Check", remainingSeconds: 15 * 60 },
     { id: "KM-8493", farmer: "Suresh Babu", crop: "Cotton", qty: "15 Quintals", status: "Weighing", remainingSeconds: 8 * 60 + 16 },
     { id: "KM-8488", farmer: "Gopi Chand", crop: "Paddy Grade A", qty: "50 Quintals", status: "Payment Processing", remainingSeconds: 3 * 60 + 15 },
+    { id: "KM-8496", farmer: "Ravi Teja", crop: "Maize", qty: "25 Quintals", status: "Waiting", remainingSeconds: 12 * 60 },
   ];
 
   const [queue, setQueue] = useState(initialQueue);
@@ -570,7 +571,7 @@ function ActiveQueueTab() {
     { id: "KM-8488", name: "Gopi Chand", token: "KM-8488", quantity: "50 Quintals", status: "Payment Processing" },
     { id: "KM-8496", name: "Ravi Teja", token: "KM-8496", quantity: "25 Quintals", status: "Waiting" },
   ];
-  const queuePreview = showAllQueue ? queueMembers : queueMembers.slice(0, 2);
+  const queuePreview = showAllQueue || queueMembers.length <= 4 ? queueMembers : queueMembers.slice(0, 4);
   const processingCount = queueMembers.filter((farmer) => farmer.status !== "Completed").length;
 
   const [booking, setBooking] = useState(() => {
@@ -690,15 +691,17 @@ function ActiveQueueTab() {
                   <h2 className="font-bold text-forest text-lg">{t("liveQueue")}</h2>
                   <Badge tone="success" className="bg-emerald-100 text-emerald-700">{queueMembers.length} in queue</Badge>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setShowAllQueue((current) => !current)}
-                  className="text-xs font-bold uppercase tracking-wider text-brand hover:text-brand/80 transition-colors"
-                >
-                  {showAllQueue ? "Show Less" : "View All"}
-                </button>
+                {queueMembers.length > 4 && (
+                  <button
+                    type="button"
+                    onClick={() => setShowAllQueue((current) => !current)}
+                    className="text-xs font-bold uppercase tracking-wider text-brand hover:text-brand/80 transition-colors"
+                  >
+                    {showAllQueue ? "Show Less" : "View All"}
+                  </button>
+                )}
               </div>
-              <div className={`${showAllQueue ? "max-h-[420px] overflow-y-auto" : "h-[156px] overflow-hidden"} overflow-x-auto`}>
+              <div className={`${showAllQueue ? "max-h-[420px] overflow-y-auto" : "h-[260px] overflow-hidden"} overflow-x-auto`}>
                 <table className="w-full text-sm text-left">
                   <thead className="bg-slate-50 text-muted font-bold border-b border-line">
                     <tr>
