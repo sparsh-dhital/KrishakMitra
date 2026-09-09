@@ -562,6 +562,14 @@ function ActiveQueueTab() {
   const { t } = useTranslation();
   const [centre, setCentre] = useState(null);
   const [activeTab, setActiveTab] = useState("dashboard");
+  const [showAllQueue, setShowAllQueue] = useState(false);
+
+  const queueMembers = [
+    { id: "KM-8490", name: "Hari Krishna", token: "KM-8490", quantity: "35 Quintals", status: "Weighing" },
+    { id: "KM-8493", name: "Suresh Babu", token: "KM-8493", quantity: "15 Quintals", status: "Quality Check" },
+    { id: "KM-8488", name: "Gopi Chand", token: "KM-8488", quantity: "50 Quintals", status: "Payment Processing" },
+  ];
+  const queuePreview = showAllQueue ? queueMembers : queueMembers.slice(0, 2);
 
   const [booking, setBooking] = useState(() => {
     try {
@@ -675,9 +683,18 @@ function ActiveQueueTab() {
             </div>
 
             <Card className="p-0 overflow-hidden">
-              <div className="px-6 py-4 border-b border-line flex items-center justify-between">
-                <h2 className="font-bold text-forest text-lg">{t("liveQueue")}</h2>
-                <Badge tone="default">{t("viewAll")}</Badge>
+              <div className="px-6 py-4 border-b border-line flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <h2 className="font-bold text-forest text-lg">{t("liveQueue")}</h2>
+                  <Badge tone="success" className="bg-emerald-100 text-emerald-700">{queueMembers.length} in queue</Badge>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowAllQueue((current) => !current)}
+                  className="text-xs font-bold uppercase tracking-wider text-brand hover:text-brand/80 transition-colors"
+                >
+                  {showAllQueue ? "Show Less" : "View All"}
+                </button>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm text-left">
@@ -691,14 +708,20 @@ function ActiveQueueTab() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-line">
-                    {booking ? (
-                       <tr className="hover:bg-slate-50 transition-colors">
-                          <td className="px-6 py-4 font-bold text-forest">01</td>
-                          <td className="px-6 py-4 font-bold text-forest">Ramesh Kumar</td>
-                          <td className="px-6 py-4 font-mono text-muted">{booking?.token?.token_number || t("notAvailable")}</td>
-                          <td className="px-6 py-4 text-forest font-medium">{booking?.booking?.estimated_quantity || 0} {t("kilograms")}</td>
-                          <td className="px-6 py-4"><Badge tone="warning">{t("statusWeighing")}</Badge></td>
-                       </tr>
+                    {queuePreview.length > 0 ? (
+                      queuePreview.map((farmer, index) => (
+                        <tr key={farmer.id} className="hover:bg-slate-50 transition-colors">
+                          <td className="px-6 py-4 font-bold text-forest">{String(index + 1).padStart(2, "0")}</td>
+                          <td className="px-6 py-4 font-bold text-forest">{farmer.name}</td>
+                          <td className="px-6 py-4 font-mono text-muted">{farmer.token}</td>
+                          <td className="px-6 py-4 text-forest font-medium">{farmer.quantity}</td>
+                          <td className="px-6 py-4">
+                            <Badge tone={farmer.status === "Payment Processing" ? "success" : farmer.status === "Quality Check" ? "warning" : "default"}>
+                              {farmer.status}
+                            </Badge>
+                          </td>
+                        </tr>
+                      ))
                     ) : (
                       <tr>
                         <td colSpan="5" className="px-6 py-8 text-center text-muted font-medium">{t("noFarmersInQueue")}</td>
