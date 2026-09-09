@@ -1,17 +1,18 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
-import { Gavel, Package, IndianRupee, CheckCircle2, Clock3, TrendingUp } from "lucide-react";
-import { Badge, Button } from "./ui";
-import { acceptHighestBidDirectly, getAuctionBids, getHighestBid, supabase } from "../services/biddingService";
+import { Gavel, Package, IndianRupee, CheckCircle2, Clock3, TrendingUp, Trash2 } from "lucide-react";
+import { Badge, Button, Card } from "./ui";
+import { acceptHighestBidDirectly, getAuctionBids, getHighestBid, removeAuctionDirectly, supabase } from "../services/biddingService";
 
-const money = (value) => `₹${Number(value || 0).toLocaleString("en-IN")}`;
+const money = (value) => `${Number(value || 0).toLocaleString("en-IN")}`;
 
-export function AuctionCard({ auction, role, onBid, onUpdated }) {
+export function AuctionCard({ auction, role, buyerId, onBid, onUpdated, onRemoved }) {
   const [highestBid, setHighestBid] = useState(null);
   const [bidHistory, setBidHistory] = useState([]);
   const [timeLeft, setTimeLeft] = useState("");
   const [accepting, setAccepting] = useState(false);
+  const [removing, setRemoving] = useState(false);
   const auctionId = auction?.id;
 
   useEffect(() => {
@@ -24,7 +25,7 @@ export function AuctionCard({ auction, role, onBid, onUpdated }) {
       setBidHistory(bids || []);
     }).catch(() => {});
 
-    // No realtime without supabase — still need to return a valid cleanup
+    // No realtime without supabase  still need to return a valid cleanup
     if (!supabase) {
       return () => { active = false; };
     }
@@ -71,6 +72,20 @@ export function AuctionCard({ auction, role, onBid, onUpdated }) {
       toast.error(error?.message || "Unable to accept this bid.");
     } finally {
       setAccepting(false);
+    }
+  }
+
+  async function removeAuction() {
+    if (!window.confirm("Remove this crop listing? Any bids on it will also be removed.")) return;
+    setRemoving(true);
+    try {
+      await removeAuctionDirectly(auctionId);
+      toast.success("Auction listing removed.");
+      onRemoved?.(auctionId);
+    } catch (error) {
+      toast.error(error?.message || "Unable to remove this listing.");
+    } finally {
+      setRemoving(false);
     }
   }
 
@@ -135,9 +150,15 @@ export function AuctionCard({ auction, role, onBid, onUpdated }) {
         )}
 
         {role === "farmer" ? (
-          <Button variant="dark" className="w-full gap-2" onClick={acceptBid} disabled={accepting || !highestBid || auction?.status !== "open"}>
-            <CheckCircle2 className="w-4 h-4" /> {accepting ? "Accepting..." : "Accept Top Bid"}
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Button variant="dark" className="flex-1 gap-2" onClick={acceptBid} disabled={accepting || removing || !highestBid || auction?.status !== "open"}>
+              <CheckCircle2 className="w-4 h-4" /> 
+              {auction?.status === "awarded" ? "Bid Accepted" : (accepting ? "Accepting..." : (!highestBid ? "Waiting for bids..." : "Accept Top Bid"))}
+            </Button>
+            <Button variant="outline" className="gap-2 border-red-200 text-red-600 hover:border-red-300 hover:bg-red-50" onClick={removeAuction} disabled={accepting || removing || auction?.status !== "open"}>
+              <Trash2 className="w-4 h-4" /> {removing ? "Removing..." : "Remove"}
+            </Button>
+          </div>
         ) : (
           <Button className="w-full" onClick={() => onBid?.(auction, currentPrice)}>Place Higher Bid</Button>
         )}

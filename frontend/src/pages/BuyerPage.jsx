@@ -46,7 +46,7 @@ export default function BuyerPage({ language, onLanguageChange, onLogout, onHome
               <div className="text-right flex items-center gap-6">
                 <div>
                   <p className="text-xs font-bold text-muted uppercase tracking-widest mb-1">Your Bid</p>
-                  <p className="font-display text-xl font-extrabold text-forest">₹85,000</p>
+                  <p className="font-display text-xl font-extrabold text-forest">85,000</p>
                 </div>
                 <Badge tone="success" className="h-8">Winning</Badge>
                 <Button variant="outline" size="sm"><ArrowRight className="w-4 h-4" /></Button>
@@ -66,7 +66,7 @@ export default function BuyerPage({ language, onLanguageChange, onLogout, onHome
               <div className="text-right flex items-center gap-6">
                 <div>
                   <p className="text-xs font-bold text-muted uppercase tracking-widest mb-1">Your Bid</p>
-                  <p className="font-display text-xl font-extrabold line-through text-slate-400">₹42,000</p>
+                  <p className="font-display text-xl font-extrabold line-through text-slate-400">42,000</p>
                 </div>
                 <Badge variant="warning" className="h-8">Outbid</Badge>
                 <Button variant="primary" size="sm">Bid Higher</Button>
@@ -86,7 +86,7 @@ export default function BuyerPage({ language, onLanguageChange, onLogout, onHome
               <div className="text-right flex items-center gap-6">
                 <div>
                   <p className="text-xs font-bold text-muted uppercase tracking-widest mb-1">Winning Bid</p>
-                  <p className="font-display text-xl font-extrabold text-forest">₹61,000</p>
+                  <p className="font-display text-xl font-extrabold text-forest">61,000</p>
                 </div>
                 <Badge tone="default" className="h-8">Lost</Badge>
                 <Button variant="ghost" size="sm" disabled>Closed</Button>
@@ -104,7 +104,7 @@ export default function BuyerPage({ language, onLanguageChange, onLogout, onHome
               <div className="w-2 h-2 mt-2 rounded-full bg-brand shrink-0" />
               <div>
                 <p className="font-bold text-forest text-sm">You have been outbid on Cotton - 15 Quintals!</p>
-                <p className="text-xs text-muted mt-1">A new bid of ₹43,500 was placed 5 minutes ago. Place a higher bid to win.</p>
+                <p className="text-xs text-muted mt-1">A new bid of 43,500 was placed 5 minutes ago. Place a higher bid to win.</p>
               </div>
               <p className="text-xs text-slate-400 ml-auto whitespace-nowrap">5 mins ago</p>
             </div>

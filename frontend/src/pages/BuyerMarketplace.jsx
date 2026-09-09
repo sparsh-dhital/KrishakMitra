@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { X, Store, RefreshCw, Search, SlidersHorizontal, Sparkles } from "lucide-react";
 import { AuctionCard } from "../components/AuctionCard";
@@ -61,7 +61,7 @@ export default function BuyerMarketplace({ role = "admin", buyerId = "demo-buyer
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <Card className="p-4"><p className="text-xs font-bold uppercase tracking-widest text-muted">Open listings</p><p className="font-display text-2xl font-extrabold text-forest mt-1">{auctions.length}</p></Card>
-        <Card className="p-4"><p className="text-xs font-bold uppercase tracking-widest text-muted">Lowest base price</p><p className="font-display text-2xl font-extrabold text-brand mt-1">{auctions.length ? `₹${Math.min(...auctions.map((auction) => Number(auction?.base_price || 0))).toLocaleString("en-IN")}` : "-"}</p></Card>
+        <Card className="p-4"><p className="text-xs font-bold uppercase tracking-widest text-muted">Lowest base price</p><p className="font-display text-2xl font-extrabold text-brand mt-1">{auctions.length ? `${Math.min(...auctions.map((auction) => Number(auction?.base_price || 0))).toLocaleString("en-IN")}` : "-"}</p></Card>
         <Card className="p-4"><p className="text-xs font-bold uppercase tracking-widest text-muted">Direct trade</p><p className="font-display text-2xl font-extrabold text-forest mt-1 flex items-center gap-2">Live <Sparkles className="w-5 h-5 text-amber-500" /></p></Card>
       </div>
 

@@ -103,10 +103,10 @@ export default function App() {
     localStorage.setItem("krishak-mitra-session", JSON.stringify(next));
   };
 
-  // If user already has a session and clicks "Go to Dashboard" on landing page
+  // Always let the user choose a dashboard explicitly from the landing page.
   const handleNavigateLogin = () => {
     if (session) {
-      // Already logged in — go straight to their dashboard
+      // Already logged in  go straight to their dashboard
       setView(session.role === "admin" ? "admin" : session.role === "buyer" ? "buyer" : "farmer");
     } else {
       setView("login");
@@ -144,6 +144,7 @@ export default function App() {
 
       {view === "contact" && (
         <ContactPage
+
           onBack={() => setView("landing")}
           language={language}
           onLanguageChange={changeLanguage}

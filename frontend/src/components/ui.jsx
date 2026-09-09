@@ -1,8 +1,8 @@
-import { forwardRef, useState } from "react";
+import { forwardRef, useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { LogOut, Check, MoreHorizontal, Home, ChevronLeft, ChevronRight, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { LogOut, Check, MoreHorizontal, Home, PanelLeftClose, PanelLeftOpen, Search, Bell, ChevronRight, Wifi } from "lucide-react";
 import { motion } from "framer-motion";
 import Logo from "./Logo";
 import LanguagePicker from "./LanguagePicker";
@@ -147,7 +147,7 @@ export function ProgressTimeline({ steps, currentStep }) {
         
         return (
           <div key={idx} className="relative flex-1 flex flex-col items-center">
-            {/* Line to previous node */}
+            
             {idx !== 0 && (
               <div className="absolute top-4 -left-1/2 w-full h-[3px] bg-slate-100 -z-0">
                 <div 
@@ -189,6 +189,22 @@ export function ProgressTimeline({ steps, currentStep }) {
   );
 }
 
+function LiveClock() {
+  const [now, setNow] = useState(new Date());
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(id);
+  }, []);
+  const time = now.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: true });
+  const date = now.toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "short" });
+  return (
+    <div className="hidden md:flex flex-col items-end leading-none">
+      <span className="text-sm font-extrabold text-forest tabular-nums">{time}</span>
+      <span className="text-[10px] text-muted font-medium mt-0.5">{date}</span>
+    </div>
+  );
+}
+
 export function SidebarLayout({ children, activeTab, onTabChange, navItems, onLogout, onHome, language, onLanguageChange, displayName = "Ramesh Kumar", roleLabel }) {
   const { t } = useTranslation();
   const defaultRoleLabel = roleLabel || t("greetingFarmer");
@@ -204,21 +220,21 @@ export function SidebarLayout({ children, activeTab, onTabChange, navItems, onLo
 
   return (
     <div className="flex min-h-screen min-w-0 overflow-x-hidden bg-cream">
-      {/* Desktop Sidebar */}
+      
       <aside 
         className={cn("hidden lg:flex bg-[#0b291d] flex-col fixed inset-y-0 left-0 z-50 transition-all duration-300 ease-in-out shadow-2xl overflow-hidden", isExpanded ? "w-[260px]" : "w-[72px]")}
       >
-        {/* Sidebar header */}
+        
         <div className={cn("px-3 py-4 flex items-center border-b border-white/10 transition-all duration-300", isExpanded ? "justify-between px-4" : "justify-center")}>
           {/* Text logo — visible only when expanded */}
-          <div className={cn("transition-all duration-300", isExpanded ? "opacity-100 scale-100 delay-100" : "opacity-0 scale-95 absolute")}>
+          <div className={cn("transition-all duration-300", isExpanded ? "opacity-100 scale-100 delay-100" : "opacity-0 scale-95 absolute pointer-events-none")}>
             <Logo variant="text" className="h-7 w-auto" dark={true} />
           </div>
-          {/* Emblem — visible only when collapsed */}
+          
           <div className={cn("transition-all duration-300 shrink-0", !isExpanded ? "opacity-100" : "opacity-0 w-0 overflow-hidden pointer-events-none")}>
             <Logo variant="emblem" className="h-10 w-10" />
           </div>
-          {/* Collapse button — only when expanded */}
+          
           <button
             onClick={() => setIsExpanded(false)}
             className={cn("ml-2 w-8 h-8 rounded-lg flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition-all shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60", isExpanded ? "opacity-100" : "opacity-0 pointer-events-none")}
@@ -228,7 +244,7 @@ export function SidebarLayout({ children, activeTab, onTabChange, navItems, onLo
           </button>
         </div>
 
-        {/* Expand button — only when collapsed */}
+        
         {!isExpanded && (
           <div className="flex justify-center py-2.5 border-b border-white/10">
             <button
@@ -287,26 +303,78 @@ export function SidebarLayout({ children, activeTab, onTabChange, navItems, onLo
         </div>
       </aside>
 
-      {/* Main Content Area */}
+      
       <main className={cn("min-w-0 flex-1 pb-20 lg:pb-0 transition-all duration-300 ease-in-out", isExpanded ? "lg:pl-[260px]" : "lg:pl-[72px]")}>
-        {/* Top Header */}
-        <header className="h-16 border-b border-line bg-surface flex items-center px-4 sm:px-6 lg:px-8 sticky top-0 z-40">
-          {/* Mobile: show emblem (hidden on desktop since sidebar shows full logo) */}
-          <div className="flex items-center gap-2 lg:hidden">
-            <Logo variant="emblem" className="w-9 h-9" />
-          </div>
+        
+        <header className="h-[72px] border-b border-line/50 bg-white/70 backdrop-blur-2xl sticky top-0 z-40">
+          <div className="flex h-full items-center gap-4 px-4 sm:px-6 lg:px-8">
 
-          {/* Controls — always pinned to the right */}
-          <div className="ml-auto flex min-w-0 items-center gap-2 sm:gap-3">
-            <LanguagePicker value={language} onChange={onLanguageChange} />
+            
+            <div className="flex items-center gap-2 lg:hidden shrink-0">
+              <Logo variant="emblem" className="w-8 h-8 drop-shadow-sm" />
+            </div>
 
-            <button
-              onClick={onLogout}
-              className="flex items-center gap-2 h-9 px-4 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 hover:shadow-sm text-sm font-bold transition-all border border-red-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-2"
-            >
-              <LogOut className="w-4 h-4" />
-              <span className="hidden sm:inline">{t("logout")}</span>
-            </button>
+            
+            <div className="hidden lg:flex items-center gap-2 text-sm font-medium shrink-0 bg-slate-50/80 px-3 py-1.5 rounded-full border border-slate-100">
+              <span className="text-muted font-bold">Dashboard</span>
+              <ChevronRight className="w-4 h-4 text-slate-300" />
+              <span className="text-forest font-extrabold">
+                {navItems.find(n => n.id === activeTab)?.label || "Overview"}
+              </span>
+            </div>
+
+            
+            <div className="flex-1 max-w-md mx-auto hidden md:block pl-4">
+              <div className="relative group">
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-400 group-focus-within:text-brand transition-colors" />
+                <input
+                  type="text"
+                  placeholder="Search farmers, tokens, crops..."
+                  className="w-full bg-slate-100/50 border border-slate-200/60 rounded-full pl-10 pr-4 py-2.5 text-sm font-medium placeholder:text-slate-400 focus:bg-white focus:border-brand/40 focus:ring-4 focus:ring-brand/10 transition-all outline-none shadow-sm"
+                />
+              </div>
+            </div>
+
+            
+            <div className="ml-auto flex items-center gap-2 sm:gap-4 shrink-0">
+
+              
+              <LiveClock />
+
+              
+              <div className="h-8 w-px bg-slate-200 hidden sm:block mx-1"></div>
+
+              
+              <LanguagePicker value={language} onChange={onLanguageChange} />
+
+              
+              <button className="relative w-10 h-10 rounded-full flex items-center justify-center text-slate-500 hover:text-brand hover:bg-brand/5 transition-all focus:outline-none">
+                <Bell className="w-5 h-5" />
+                <span className="absolute top-2 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white shadow-sm" />
+              </button>
+
+              
+              <div className="flex items-center gap-3 pl-2 sm:pl-4 border-l border-slate-200">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-brand to-emerald-400 flex items-center justify-center text-white text-sm font-extrabold shadow-md shrink-0 border border-white">
+                  {displayName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase()}
+                </div>
+                <div className="hidden lg:block leading-tight">
+                  <p className="text-sm font-extrabold text-forest">{displayName}</p>
+                  <p className="text-[10px] text-muted font-bold tracking-wider uppercase mt-0.5">
+                    {defaultRoleLabel}
+                  </p>
+                </div>
+              </div>
+
+              
+              <button
+                onClick={onLogout}
+                className="w-10 h-10 ml-1 rounded-full flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
+                title={t("logout")}
+              >
+                <LogOut className="w-5 h-5" />
+              </button>
+            </div>
           </div>
         </header>
         
@@ -315,7 +383,7 @@ export function SidebarLayout({ children, activeTab, onTabChange, navItems, onLo
         </div>
       </main>
 
-      {/* Mobile Bottom Nav */}
+      
       {moreOpen && secondaryNavItems.length > 0 && (
         <div className="lg:hidden fixed inset-x-3 bottom-[4.75rem] z-50 max-h-[min(70vh,28rem)] overflow-y-auto rounded-2xl border border-line bg-surface p-2 shadow-xl">
           <div className="flex items-center justify-between px-3 py-2">
@@ -326,7 +394,7 @@ export function SidebarLayout({ children, activeTab, onTabChange, navItems, onLo
               className="rounded-lg px-2 py-1 text-xs font-bold text-muted hover:bg-slate-50"
               aria-label="Close menu"
             >
-              <span aria-hidden="true">×</span>
+              <span aria-hidden="true"></span>
             </button>
           </div>
           <div className="grid grid-cols-1 gap-1 sm:grid-cols-2">

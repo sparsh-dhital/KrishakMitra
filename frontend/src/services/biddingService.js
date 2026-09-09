@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
+﻿import { createClient } from "@supabase/supabase-js";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -101,7 +101,7 @@ export async function placeBidDirectly(auctionId, buyerId, offeredPrice) {
       farmer_id: auction.farmer_id,
       type: "bid",
       title: "New private-market bid",
-      message: `A buyer placed a bid of ₹${price.toLocaleString("en-IN")} per quintal on your ${auction.crops?.name || "crop"}.`,
+      message: `A buyer placed a bid of ${price.toLocaleString("en-IN")} per quintal on your ${auction.crops?.name || "crop"}.`,
       auction_id: auctionId,
       created_at: new Date().toISOString(),
       read: false,
@@ -140,7 +140,7 @@ export async function placeBidDirectly(auctionId, buyerId, offeredPrice) {
       auction_id: auctionId,
       bid_id: data?.id,
       title: "New private-market bid",
-      message: `A buyer placed a bid of ₹${price.toLocaleString("en-IN")} per quintal.`,
+      message: `A buyer placed a bid of ${price.toLocaleString("en-IN")} per quintal.`,
       is_read: false,
     }).catch(() => {});
   }
@@ -163,6 +163,27 @@ export async function acceptHighestBidDirectly(auctionId) {
     .select()
     .single();
 
+  if (error) throw error;
+  return data;
+}
+
+export async function removeAuctionDirectly(auctionId) {
+  if (!auctionId) throw new Error("Auction details are required.");
+  if (auctionId.startsWith("demo-")) {
+    const listings = demoListings().filter((auction) => auction.id !== auctionId);
+    writeDemo(demoAuctionsKey, listings);
+    writeDemo(demoBidsKey, readDemo(demoBidsKey, []).filter((bid) => bid.auction_id !== auctionId));
+    writeDemo(demoNotificationsKey, readDemo(demoNotificationsKey, []).filter((notification) => notification.auction_id !== auctionId));
+    return { id: auctionId };
+  }
+
+  const client = requireClient();
+  const { data, error } = await client
+    .from("auctions")
+    .delete()
+    .eq("id", auctionId)
+    .select("id")
+    .single();
   if (error) throw error;
   return data;
 }

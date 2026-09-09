@@ -39,7 +39,7 @@ export default function LoginPage({ onBack, onLogin, t, language, onLanguageChan
 
   return (
     <div className="min-h-screen bg-cream flex items-center justify-center p-4 sm:p-6 selection:bg-brand selection:text-white">
-      {/* Language picker floating top-right */}
+      
       <div className="fixed top-3 right-3 z-50 sm:top-4 sm:right-4">
         <LanguagePicker value={language} onChange={onLanguageChange} />
       </div>
@@ -51,7 +51,7 @@ export default function LoginPage({ onBack, onLogin, t, language, onLanguageChan
         
         <Card className="shadow-xl shadow-brand/5 border-line p-5 sm:p-10">
           <div className="flex flex-col items-center mb-6">
-            {/* stacked variant: emblem on top, styled text below */}
+            
             <Logo variant="stacked" className="mb-1" />
             <p className="text-sm text-muted font-medium text-center mt-2">{t("login.accessDashboard")}</p>
           </div>
