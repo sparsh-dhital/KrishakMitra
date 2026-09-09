@@ -131,7 +131,15 @@ export default function ContactPage({ onBack, language, onLanguageChange }) {
         {/* Right Side: Form */}
         <div className="bg-white rounded-[2rem] p-8 md:p-12 shadow-xl border border-line">
           <h2 className="text-2xl font-bold mb-8">Send us a message</h2>
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form
+            onSubmit={handleSubmit}
+            onFocusCapture={(event) => {
+              if (!event.target.closest("[data-country-picker]")) {
+                setIsCountryMenuOpen(false);
+              }
+            }}
+            className="space-y-6"
+          >
             <div>
               <label className="block text-sm font-bold mb-2">Full Name</label>
               <input 
@@ -146,7 +154,7 @@ export default function ContactPage({ onBack, language, onLanguageChange }) {
               <div>
                 <label className="block text-sm font-bold mb-2">Phone Number</label>
                 <div className="flex gap-2">
-                  <div className="relative w-20 shrink-0">
+                  <div className="relative w-20 shrink-0" data-country-picker>
                     <button
                       type="button"
                       onClick={() => setIsCountryMenuOpen((open) => !open)}
@@ -185,6 +193,7 @@ export default function ContactPage({ onBack, language, onLanguageChange }) {
                     inputMode="numeric"
                     onInput={(event) => {
                       event.currentTarget.value = event.currentTarget.value.replace(/\D/g, "").slice(0, selectedCountry.digits);
+                      setIsCountryMenuOpen(false);
                     }}
                     placeholder={"0".repeat(selectedCountry.digits)}
                     className="min-w-0 flex-1 px-5 py-3.5 bg-[#F8F9FA] border border-line rounded-xl focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all"
