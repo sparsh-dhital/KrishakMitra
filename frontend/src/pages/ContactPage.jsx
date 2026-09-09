@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ArrowLeft, Mail, Phone, MapPin, Send, ChevronDown } from "lucide-react";
 import toast from "react-hot-toast";
 import Logo from "../components/Logo";
@@ -14,6 +15,7 @@ const countryOptions = [
 ];
 
 export default function ContactPage({ onBack, language, onLanguageChange }) {
+  const { t } = useTranslation();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState(countryOptions[0]);
@@ -83,13 +85,13 @@ export default function ContactPage({ onBack, language, onLanguageChange }) {
         {/* Left Side: Info */}
         <div>
           <div className="inline-flex items-center text-sm font-bold text-brand bg-brand/10 px-4 py-1.5 rounded-full mb-6">
-            Get In Touch
+            {t("contactTitle")}
           </div>
           <h1 className="font-display text-4xl md:text-5xl font-extrabold tracking-tight mb-6">
-            We're here to help you grow.
+            {t("contactHeading")}
           </h1>
           <p className="text-muted text-lg leading-relaxed mb-12 max-w-md">
-            Have questions about the procurement process, platform usage, or need technical support? Reach out to our dedicated team.
+            {t("contactIntro")}
           </p>
 
           <div className="space-y-8">
@@ -98,7 +100,7 @@ export default function ContactPage({ onBack, language, onLanguageChange }) {
                 <Phone className="w-6 h-6 text-brand" />
               </div>
               <div>
-                <h3 className="font-bold text-lg mb-1">Call Us (Toll-Free)</h3>
+                <h3 className="font-bold text-lg mb-1">{t("callUs")}</h3>
                 <p className="text-muted">1800-123-4567</p>
                 <p className="text-sm text-muted/70 mt-1">Available Mon-Sat, 9am - 6pm</p>
               </div>
@@ -109,7 +111,7 @@ export default function ContactPage({ onBack, language, onLanguageChange }) {
                 <Mail className="w-6 h-6 text-brand" />
               </div>
               <div>
-                <h3 className="font-bold text-lg mb-1">Email Support</h3>
+                <h3 className="font-bold text-lg mb-1">{t("emailSupport")}</h3>
                 <p className="text-muted">support@krishakmitra.gov.in</p>
                 <p className="text-sm text-muted/70 mt-1">We aim to reply within 24 hours</p>
               </div>
@@ -120,7 +122,7 @@ export default function ContactPage({ onBack, language, onLanguageChange }) {
                 <MapPin className="w-6 h-6 text-brand" />
               </div>
               <div>
-                <h3 className="font-bold text-lg mb-1">Head Office</h3>
+                <h3 className="font-bold text-lg mb-1">{t("headOffice")}</h3>
                 <p className="text-muted">Ministry of Agriculture</p>
                 <p className="text-sm text-muted/70 mt-1">Krishi Bhawan, New Delhi, 110001</p>
               </div>
@@ -130,7 +132,7 @@ export default function ContactPage({ onBack, language, onLanguageChange }) {
 
         {/* Right Side: Form */}
         <div className="bg-white rounded-[2rem] p-8 md:p-12 shadow-xl border border-line">
-          <h2 className="text-2xl font-bold mb-8">Send us a message</h2>
+          <h2 className="text-2xl font-bold mb-8">{t("sendMessage")}</h2>
           <form
             onSubmit={handleSubmit}
             onFocusCapture={(event) => {

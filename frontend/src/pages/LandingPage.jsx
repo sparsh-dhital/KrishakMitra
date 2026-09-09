@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import { 
   ArrowRight, 
   Play, 
@@ -22,21 +23,22 @@ import Logo from "../components/Logo";
 import LanguagePicker from "../components/LanguagePicker";
 
 export default function LandingPage({ onNavigateLogin, onNavigateContact, hasSession, language, onLanguageChange }) {
+  const { t } = useTranslation();
   return (
     <div className="min-h-screen bg-[#F8F9FA] font-body text-forest selection:bg-brand selection:text-white">
       {/* Navbar */}
       <header className="w-full py-4 px-4 sm:py-6 sm:px-6 max-w-7xl mx-auto flex items-center justify-between gap-3">
         <Logo variant="full" className="h-14" />
         <nav className="hidden md:flex items-center gap-10 text-base font-semibold">
-          <a href="#features" className="hover:text-brand transition-colors">Features</a>
-          <a href="#how-it-works" className="hover:text-brand transition-colors">How it Works</a>
-          <a href="#impact" className="hover:text-brand transition-colors">Impact</a>
-          <a href="#testimonials" className="hover:text-brand transition-colors">Testimonials</a>
+          <a href="#features" className="hover:text-brand transition-colors">{t("landingFeatures")}</a>
+          <a href="#how-it-works" className="hover:text-brand transition-colors">{t("landingHow")}</a>
+          <a href="#impact" className="hover:text-brand transition-colors">{t("landingImpact")}</a>
+          <a href="#testimonials" className="hover:text-brand transition-colors">{t("landingTestimonials")}</a>
         </nav>
         <div className="flex shrink-0 items-center gap-2 sm:gap-5">
           <LanguagePicker value={language} onChange={onLanguageChange} />
           <button onClick={onNavigateLogin} className="bg-forest text-white px-4 py-2.5 sm:px-8 sm:py-3 rounded-full text-sm sm:text-base font-medium hover:bg-forest-dark transition-colors shadow-sm">
-            {hasSession ? "Open Dashboard" : "Login / Register"}
+            {hasSession ? t("overview") : `${t("signIn")} / Register`}
           </button>
         </div>
       </header>
@@ -44,22 +46,22 @@ export default function LandingPage({ onNavigateLogin, onNavigateContact, hasSes
       {/* Hero */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 pt-12 sm:pt-20 pb-20 sm:pb-28 grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
         <div className="min-w-0">
-          <div className="inline-flex items-center text-sm font-bold text-brand bg-brand/10 px-4 py-1.5 rounded-full mb-8">
-            <div className="w-2 h-2 rounded-full bg-brand mr-2" /> Next Generation Platform
+            <div className="inline-flex items-center text-sm font-bold text-brand bg-brand/10 px-4 py-1.5 rounded-full mb-8">
+            <div className="w-2 h-2 rounded-full bg-brand mr-2" /> {t("landingBadge")}
           </div>
           <h1 className="font-display text-4xl sm:text-5xl md:text-[5rem] leading-[1.05] font-extrabold tracking-tight mb-8">
-            Smarter Procurement.<br/>
-            <span className="text-brand">Stronger Farmers.</span>
+            {t("landingTitle").split(". ")[0]}.<br/>
+            <span className="text-brand">{t("landingTitle").split(". ")[1]}</span>
           </h1>
           <p className="text-muted text-xl mb-10 max-w-lg leading-relaxed">
-            Experience seamless coordination between farmers, procurement centres, and government systems. No more queues, just transparent, real-time efficiency.
+            {t("landingIntro")} No more queues, just transparent, real-time efficiency.
           </p>
           <div className="flex flex-col sm:flex-row items-center gap-5 mb-14">
             <button onClick={onNavigateLogin} className="w-full sm:w-auto bg-brand text-white px-10 py-4 rounded-full text-lg font-bold flex items-center justify-center gap-2 hover:bg-brand-hover transition-colors shadow-lg shadow-brand/20">
-              {hasSession ? "Go to Dashboard" : "Book Your Slot"} <ArrowRight className="w-5 h-5" />
+              {hasSession ? t("overview") : t("bookSlot")} <ArrowRight className="w-5 h-5" />
             </button>
             <button className="w-full sm:w-auto bg-white text-forest px-10 py-4 rounded-full text-lg font-bold flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors border border-line">
-              <Play className="w-5 h-5 fill-forest" /> Watch Demo
+              <Play className="w-5 h-5 fill-forest" /> {t("watchDemo")}
             </button>
           </div>
           <div className="flex flex-wrap items-center gap-4 sm:gap-8">
@@ -71,10 +73,10 @@ export default function LandingPage({ onNavigateLogin, onNavigateContact, hasSes
               ))}
             </div>
             <div>
-              <p className="text-base font-extrabold">10,000+ Farmers</p>
+              <p className="text-base font-extrabold">{t("farmersCount")}</p>
               <div className="flex items-center gap-1.5 mt-1">
                 {[1, 2, 3, 4, 5].map(i => <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />)}
-                <span className="text-sm font-bold ml-1.5">4.9/5 Rating</span>
+                <span className="text-sm font-bold ml-1.5">{t("rating")}</span>
               </div>
             </div>
           </div>
@@ -88,7 +90,7 @@ export default function LandingPage({ onNavigateLogin, onNavigateContact, hasSes
                 <CheckCircle2 className="w-6 h-6" />
               </div>
               <div>
-                <p className="text-base font-bold text-forest leading-tight">Slot Confirmed</p>
+                <p className="text-base font-bold text-forest leading-tight">{t("bookingConfirmed")}</p>
                 <p className="text-sm text-muted mt-1">Time: <span className="font-bold">Today, 10:30 AM</span></p>
               </div>
             </div>
@@ -98,7 +100,7 @@ export default function LandingPage({ onNavigateLogin, onNavigateContact, hasSes
                 <Clock className="w-6 h-6" />
               </div>
               <div>
-                <p className="text-sm text-muted leading-tight">Current Wait Time</p>
+                <p className="text-sm text-muted leading-tight">{t("estimatedWait")}</p>
                 <p className="text-xl font-extrabold text-forest mt-1">12 min</p>
               </div>
             </div>
@@ -106,8 +108,8 @@ export default function LandingPage({ onNavigateLogin, onNavigateContact, hasSes
             <div className="absolute top-[55%] right-0 xl:-right-12 w-[80%] md:w-[75%] bg-white rounded-3xl p-3 sm:p-5 shadow-xl flex items-center gap-3 sm:gap-4">
               <div className="flex-1">
                 <div className="flex items-center justify-between">
-                  <p className="text-sm text-muted leading-tight">Payment Disbursed</p>
-                  <span className="text-brand text-xs font-bold px-2 py-1 bg-brand/10 rounded uppercase">Verified</span>
+                  <p className="text-sm text-muted leading-tight">{t("paymentStatus")}</p>
+                  <span className="text-brand text-xs font-bold px-2 py-1 bg-brand/10 rounded uppercase">{t("statusAccepted")}</span>
                 </div>
                 <p className="text-2xl font-extrabold text-forest mt-2">₹45,200</p>
               </div>
@@ -116,15 +118,15 @@ export default function LandingPage({ onNavigateLogin, onNavigateContact, hasSes
             <div className="mt-auto pt-8 border-t border-white/10 flex justify-between px-2 md:px-6">
                <div className="text-center">
                  <p className="text-white font-extrabold text-2xl md:text-3xl">42</p>
-                 <p className="text-white/50 text-xs md:text-sm uppercase tracking-wider mt-1.5 font-semibold">Live Queue</p>
+                 <p className="text-white/50 text-xs md:text-sm uppercase tracking-wider mt-1.5 font-semibold">{t("liveQueue")}</p>
                </div>
                <div className="text-center">
                  <p className="text-white font-extrabold text-2xl md:text-3xl">8</p>
-                 <p className="text-white/50 text-xs md:text-sm uppercase tracking-wider mt-1.5 font-semibold">Verified</p>
+                 <p className="text-white/50 text-xs md:text-sm uppercase tracking-wider mt-1.5 font-semibold">{t("statusAccepted")}</p>
                </div>
                <div className="text-center">
                  <p className="text-white font-extrabold text-2xl md:text-3xl">95%</p>
-                 <p className="text-white/50 text-xs md:text-sm uppercase tracking-wider mt-1.5 font-semibold">Efficiency</p>
+                 <p className="text-white/50 text-xs md:text-sm uppercase tracking-wider mt-1.5 font-semibold">{t("capacity")}</p>
                </div>
             </div>
           </div>
@@ -136,19 +138,19 @@ export default function LandingPage({ onNavigateLogin, onNavigateContact, hasSes
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16 grid grid-cols-2 md:grid-cols-4 gap-8 sm:gap-10 text-center divide-x-0 md:divide-x divide-line/50">
           <div>
             <h3 className="text-xl sm:text-3xl lg:text-5xl font-display font-extrabold mb-3">10,000+</h3>
-            <p className="text-base font-medium text-muted">Farmers Onboarded</p>
+            <p className="text-base font-medium text-muted">{t("farmersCount")}</p>
           </div>
           <div>
             <h3 className="text-xl sm:text-3xl lg:text-5xl font-display font-extrabold mb-3">50+</h3>
-            <p className="text-base font-medium text-muted">Procurement Centres</p>
+            <p className="text-base font-medium text-muted">{t("centre")}</p>
           </div>
           <div>
             <h3 className="text-xl sm:text-3xl lg:text-5xl font-display font-extrabold mb-3">95%</h3>
-            <p className="text-base font-medium text-muted">Fast-Tracked Sales</p>
+            <p className="text-base font-medium text-muted">{t("bookedSuccess")}</p>
           </div>
           <div>
             <h3 className="text-xl sm:text-3xl lg:text-5xl font-display font-extrabold mb-3">₹100Cr+</h3>
-            <p className="text-base font-medium text-muted">Payments Processed</p>
+            <p className="text-base font-medium text-muted">{t("paymentStatus")}</p>
           </div>
         </div>
       </section>
@@ -157,19 +159,19 @@ export default function LandingPage({ onNavigateLogin, onNavigateContact, hasSes
       <section id="features" className="py-28 bg-[#F8F9FA]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-20">
-            <div className="inline-block text-xs font-bold text-white bg-brand px-4 py-1.5 rounded-full mb-6 uppercase tracking-wider">Features</div>
-            <h2 className="text-4xl md:text-5xl font-display font-extrabold mb-4 tracking-tight">Everything You Need</h2>
-            <p className="text-muted text-lg max-w-2xl mx-auto">A complete solution for a transparent and fast procurement process.</p>
+            <div className="inline-block text-xs font-bold text-white bg-brand px-4 py-1.5 rounded-full mb-6 uppercase tracking-wider">{t("landingFeatures")}</div>
+            <h2 className="text-4xl md:text-5xl font-display font-extrabold mb-4 tracking-tight">{t("featureHeading")}</h2>
+            <p className="text-muted text-lg max-w-2xl mx-auto">{t("featureIntro")}</p>
           </div>
           
           <div className="grid lg:grid-cols-3 gap-8">
             {[
-              { icon: Activity, title: "Real-time Visibility", desc: "Track live queue status and schedules to minimize wait times." },
-              { icon: ShieldCheck, title: "Secure & Transparent", desc: "End-to-end transparency with digital tokens preventing malpractices." },
-              { icon: CreditCard, title: "Direct Payments", desc: "Integration with banking APIs ensures instant transfers to accounts." },
-              { icon: MapPin, title: "Smart Allocation", desc: "Intelligent routing to the nearest centers with available capacity." },
-              { icon: Phone, title: "Mobile First", desc: "Designed for seamless use on any mobile device for farmers on the go." },
-              { icon: Activity, title: "Smart Analytics", desc: "Government and centers get real-time data for better decision making." }
+              { icon: Activity, title: t("featureRealtime"), desc: t("featureRealtimeDesc") },
+              { icon: ShieldCheck, title: t("featureSecure"), desc: t("featureSecureDesc") },
+              { icon: CreditCard, title: t("featurePayments"), desc: t("featurePaymentsDesc") },
+              { icon: MapPin, title: t("featureAllocation"), desc: t("featureAllocationDesc") },
+              { icon: Phone, title: t("featureMobile"), desc: t("featureMobileDesc") },
+              { icon: Activity, title: t("featureAnalytics"), desc: t("featureAnalyticsDesc") }
             ].map((f, i) => (
               <div key={i} className="bg-white p-10 rounded-[2rem] border border-line shadow-sm hover:shadow-md transition-shadow">
                 <div className="w-14 h-14 rounded-2xl bg-[#F8F9FA] border border-line flex items-center justify-center mb-8 text-brand">
@@ -189,20 +191,20 @@ export default function LandingPage({ onNavigateLogin, onNavigateContact, hasSes
         <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '32px 32px' }} />
         
         <div className="max-w-6xl mx-auto px-6 relative z-10 text-center">
-          <div className="inline-block text-xs font-bold text-white bg-white/10 border border-white/20 px-4 py-1.5 rounded-full mb-6 uppercase tracking-wider">Process</div>
-          <h2 className="text-4xl md:text-5xl font-display font-extrabold text-white mb-4 tracking-tight">Five Simple Steps</h2>
-          <p className="text-white/60 mb-24 text-lg">From booking your slot to receiving your payment.</p>
+          <div className="inline-block text-xs font-bold text-white bg-white/10 border border-white/20 px-4 py-1.5 rounded-full mb-6 uppercase tracking-wider">{t("process")}</div>
+          <h2 className="text-4xl md:text-5xl font-display font-extrabold text-white mb-4 tracking-tight">{t("fiveSteps")}</h2>
+          <p className="text-white/60 mb-24 text-lg">{t("processIntro")}</p>
 
           <div className="flex flex-col lg:flex-row items-center justify-between gap-8 relative">
              {/* Desktop Connecting Line */}
             <div className="hidden md:block absolute top-1/2 left-[10%] right-[10%] h-[2px] bg-white/10 -translate-y-1/2 z-0" />
             
             {[
-              { num: "1", title: "Choose Centre", desc: "Find nearest available center", icon: MapPin },
-              { num: "2", title: "Book a Slot", desc: "Select preferred date & time", icon: Zap },
-              { num: "3", title: "Get Token", desc: "Receive digital QR instantly", icon: Clock },
-              { num: "4", title: "Quality Check", desc: "Bring produce for fast grading", icon: CheckCircle2 },
-              { num: "5", title: "Get Paid", desc: "Money transferred directly", icon: CreditCard }
+              { num: "1", title: t("chooseCentre"), desc: t("chooseCentreDesc"), icon: MapPin },
+              { num: "2", title: t("bookSlotStep"), desc: t("bookSlotStepDesc"), icon: Zap },
+              { num: "3", title: t("getToken"), desc: t("getTokenDesc"), icon: Clock },
+              { num: "4", title: t("qualityCheck"), desc: t("qualityCheckDesc"), icon: CheckCircle2 },
+              { num: "5", title: t("getPaid"), desc: t("getPaidDesc"), icon: CreditCard }
             ].map((step, idx) => (
               <div key={idx} className="relative z-10 w-full lg:w-1/5 bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-8 flex flex-col items-center hover:bg-white/10 transition-colors cursor-pointer">
                 <div className="w-14 h-14 rounded-full bg-brand flex items-center justify-center text-white font-bold mb-6 shadow-lg shadow-brand/30">
@@ -226,8 +228,8 @@ export default function LandingPage({ onNavigateLogin, onNavigateContact, hasSes
           
           <div className="grid lg:grid-cols-2 gap-20 items-center">
             <div>
-              <h2 className="text-4xl md:text-5xl font-display font-extrabold mb-5 tracking-tight">Transforming Lives</h2>
-              <p className="text-muted mb-12 text-lg">Measurable impact across the agricultural ecosystem.</p>
+              <h2 className="text-4xl md:text-5xl font-display font-extrabold mb-5 tracking-tight">{t("impactHeading")}</h2>
+              <p className="text-muted mb-12 text-lg">{t("impactIntro")}</p>
               
               <div className="space-y-8">
                 {[
@@ -284,15 +286,15 @@ export default function LandingPage({ onNavigateLogin, onNavigateContact, hasSes
             <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mb-10 border border-white/10">
               <Leaf className="w-10 h-10 text-brand" />
             </div>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-display font-extrabold text-white mb-5 tracking-tight">Ready to simplify your procurement?</h2>
-            <p className="text-white/70 mb-12 text-lg md:text-xl max-w-2xl">Join thousands of farmers experiencing faster, fairer, and transparent transactions.</p>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-display font-extrabold text-white mb-5 tracking-tight">{t("readyHeading")}</h2>
+            <p className="text-white/70 mb-12 text-lg md:text-xl max-w-2xl">{t("readyIntro")}</p>
             
             <div className="flex flex-col sm:flex-row items-center justify-center gap-5 w-full sm:w-auto">
               <button onClick={onNavigateLogin} className="w-full sm:w-auto bg-brand text-white px-10 py-4 rounded-full text-lg font-bold flex items-center justify-center gap-3 hover:bg-brand-hover transition-colors shadow-lg shadow-brand/20">
-                Get Started Now <ArrowRight className="w-5 h-5" />
+                {t("getStarted")} <ArrowRight className="w-5 h-5" />
               </button>
               <button onClick={onNavigateContact} className="w-full sm:w-auto bg-transparent text-white px-10 py-4 rounded-full text-lg font-bold flex items-center justify-center gap-3 hover:bg-white/5 transition-colors border border-white/20">
-                <User className="w-5 h-5" /> Contact Support
+                <User className="w-5 h-5" /> {t("support")}
               </button>
             </div>
           </div>

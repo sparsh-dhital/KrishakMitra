@@ -285,7 +285,7 @@ export function SidebarLayout({ children, activeTab, onTabChange, navItems, onLo
       {moreOpen && secondaryNavItems.length > 0 && (
         <div className="lg:hidden fixed inset-x-3 bottom-[4.75rem] z-50 max-h-[min(70vh,28rem)] overflow-y-auto rounded-2xl border border-line bg-surface p-2 shadow-xl">
           <div className="flex items-center justify-between px-3 py-2">
-            <span className="text-sm font-bold text-forest">More</span>
+            <span className="text-sm font-bold text-forest">{t("more")}</span>
             <button
               type="button"
               onClick={() => setMoreOpen(false)}
@@ -348,7 +348,7 @@ export function SidebarLayout({ children, activeTab, onTabChange, navItems, onLo
             )}
           >
             <MoreHorizontal className="h-6 w-6" />
-            <span className="max-w-full break-words text-center text-[10px] leading-tight font-bold">More</span>
+                <span className="max-w-full break-words text-center text-[10px] leading-tight font-bold">{t("more")}</span>
           </button>
         )}
       </nav>

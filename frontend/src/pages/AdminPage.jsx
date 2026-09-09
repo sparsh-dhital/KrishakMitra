@@ -372,8 +372,8 @@ function ActiveQueueTab() {
             <div className="flex items-center gap-6 w-full sm:w-auto">
                <div className="text-left sm:text-right flex-1 sm:flex-none">
                  <p className="text-xs text-muted font-bold uppercase tracking-wider mb-1">Current Status</p>
-                 <Badge variant={item.status === 'Quality Check' ? 'warning' : 'primary'} className="text-sm">
-                   {item.status}
+                  <Badge variant={item.status === 'Quality Check' ? 'warning' : 'primary'} className="text-sm">
+                    {item.status === 'Quality Check' ? t("statusQualityCheck") : item.status}
                  </Badge>
                </div>
                <div className="text-right hidden sm:block min-w-[80px]">

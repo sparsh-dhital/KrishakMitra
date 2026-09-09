@@ -1,14 +1,16 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Gavel, LayoutDashboard, Bell, ArrowRight, CheckCircle2, XCircle, Clock } from "lucide-react";
 import { SidebarLayout, Card, Badge, Button } from "../components/ui";
 import BuyerMarketplace from "./BuyerMarketplace";
 
 export default function BuyerPage({ language, onLanguageChange, onLogout, onHome, buyerId }) {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("marketplace");
   const navItems = [
-    { id: "marketplace", label: "Browse Auctions", icon: Gavel },
-    { id: "activity", label: "My Bid Activity", icon: LayoutDashboard },
-    { id: "notifications", label: "Notifications", icon: Bell },
+    { id: "marketplace", label: t("marketplace"), icon: Gavel },
+    { id: "activity", label: t("bidActivity"), icon: LayoutDashboard },
+    { id: "notifications", label: t("alerts"), icon: Bell },
   ];
 
   return (
@@ -25,8 +27,8 @@ export default function BuyerPage({ language, onLanguageChange, onLogout, onHome
       {activeTab === "marketplace" && <BuyerMarketplace role="buyer" buyerId={buyerId || "demo-buyer"} />}
       {activeTab === "activity" && (
         <div className="max-w-5xl mx-auto">
-          <p className="text-xs font-bold uppercase tracking-widest text-brand mb-2">Buyer workspace</p>
-          <h1 className="font-display text-2xl font-bold text-forest mb-6">My bid activity</h1>
+          <p className="text-xs font-bold uppercase tracking-widest text-brand mb-2">{t("buyerWorkspace")}</p>
+          <h1 className="font-display text-2xl font-bold text-forest mb-6">{t("myBidActivity")}</h1>
           
           <div className="space-y-4">
             <Card className="flex items-center justify-between hover:shadow-md transition-shadow border-l-4 border-l-brand">
@@ -41,10 +43,10 @@ export default function BuyerPage({ language, onLanguageChange, onLogout, onHome
               </div>
               <div className="text-right flex items-center gap-6">
                 <div>
-                  <p className="text-xs font-bold text-muted uppercase tracking-widest mb-1">Your Bid</p>
+                  <p className="text-xs font-bold text-muted uppercase tracking-widest mb-1">{t("yourBid")}</p>
                   <p className="font-display text-xl font-extrabold text-forest">₹85,000</p>
                 </div>
-                <Badge tone="success" className="h-8">Winning</Badge>
+                <Badge tone="success" className="h-8">{t("winning")}</Badge>
                 <Button variant="outline" size="sm"><ArrowRight className="w-4 h-4" /></Button>
               </div>
             </Card>
@@ -61,11 +63,11 @@ export default function BuyerPage({ language, onLanguageChange, onLogout, onHome
               </div>
               <div className="text-right flex items-center gap-6">
                 <div>
-                  <p className="text-xs font-bold text-muted uppercase tracking-widest mb-1">Your Bid</p>
+                  <p className="text-xs font-bold text-muted uppercase tracking-widest mb-1">{t("yourBid")}</p>
                   <p className="font-display text-xl font-extrabold line-through text-slate-400">₹42,000</p>
                 </div>
-                <Badge variant="warning" className="h-8">Outbid</Badge>
-                <Button variant="primary" size="sm">Bid Higher</Button>
+                <Badge variant="warning" className="h-8">{t("outbid")}</Badge>
+                <Button variant="primary" size="sm">{t("bidHigher")}</Button>
               </div>
             </Card>
 
@@ -81,11 +83,11 @@ export default function BuyerPage({ language, onLanguageChange, onLogout, onHome
               </div>
               <div className="text-right flex items-center gap-6">
                 <div>
-                  <p className="text-xs font-bold text-muted uppercase tracking-widest mb-1">Winning Bid</p>
+                  <p className="text-xs font-bold text-muted uppercase tracking-widest mb-1">{t("winningBid")}</p>
                   <p className="font-display text-xl font-extrabold text-forest">₹61,000</p>
                 </div>
-                <Badge tone="default" className="h-8">Lost</Badge>
-                <Button variant="ghost" size="sm" disabled>Closed</Button>
+                <Badge tone="default" className="h-8">{t("lost")}</Badge>
+                <Button variant="ghost" size="sm" disabled>{t("closed")}</Button>
               </div>
             </Card>
           </div>
@@ -93,8 +95,8 @@ export default function BuyerPage({ language, onLanguageChange, onLogout, onHome
       )}
       {activeTab === "notifications" && (
         <div className="max-w-3xl mx-auto">
-          <p className="text-xs font-bold uppercase tracking-widest text-brand mb-2">Buyer workspace</p>
-          <h1 className="font-display text-2xl font-bold text-forest mb-6">Notifications</h1>
+          <p className="text-xs font-bold uppercase tracking-widest text-brand mb-2">{t("buyerWorkspace")}</p>
+          <h1 className="font-display text-2xl font-bold text-forest mb-6">{t("notifications")}</h1>
           <div className="space-y-4">
             <div className="flex items-start gap-4 p-4 bg-white rounded-2xl border border-line shadow-sm">
               <div className="w-2 h-2 mt-2 rounded-full bg-brand shrink-0" />

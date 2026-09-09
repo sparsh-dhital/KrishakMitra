@@ -468,14 +468,14 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, onHom
                   <QRCode value={booking.token.token_number} size={200} style={{ maxWidth: "100%", height: "auto" }} />
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Token Number</p>
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">{t("tokenNumber")}</p>
                   <p className="font-display text-5xl font-extrabold text-forest tracking-tight">#{booking.token.token_number}</p>
                 </div>
                 
                 <div className="w-full mt-8 bg-slate-50 rounded-2xl p-4 flex justify-between items-center text-left">
                    <div>
                      <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5">Crop</p>
-                     <p className="font-bold text-forest">{crops.find((c) => c.id === booking?.booking?.crop_id)?.name || "Unknown"}</p>
+                     <p className="font-bold text-forest">{crops.find((c) => c.id === booking?.booking?.crop_id)?.name || t("unknown")}</p>
                    </div>
                    <div className="text-right">
                      <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-0.5">Quantity</p>
@@ -486,7 +486,7 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, onHom
               
               {/* Footer */}
               <div className="bg-slate-50 border-t border-line p-4 text-center">
-                 <p className="text-xs text-slate-500 font-medium">Please present this QR code at the gate</p>
+                 <p className="text-xs text-slate-500 font-medium">{t("presentQr")}</p>
               </div>
             </div>
           ) : (
@@ -495,10 +495,10 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, onHom
                 <QrCode className="w-10 h-10" />
               </div>
               <div>
-                <p className="text-forest font-bold text-lg mb-1">No token yet</p>
-                <p className="text-muted font-medium">Book a slot to generate your gate pass.</p>
+                <p className="text-forest font-bold text-lg mb-1">{t("noToken")}</p>
+                <p className="text-muted font-medium">{t("gatePassHelp")}</p>
               </div>
-              <Button onClick={() => setActiveTab("bookings")} className="mt-2">Book a Slot</Button>
+              <Button onClick={() => setActiveTab("bookings")} className="mt-2">{t("bookSlot")}</Button>
             </Card>
           )}
         </motion.div>
@@ -507,18 +507,18 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, onHom
       {/* ── QUEUE ── */}
       {activeTab === "queue" && (
         <div className="min-w-0 max-w-2xl mx-auto">
-          <h1 className="font-display text-2xl font-bold text-forest mb-6">Live Queue Status</h1>
+          <h1 className="font-display text-2xl font-bold text-forest mb-6">{t("queueStatus")}</h1>
           {queueEntry ? (
             <Card className="bg-forest text-white border-transparent text-center">
-              <p className="text-xs font-bold text-white/50 uppercase tracking-widest mb-2">Your Position</p>
+              <p className="text-xs font-bold text-white/50 uppercase tracking-widest mb-2">{t("yourPosition")}</p>
               <p className="font-display text-7xl font-extrabold mb-4">#{queueEntry.queue_position}</p>
-              <p className="text-white/70 font-medium text-lg">Estimated wait: ~{queueEntry.estimated_wait_time} minutes</p>
-              <p className="text-white/40 text-sm mt-4">Currently serving: #08</p>
+              <p className="text-white/70 font-medium text-lg">{t("estimatedWaitLabel")}: ~{queueEntry.estimated_wait_time} {t("minutes")}</p>
+              <p className="text-white/40 text-sm mt-4">{t("servingNow")}: #08</p>
             </Card>
           ) : (
             <Card className="text-center py-10">
-              <p className="text-muted font-medium mb-4">You are not in the queue yet.</p>
-              <Button onClick={() => setActiveTab("bookings")}>Book a Slot</Button>
+              <p className="text-muted font-medium mb-4">{t("notInQueue")}</p>
+              <Button onClick={() => setActiveTab("bookings")}>{t("bookSlot")}</Button>
             </Card>
           )}
         </div>
@@ -527,7 +527,7 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, onHom
       {/* ── PROCUREMENT ── */}
       {activeTab === "procurement" && (
         <div className="min-w-0 max-w-2xl mx-auto space-y-4">
-          <h1 className="font-display text-2xl font-bold text-forest mb-6">Procurement Details</h1>
+          <h1 className="font-display text-2xl font-bold text-forest mb-6">{t("procurementDetails")}</h1>
           {procurement ? (
             <Card>
               <div className="space-y-4">
