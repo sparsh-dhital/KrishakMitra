@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import Logo from "../components/Logo";
 import LanguagePicker from "../components/LanguagePicker";
-import heroImage from "../assets/bg-image.png";
+import heroImage from "../assets/bg-land.png";
 
 const journey = [
   ["01", 0, MapPin], ["02", 1, SlidersHorizontal], ["03", 2, Ticket],
