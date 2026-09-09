@@ -17,23 +17,48 @@ import {
   CheckCircle2,
   Phone,
   Activity,
-  Leaf
+  Leaf,
+  Gavel
 } from "lucide-react";
 import Logo from "../components/Logo";
 import LanguagePicker from "../components/LanguagePicker";
+import { useEffect, useState } from "react";
 
 export default function LandingPage({ onNavigateLogin, onNavigateContact, hasSession, language, onLanguageChange }) {
   const { t } = useTranslation();
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#F8F9FA] flex flex-col items-center justify-center font-body text-forest">
+        <Logo variant="full" className="h-24 w-auto mb-8 animate-pulse mix-blend-multiply" />
+        <div className="flex gap-3 mb-6">
+          <div className="w-3.5 h-3.5 bg-brand rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+          <div className="w-3.5 h-3.5 bg-brand rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+          <div className="w-3.5 h-3.5 bg-brand rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+        </div>
+        <h2 className="text-xl md:text-2xl font-medium text-forest/80">Welcome to KrishakMitra</h2>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-[#F8F9FA] font-body text-forest selection:bg-brand selection:text-white">
-      {/* Navbar */}
+    <div className="min-h-screen bg-[#F8F9FA] font-body text-forest selection:bg-brand selection:text-white overflow-x-hidden">
       <header className="w-full py-4 px-4 sm:py-6 sm:px-6 max-w-7xl mx-auto flex items-center justify-between gap-3">
-        <Logo variant="full" className="h-14" />
+        <Logo variant="full" className="h-14 mix-blend-multiply" />
         <nav className="hidden md:flex items-center gap-10 text-base font-semibold">
           <a href="#features" className="hover:text-brand transition-colors">{t("landingFeatures")}</a>
           <a href="#how-it-works" className="hover:text-brand transition-colors">{t("landingHow")}</a>
           <a href="#impact" className="hover:text-brand transition-colors">{t("landingImpact")}</a>
           <a href="#testimonials" className="hover:text-brand transition-colors">{t("landingTestimonials")}</a>
+          <button onClick={onNavigateContact} className="hover:text-brand transition-colors">Contact Us</button>
         </nav>
         <div className="flex shrink-0 items-center gap-2 sm:gap-5">
           <LanguagePicker value={language} onChange={onLanguageChange} />
@@ -43,7 +68,7 @@ export default function LandingPage({ onNavigateLogin, onNavigateContact, hasSes
         </div>
       </header>
 
-      {/* Hero */}
+      
       <section className="max-w-7xl mx-auto px-4 sm:px-6 pt-12 sm:pt-20 pb-20 sm:pb-28 grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
         <div className="min-w-0">
             <div className="inline-flex items-center text-sm font-bold text-brand bg-brand/10 px-4 py-1.5 rounded-full mb-8">
@@ -82,7 +107,7 @@ export default function LandingPage({ onNavigateLogin, onNavigateContact, hasSes
           </div>
         </div>
 
-        {/* Right side mockup */}
+        
         <div className="relative mt-16 min-w-0 md:mt-0">
           <div className="bg-forest rounded-[3rem] p-6 sm:p-10 md:p-14 aspect-square relative shadow-2xl flex flex-col justify-between max-w-lg mx-auto w-full">
             <div className="absolute top-8 sm:top-12 left-1/2 -translate-x-1/2 w-[85%] bg-white rounded-3xl p-3 sm:p-5 shadow-xl flex items-center gap-3 sm:gap-4 transform -rotate-1">
@@ -111,7 +136,7 @@ export default function LandingPage({ onNavigateLogin, onNavigateContact, hasSes
                   <p className="text-sm text-muted leading-tight">{t("paymentStatus")}</p>
                   <span className="text-brand text-xs font-bold px-2 py-1 bg-brand/10 rounded uppercase">{t("statusAccepted")}</span>
                 </div>
-                <p className="text-2xl font-extrabold text-forest mt-2">₹45,200</p>
+                <p className="text-2xl font-extrabold text-forest mt-2">45,200</p>
               </div>
             </div>
 
@@ -133,7 +158,7 @@ export default function LandingPage({ onNavigateLogin, onNavigateContact, hasSes
         </div>
       </section>
 
-      {/* Metrics */}
+
       <section className="border-y border-line bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16 grid grid-cols-2 md:grid-cols-4 gap-8 sm:gap-10 text-center divide-x-0 md:divide-x divide-line/50">
           <div>
@@ -155,7 +180,48 @@ export default function LandingPage({ onNavigateLogin, onNavigateContact, hasSes
         </div>
       </section>
 
-      {/* Features */}
+      {/* MSP Harvest Challenge */}
+      <section id="msp-challenge" className="py-24 bg-[#F8F9FA]">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="grid lg:grid-cols-[1.05fr_0.95fr] gap-8 items-stretch">
+            <div className="bg-forest text-white rounded-[2.5rem] p-8 md:p-12 flex flex-col justify-between">
+              <div>
+                <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-white/70 border border-white/20 px-4 py-1.5 rounded-full mb-8">
+                  <Activity className="w-4 h-4 text-brand" /> MSP harvest season
+                </div>
+                <h2 className="text-3xl md:text-4xl font-display font-extrabold leading-tight mb-6">When procurement slows down, farmers carry the risk.</h2>
+                <p className="text-white/75 text-base md:text-lg leading-relaxed">
+                  Farmers face significant challenges during the MSP harvest procurement seasons. They experience long waiting times, lack critical information regarding procurement schedules, and suffer from uncertainty about their procurement and payment status. This results in severe overcrowding at Mandis, multi-day wait times under open skies, and potential crop spoilage.
+                </p>
+              </div>
+              <div className="mt-10 grid grid-cols-3 gap-3 border-t border-white/15 pt-6">
+                <div><p className="text-2xl font-extrabold text-white">Multi-day</p><p className="text-xs text-white/55 mt-1">waiting risk</p></div>
+                <div><p className="text-2xl font-extrabold text-white">Open skies</p><p className="text-xs text-white/55 mt-1">farmer exposure</p></div>
+                <div><p className="text-2xl font-extrabold text-white">Crop loss</p><p className="text-xs text-white/55 mt-1">spoilage risk</p></div>
+              </div>
+            </div>
+
+            <div className="grid sm:grid-cols-2 gap-4">
+              {[
+                { icon: Clock, title: "Plan before arrival", text: "See available mandi slots and capacity before loading the harvest." },
+                { icon: Activity, title: "Know the queue", text: "Track token movement and estimated turn time instead of waiting blindly." },
+                { icon: ShieldCheck, title: "Protect the MSP journey", text: "Keep booking, quality, acceptance, and payment updates in one traceable flow." },
+                { icon: TrendingDown, title: "Reduce spoilage pressure", text: "Less uncertainty means fewer unnecessary trips and less time in crowded yards." },
+                { icon: Gavel, title: "Unlock private demand", text: "Farmers can also list harvested crops for direct buyer and institution bids." },
+                { icon: CreditCard, title: "Close the payment loop", text: "Make payment status visible after procurement instead of leaving farmers guessing." },
+              ].map((item) => (
+                <div key={item.title} className="bg-white border border-line rounded-3xl p-6 shadow-sm hover:shadow-md hover:border-brand/30 transition-all">
+                  <div className="w-11 h-11 rounded-2xl bg-green-50 text-brand flex items-center justify-center mb-5"><item.icon className="w-5 h-5" /></div>
+                  <h3 className="font-bold text-forest text-lg mb-2">{item.title}</h3>
+                  <p className="text-sm text-muted leading-relaxed">{item.text}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      
       <section id="features" className="py-28 bg-[#F8F9FA]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-20">
@@ -185,9 +251,9 @@ export default function LandingPage({ onNavigateLogin, onNavigateContact, hasSes
         </div>
       </section>
 
-      {/* How it Works */}
+      
       <section id="how-it-works" className="py-28 bg-forest relative overflow-hidden">
-        {/* Background grid pattern */}
+        
         <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '32px 32px' }} />
         
         <div className="max-w-6xl mx-auto px-6 relative z-10 text-center">
@@ -196,7 +262,7 @@ export default function LandingPage({ onNavigateLogin, onNavigateContact, hasSes
           <p className="text-white/60 mb-24 text-lg">{t("processIntro")}</p>
 
           <div className="flex flex-col lg:flex-row items-center justify-between gap-8 relative">
-             {/* Desktop Connecting Line */}
+             
             <div className="hidden md:block absolute top-1/2 left-[10%] right-[10%] h-[2px] bg-white/10 -translate-y-1/2 z-0" />
             
             {[
@@ -221,7 +287,7 @@ export default function LandingPage({ onNavigateLogin, onNavigateContact, hasSes
         </div>
       </section>
 
-      {/* Impact */}
+      
       <section id="impact" className="py-28 bg-[#F8F9FA]">
         <div className="max-w-6xl mx-auto px-6">
           <div className="inline-block text-xs font-bold text-brand bg-brand/10 px-4 py-1.5 rounded-full mb-8 uppercase tracking-wider">Impact</div>
@@ -276,10 +342,10 @@ export default function LandingPage({ onNavigateLogin, onNavigateContact, hasSes
         </div>
       </section>
 
-      {/* CTA */}
+      
       <section className="py-28 px-6 bg-[#F8F9FA]">
         <div className="max-w-5xl mx-auto bg-forest rounded-[3rem] p-8 sm:p-16 md:p-24 text-center relative overflow-hidden">
-           {/* Background grid pattern */}
+           
           <div className="absolute inset-0 opacity-[0.05]" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '24px 24px' }} />
           
             <div className="relative z-10 flex w-full min-w-0 flex-col items-center">
@@ -301,7 +367,7 @@ export default function LandingPage({ onNavigateLogin, onNavigateContact, hasSes
         </div>
       </section>
 
-      {/* Footer */}
+      
       <footer className="bg-forest pt-20 pb-10 border-t border-white/10">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 sm:gap-12 mb-16 sm:mb-20">
           <div className="col-span-2 md:col-span-1">
@@ -338,7 +404,7 @@ export default function LandingPage({ onNavigateLogin, onNavigateContact, hasSes
         </div>
         
         <div className="text-center text-white/40 text-xs border-t border-white/10 pt-10 max-w-6xl mx-auto px-6 tracking-wide">
-          © {new Date().getFullYear()} KrishakMitra. All Rights Reserved.
+           {new Date().getFullYear()} KrishakMitra. All Rights Reserved.
         </div>
       </footer>
     </div>

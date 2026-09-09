@@ -36,6 +36,11 @@ export default function BuyerMarketplace({ role = "admin", buyerId = "demo-buyer
 
   async function submitBid(event) {
     event.preventDefault();
+    const savedProfile = JSON.parse(localStorage.getItem(`krishak-mitra-profile-${buyerId}`) || "null");
+    if (savedProfile?.kycStatus !== "Approved") {
+      toast.error("Complete and get KYC approved before placing a bid.");
+      return;
+    }
     setSubmitting(true);
     try {
       await placeBidDirectly(selectedAuction?.id, buyerId, bid);

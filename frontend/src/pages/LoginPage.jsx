@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ShieldCheck, Building2 } from "lucide-react";
 import { Button, Input, Card } from "../components/ui";
@@ -8,13 +8,14 @@ import LanguagePicker from "../components/LanguagePicker";
 export default function LoginPage({ onBack, onLogin, t, language, onLanguageChange }) {
   const [role, setRole] = useState("farmer");
   const [mobile, setMobile] = useState("");
+  const [name, setName] = useState("");
   const [otp, setOtp] = useState("");
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSendOtp = (e) => {
     e.preventDefault();
-    if (!mobile || mobile.length < 10) return;
+    if (!mobile || mobile.length < 10 || !name.trim()) return;
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
@@ -27,17 +28,18 @@ export default function LoginPage({ onBack, onLogin, t, language, onLanguageChan
     if (otp.length < 6) return;
     setIsLoading(true);
     setTimeout(() => {
-      onLogin(role, mobile, role === "farmer" ? "12f3b7f6-5999-45e7-8811-3fd982a25345" : null, role === "buyer" ? `buyer-${mobile}` : null);
+      onLogin(role, mobile, role === "farmer" ? "12f3b7f6-5999-45e7-8811-3fd982a25345" : null, role === "buyer" ? `buyer-${mobile}` : null, name.trim());
     }, 800);
   };
 
   const handleDemoLogin = () => {
-    onLogin(role, "9876543210", role === "farmer" ? "12f3b7f6-5999-45e7-8811-3fd982a25345" : null, role === "buyer" ? "demo-buyer" : null);
+    const demoName = name.trim() || (role === "farmer" ? "Ramesh Kumar" : "Guest");
+    onLogin(role, "9876543210", role === "farmer" ? "12f3b7f6-5999-45e7-8811-3fd982a25345" : null, role === "buyer" ? "demo-buyer" : null, demoName);
   };
 
   return (
     <div className="min-h-screen bg-cream flex items-center justify-center p-4 sm:p-6 selection:bg-brand selection:text-white">
-      {/* Language picker floating top-right */}
+      
       <div className="fixed top-3 right-3 z-50 sm:top-4 sm:right-4">
         <LanguagePicker value={language} onChange={onLanguageChange} />
       </div>
@@ -49,7 +51,7 @@ export default function LoginPage({ onBack, onLogin, t, language, onLanguageChan
         
         <Card className="shadow-xl shadow-brand/5 border-line p-5 sm:p-10">
           <div className="flex flex-col items-center mb-6">
-            {/* stacked variant: emblem on top, styled text below */}
+            
             <Logo variant="stacked" className="mb-1" />
             <p className="text-sm text-muted font-medium text-center mt-2">{t("journeyIntro")}</p>
           </div>

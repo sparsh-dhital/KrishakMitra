@@ -4,7 +4,7 @@ import { Gavel, LayoutDashboard, Bell, ArrowRight, CheckCircle2, XCircle, Clock 
 import { SidebarLayout, Card, Badge, Button } from "../components/ui";
 import BuyerMarketplace from "./BuyerMarketplace";
 
-export default function BuyerPage({ language, onLanguageChange, onLogout, onHome, buyerId }) {
+export default function BuyerPage({ language, onLanguageChange, onLogout, onHome, onNavigateProfile, buyerId, buyerName }) {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("marketplace");
   const navItems = [
@@ -21,7 +21,9 @@ export default function BuyerPage({ language, onLanguageChange, onLogout, onHome
       onLogout={onLogout} onHome={onHome}
       language={language}
       onLanguageChange={onLanguageChange}
-      displayName="Buyer / Institution"
+      onNavigateProfile={onNavigateProfile}
+      displayName={buyerName || "Buyer / Institution"}
+      profileId={buyerId || "buyer-demo"}
       roleLabel="Private market"
     >
       {activeTab === "marketplace" && <BuyerMarketplace role="buyer" buyerId={buyerId || "demo-buyer"} />}
@@ -102,7 +104,7 @@ export default function BuyerPage({ language, onLanguageChange, onLogout, onHome
               <div className="w-2 h-2 mt-2 rounded-full bg-brand shrink-0" />
               <div>
                 <p className="font-bold text-forest text-sm">You have been outbid on Cotton - 15 Quintals!</p>
-                <p className="text-xs text-muted mt-1">A new bid of ₹43,500 was placed 5 minutes ago. Place a higher bid to win.</p>
+                <p className="text-xs text-muted mt-1">A new bid of 43,500 was placed 5 minutes ago. Place a higher bid to win.</p>
               </div>
               <p className="text-xs text-slate-400 ml-auto whitespace-nowrap">5 mins ago</p>
             </div>

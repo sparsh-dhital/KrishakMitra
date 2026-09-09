@@ -2,7 +2,7 @@ import { forwardRef, useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { LogOut, Check, MoreHorizontal, Home, PanelLeftClose, PanelLeftOpen, Search, Bell, ChevronRight, Wifi } from "lucide-react";
+import { LogOut, Check, MoreHorizontal, Home, PanelLeftClose, PanelLeftOpen, Search, Bell, ChevronRight, Wifi, UserRound, Camera, ShieldCheck, X, CheckCircle2 } from "lucide-react";
 import { motion } from "framer-motion";
 import Logo from "./Logo";
 import LanguagePicker from "./LanguagePicker";
@@ -196,11 +196,68 @@ function LiveClock() {
   );
 }
 
-export function SidebarLayout({ children, activeTab, onTabChange, navItems, onLogout, onHome, language, onLanguageChange, displayName = "Ramesh Kumar", roleLabel }) {
+export function SidebarLayout({ children, activeTab, onTabChange, navItems, onLogout, onHome, onNavigateProfile, language, onLanguageChange, displayName = "Ramesh Kumar", roleLabel, profileId = "user" }) {
   const { t } = useTranslation();
   const defaultRoleLabel = roleLabel || t("greetingFarmer");
   const [moreOpen, setMoreOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(true);
+  const [panel, setPanel] = useState(null);
+  const profileStorageKey = `krishak-mitra-profile-${profileId}`;
+  const [profile, setProfile] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem(profileStorageKey) || "null") || { fullName: displayName, phone: "", email: "", address: "", kycStatus: "Not submitted", kycDocument: "", avatar: "" };
+    } catch {
+      return { fullName: displayName, phone: "", email: "", address: "", kycStatus: "Not submitted", kycDocument: "", avatar: "" };
+    }
+  });
+  const [profileDraft, setProfileDraft] = useState(profile);
+
+  const notifications = (() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem("krishak-mitra-notifications") || "[]");
+      return saved.length ? saved : [{ id: "welcome", message: "Your KrishakMitra account is ready.", date: new Date().toISOString(), read: false }];
+    } catch {
+      return [{ id: "welcome", message: "Your KrishakMitra account is ready.", date: new Date().toISOString(), read: false }];
+    }
+  })();
+  const unreadCount = notifications.filter((item) => !item.read).length;
+
+  function openProfile() {
+    if (onNavigateProfile) {
+      onNavigateProfile();
+      return;
+    }
+    setProfileDraft(profile);
+    setPanel("profile");
+  }
+
+  function saveProfile(event) {
+    event.preventDefault();
+    const next = { ...profileDraft, kycStatus: profileDraft.kycStatus || "Not submitted" };
+    setProfile(next);
+    localStorage.setItem(profileStorageKey, JSON.stringify(next));
+    setPanel(null);
+  }
+
+  function handleAvatar(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setProfileDraft((current) => ({ ...current, avatar: reader.result }));
+    reader.readAsDataURL(file);
+  }
+
+  function handleKycDocument(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setProfileDraft((current) => ({ ...current, kycDocument: file.name, kycStatus: "Document attached - ready to submit" }));
+  }
+
+  function markNotificationsRead() {
+    const read = notifications.map((item) => ({ ...item, read: true }));
+    localStorage.setItem("krishak-mitra-notifications", JSON.stringify(read));
+    setPanel("notifications");
+  }
   const primaryNavItems = navItems.slice(0, 4);
   const secondaryNavItems = navItems.slice(4);
 
@@ -248,15 +305,15 @@ export function SidebarLayout({ children, activeTab, onTabChange, navItems, onLo
           </div>
         )}
         
-        <div className={cn("px-4 py-4 border-b border-white/10 flex items-center transition-all duration-300", isExpanded ? "justify-between" : "justify-center px-2")}>
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white text-sm font-bold shrink-0 shadow-inner">SM</div>
+        <button onClick={openProfile} className={cn("px-4 py-4 border-b border-white/10 flex items-center transition-all duration-300 text-left hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 w-full", isExpanded ? "justify-between" : "justify-center px-2")} title="Open profile">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white text-sm font-bold shrink-0 shadow-inner overflow-hidden">{profile.avatar ? <img src={profile.avatar} alt="Profile" className="w-full h-full object-cover" /> : "SM"}</div>
             <div className={cn("whitespace-nowrap overflow-hidden transition-all duration-300", isExpanded ? "opacity-100 w-32 ml-1" : "opacity-0 w-0 ml-0")}>
               <p className="text-xs text-brand font-bold">{defaultRoleLabel}</p>
-              <p className="text-sm text-white font-bold truncate max-w-[150px]">{displayName}</p>
+              <p className="text-sm text-white font-bold truncate max-w-[150px]">{profile.fullName || displayName}</p>
             </div>
           </div>
-        </div>
+        </button>
 
         <nav className={cn("flex-1 p-3 space-y-1 overflow-y-auto scrollbar-hide overflow-x-hidden", isExpanded ? "" : "px-2")}>
           {navItems.map((item) => {
@@ -339,23 +396,23 @@ export function SidebarLayout({ children, activeTab, onTabChange, navItems, onLo
               <LanguagePicker value={language} onChange={onLanguageChange} />
 
               
-              <button className="relative w-10 h-10 rounded-full flex items-center justify-center text-slate-500 hover:text-brand hover:bg-brand/5 transition-all focus:outline-none">
+              <button onClick={markNotificationsRead} className="relative w-10 h-10 rounded-full flex items-center justify-center text-slate-500 hover:text-brand hover:bg-brand/5 transition-all focus:outline-none" title="Notifications">
                 <Bell className="w-5 h-5" />
-                <span className="absolute top-2 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white shadow-sm" />
+                {unreadCount > 0 && <span className="absolute top-1.5 right-1.5 min-w-4 h-4 px-1 bg-red-500 text-white rounded-full border-2 border-white text-[9px] font-bold flex items-center justify-center">{unreadCount}</span>}
               </button>
 
               
-              <div className="flex items-center gap-3 pl-2 sm:pl-4 border-l border-slate-200">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-brand to-emerald-400 flex items-center justify-center text-white text-sm font-extrabold shadow-md shrink-0 border border-white">
-                  {displayName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase()}
+              <button onClick={openProfile} className="flex items-center gap-3 pl-2 sm:pl-4 border-l border-slate-200 text-left">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-brand to-emerald-400 flex items-center justify-center text-white text-sm font-extrabold shadow-md shrink-0 border border-white overflow-hidden">
+                  {profile.avatar ? <img src={profile.avatar} alt="Profile" className="w-full h-full object-cover" /> : (profile.fullName || displayName).split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase()}
                 </div>
                 <div className="hidden lg:block leading-tight">
-                  <p className="text-sm font-extrabold text-forest">{displayName}</p>
+                  <p className="text-sm font-extrabold text-forest">{profile.fullName || displayName}</p>
                   <p className="text-[10px] text-muted font-bold tracking-wider uppercase mt-0.5">
                     {defaultRoleLabel}
                   </p>
                 </div>
-              </div>
+              </button>
 
               
               <button
@@ -373,6 +430,39 @@ export function SidebarLayout({ children, activeTab, onTabChange, navItems, onLo
           {children}
         </div>
       </main>
+
+      {panel && (
+        <div className="fixed inset-0 z-[100] bg-forest/30 backdrop-blur-sm flex justify-end min-h-0" onClick={() => setPanel(null)}>
+          <section
+            data-lenis-prevent="true"
+            className="w-full max-w-md h-[100dvh] min-h-0 bg-white shadow-2xl p-6 overflow-y-scroll overscroll-contain touch-pan-y pb-12"
+            onClick={(event) => event.stopPropagation()}
+            onWheel={(event) => event.stopPropagation()}
+            onTouchMove={(event) => event.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-display font-extrabold text-forest">{panel === "profile" ? "Profile & KYC" : "Notifications"}</h2>
+              <button onClick={() => setPanel(null)} className="w-9 h-9 rounded-full hover:bg-slate-100 flex items-center justify-center"><X className="w-5 h-5" /></button>
+            </div>
+            {panel === "notifications" ? (
+              <div className="space-y-3">{notifications.map((item) => <div key={item.id} className="p-4 rounded-xl border border-line bg-slate-50"><p className="font-bold text-forest text-sm">{item.message}</p><p className="text-xs text-muted mt-1">{new Date(item.date).toLocaleString()}</p></div>)}</div>
+            ) : (
+              <form onSubmit={saveProfile} className="space-y-5">
+                <div className="flex items-center gap-4">
+                  <div className="w-20 h-20 rounded-full bg-brand/10 text-brand flex items-center justify-center overflow-hidden">{profileDraft.avatar ? <img src={profileDraft.avatar} alt="Profile preview" className="w-full h-full object-cover" /> : <UserRound className="w-8 h-8" />}</div>
+                  <label className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-line text-sm font-bold cursor-pointer hover:bg-slate-50"><Camera className="w-4 h-4" /> Update photo<input type="file" accept="image/*" onChange={handleAvatar} className="hidden" /></label>
+                </div>
+                <label className="block text-sm font-bold">Full name<input className="mt-2 w-full rounded-xl border border-line px-4 py-3" value={profileDraft.fullName} onChange={(e) => setProfileDraft({ ...profileDraft, fullName: e.target.value })} required /></label>
+                <label className="block text-sm font-bold">Phone number<input className="mt-2 w-full rounded-xl border border-line px-4 py-3" value={profileDraft.phone} onChange={(e) => setProfileDraft({ ...profileDraft, phone: e.target.value.replace(/\D/g, "").slice(0, 15) })} inputMode="numeric" /></label>
+                <label className="block text-sm font-bold">Email<input type="email" className="mt-2 w-full rounded-xl border border-line px-4 py-3" value={profileDraft.email} onChange={(e) => setProfileDraft({ ...profileDraft, email: e.target.value })} /></label>
+                <label className="block text-sm font-bold">Address<textarea className="mt-2 w-full rounded-xl border border-line px-4 py-3" rows="3" value={profileDraft.address} onChange={(e) => setProfileDraft({ ...profileDraft, address: e.target.value })} /></label>
+                <div className="rounded-xl border border-line p-4 space-y-3"><div className="flex items-center gap-3"><ShieldCheck className="w-5 h-5 text-brand" /><div><p className="font-bold text-sm">KYC verification</p><p className="text-xs text-muted">{profileDraft.kycStatus}</p></div></div><label className="block text-xs font-bold text-muted">Identity document<input type="file" accept="image/*,.pdf" onChange={handleKycDocument} className="mt-2 block w-full text-xs" /></label>{profileDraft.kycDocument && <p className="text-xs text-brand font-semibold">Attached: {profileDraft.kycDocument}</p>}<button type="button" onClick={() => setProfileDraft({ ...profileDraft, kycStatus: profileDraft.kycDocument ? "Submitted for review" : "Please attach an identity document" })} className="text-xs font-bold text-brand">Submit for review</button></div>
+                <button type="submit" className="w-full rounded-xl bg-forest text-white py-3 font-bold">Save profile</button>
+              </form>
+            )}
+          </section>
+        </div>
+      )}
 
       
       {moreOpen && secondaryNavItems.length > 0 && (
