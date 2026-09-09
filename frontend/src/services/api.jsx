@@ -283,6 +283,33 @@ export const api = {
     }
     return updatedBooking;
   },
+  requestPayment: async (bookingId, mobile, bank) => {
+    await delay(300);
+    const bookings = getStoredBookings();
+    const idx = bookings.findIndex(x => x.booking.id === bookingId);
+    let updatedBooking = null;
+    if (idx > -1) {
+      bookings[idx].booking.status = "PAYMENT_REQUESTED";
+      if (mobile) bookings[idx].booking.farmer_mobile = mobile;
+      if (bank) bookings[idx].booking.farmer_bank = bank;
+      updatedBooking = bookings[idx].booking;
+      saveBookings(bookings);
+    }
+    return updatedBooking;
+  },
+  processPayment: async (bookingId, receiptUrl = "https://example.com/receipt.pdf") => {
+    await delay(400);
+    const bookings = getStoredBookings();
+    const idx = bookings.findIndex(x => x.booking.id === bookingId);
+    let updatedBooking = null;
+    if (idx > -1) {
+      bookings[idx].booking.status = "PAID";
+      bookings[idx].booking.receipt_url = receiptUrl;
+      updatedBooking = bookings[idx].booking;
+      saveBookings(bookings);
+    }
+    return updatedBooking;
+  },
   deleteBooking: async (bookingId) => {
     await delay(300);
     let bookings = getStoredBookings();
