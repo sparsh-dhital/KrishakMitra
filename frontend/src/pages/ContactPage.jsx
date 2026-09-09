@@ -1,19 +1,70 @@
-﻿import { motion } from "framer-motion";
-import { ArrowLeft, Mail, Phone, MapPin, Send } from "lucide-react";
+import { useState } from "react";
+import { ArrowLeft, Mail, Phone, MapPin, Send, ChevronDown } from "lucide-react";
+import toast from "react-hot-toast";
 import Logo from "../components/Logo";
 import LanguagePicker from "../components/LanguagePicker";
 
+const countryOptions = [
+  { code: "+91", name: "India", digits: 10 },
+  { code: "+1", name: "United States / Canada", digits: 10 },
+  { code: "+44", name: "United Kingdom", digits: 10 },
+  { code: "+61", name: "Australia", digits: 9 },
+  { code: "+971", name: "United Arab Emirates", digits: 9 },
+  { code: "+65", name: "Singapore", digits: 8 },
+];
+
 export default function ContactPage({ onBack, language, onLanguageChange }) {
-  const handleSubmit = (e) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [selectedCountry, setSelectedCountry] = useState(countryOptions[0]);
+  const [isCountryMenuOpen, setIsCountryMenuOpen] = useState(false);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Simulate form submission
-    alert("Message sent successfully! We will get back to you soon.");
-    onBack();
+    setIsSubmitting(true);
+    setSubmitted(false);
+
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), 20000);
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || "http://127.0.0.1:8000"}/contact/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        signal: controller.signal,
+        body: JSON.stringify({
+          full_name: formData.get("full_name"),
+          country_code: selectedCountry.code,
+          phone: formData.get("phone"),
+          email: formData.get("email") || null,
+          message: formData.get("message"),
+        }),
+      });
+
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(result.detail || "Unable to send your message.");
+      }
+
+      form.reset();
+      setSubmitted(true);
+      toast.success("Message received. Our KrishakMitra support team will contact you soon.");
+    } catch (error) {
+      const message = error.name === "AbortError"
+        ? "The email service took too long to respond. Please start the backend and try again."
+        : error.message || "Unable to send your message. Please try again.";
+      toast.error(message);
+    } finally {
+      window.clearTimeout(timeoutId);
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <div className="min-h-screen bg-[#F8F9FA] font-body text-forest selection:bg-brand selection:text-white flex flex-col">
-      
+      {/* Header */}
       <header className="w-full py-6 px-6 max-w-7xl mx-auto flex items-center justify-between border-b border-line">
         <div className="flex items-center gap-6">
           <button 
@@ -27,9 +78,9 @@ export default function ContactPage({ onBack, language, onLanguageChange }) {
         <LanguagePicker value={language} onChange={onLanguageChange} />
       </header>
 
-      
+      {/* Main Content */}
       <main className="flex-1 max-w-7xl mx-auto w-full px-6 py-12 md:py-20 grid md:grid-cols-2 gap-16 items-start">
-        
+        {/* Left Side: Info */}
         <div>
           <div className="inline-flex items-center text-sm font-bold text-brand bg-brand/10 px-4 py-1.5 rounded-full mb-6">
             Get In Touch
@@ -77,14 +128,23 @@ export default function ContactPage({ onBack, language, onLanguageChange }) {
           </div>
         </div>
 
-        
+        {/* Right Side: Form */}
         <div className="bg-white rounded-[2rem] p-8 md:p-12 shadow-xl border border-line">
           <h2 className="text-2xl font-bold mb-8">Send us a message</h2>
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form
+            onSubmit={handleSubmit}
+            onFocusCapture={(event) => {
+              if (!event.target.closest("[data-country-picker]")) {
+                setIsCountryMenuOpen(false);
+              }
+            }}
+            className="space-y-6"
+          >
             <div>
               <label className="block text-sm font-bold mb-2">Full Name</label>
               <input 
                 type="text" 
+                name="full_name"
                 required
                 placeholder="E.g. Ramesh Kumar"
                 className="w-full px-5 py-3.5 bg-[#F8F9FA] border border-line rounded-xl focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all"
@@ -93,17 +153,59 @@ export default function ContactPage({ onBack, language, onLanguageChange }) {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-bold mb-2">Phone Number</label>
-                <input 
-                  type="tel" 
-                  required
-                  placeholder="+91"
-                  className="w-full px-5 py-3.5 bg-[#F8F9FA] border border-line rounded-xl focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all"
-                />
+                <div className="flex gap-2">
+                  <div className="relative w-20 shrink-0" data-country-picker>
+                    <button
+                      type="button"
+                      onClick={() => setIsCountryMenuOpen((open) => !open)}
+                      aria-label="Select country code"
+                      aria-expanded={isCountryMenuOpen}
+                      className="w-full px-2 py-3.5 bg-[#F8F9FA] border border-line rounded-xl flex items-center justify-center gap-1 focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all"
+                    >
+                      <span>{selectedCountry.code}</span>
+                      <ChevronDown className="w-4 h-4" />
+                    </button>
+                    {isCountryMenuOpen && (
+                      <div className="absolute z-20 left-0 top-full mt-2 w-56 bg-white border border-line rounded-xl shadow-lg overflow-hidden">
+                        {countryOptions.map((country) => (
+                          <button
+                            key={country.code}
+                            type="button"
+                            onClick={() => {
+                              setSelectedCountry(country);
+                              setIsCountryMenuOpen(false);
+                            }}
+                            className="w-full px-4 py-3 text-left text-sm hover:bg-[#F8F9FA] transition-colors"
+                          >
+                            {country.name} ({country.code})
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <input
+                    type="tel"
+                    name="phone"
+                    required
+                    minLength={selectedCountry.digits}
+                    maxLength={selectedCountry.digits}
+                    pattern={`[0-9]{${selectedCountry.digits}}`}
+                    inputMode="numeric"
+                    onInput={(event) => {
+                      event.currentTarget.value = event.currentTarget.value.replace(/\D/g, "").slice(0, selectedCountry.digits);
+                      setIsCountryMenuOpen(false);
+                    }}
+                    placeholder={"0".repeat(selectedCountry.digits)}
+                    className="min-w-0 flex-1 px-5 py-3.5 bg-[#F8F9FA] border border-line rounded-xl focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all"
+                  />
+                </div>
+                <p className="text-xs text-muted mt-2">Enter {selectedCountry.digits} digits.</p>
               </div>
               <div>
                 <label className="block text-sm font-bold mb-2">Email Address</label>
                 <input 
                   type="email" 
+                  name="email"
                   placeholder="(Optional)"
                   className="w-full px-5 py-3.5 bg-[#F8F9FA] border border-line rounded-xl focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all"
                 />
@@ -112,6 +214,7 @@ export default function ContactPage({ onBack, language, onLanguageChange }) {
             <div>
               <label className="block text-sm font-bold mb-2">Message</label>
               <textarea 
+                name="message"
                 required
                 rows="4"
                 placeholder="How can we help you?"
@@ -120,10 +223,16 @@ export default function ContactPage({ onBack, language, onLanguageChange }) {
             </div>
             <button 
               type="submit"
+              disabled={isSubmitting}
               className="w-full bg-forest text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-forest-dark transition-colors shadow-lg"
             >
-              Send Message <Send className="w-5 h-5" />
+              {isSubmitting ? "Sending..." : "Send Message"} <Send className="w-5 h-5" />
             </button>
+            {submitted && (
+              <p className="text-sm font-semibold text-brand" role="status">
+                Your message was sent. Our support team will contact you soon.
+              </p>
+            )}
           </form>
         </div>
       </main>
