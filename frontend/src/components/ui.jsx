@@ -2,11 +2,7 @@ import { forwardRef, useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-<<<<<<< HEAD
 import { LogOut, Check, MoreHorizontal, Home, PanelLeftClose, PanelLeftOpen, Search, Bell, ChevronRight, Wifi, UserRound, Camera, ShieldCheck, X, CheckCircle2 } from "lucide-react";
-=======
-import { LogOut, Check, MoreHorizontal, Home, PanelLeftClose, PanelLeftOpen, Search, Bell, ChevronRight, Wifi } from "lucide-react";
->>>>>>> main
 import { motion } from "framer-motion";
 import Logo from "./Logo";
 import LanguagePicker from "./LanguagePicker";
@@ -200,11 +196,7 @@ function LiveClock() {
   );
 }
 
-<<<<<<< HEAD
 export function SidebarLayout({ children, activeTab, onTabChange, navItems, onLogout, onHome, onNavigateProfile, language, onLanguageChange, displayName = "Ramesh Kumar", roleLabel, profileId = "user" }) {
-=======
-export function SidebarLayout({ children, activeTab, onTabChange, navItems, onLogout, onHome, language, onLanguageChange, displayName = "Ramesh Kumar", roleLabel }) {
->>>>>>> main
   const { t } = useTranslation();
   const defaultRoleLabel = roleLabel || t("greetingFarmer");
   const [moreOpen, setMoreOpen] = useState(false);
@@ -313,21 +305,12 @@ export function SidebarLayout({ children, activeTab, onTabChange, navItems, onLo
           </div>
         )}
         
-<<<<<<< HEAD
         <button onClick={openProfile} className={cn("px-4 py-4 border-b border-white/10 flex items-center transition-all duration-300 text-left hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 w-full", isExpanded ? "justify-between" : "justify-center px-2")} title="Open profile">
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white text-sm font-bold shrink-0 shadow-inner overflow-hidden">{profile.avatar ? <img src={profile.avatar} alt="Profile" className="w-full h-full object-cover" /> : "SM"}</div>
             <div className={cn("whitespace-nowrap overflow-hidden transition-all duration-300", isExpanded ? "opacity-100 w-32 ml-1" : "opacity-0 w-0 ml-0")}>
               <p className="text-xs text-brand font-bold">{defaultRoleLabel}</p>
               <p className="text-sm text-white font-bold truncate max-w-[150px]">{profile.fullName || displayName}</p>
-=======
-        <div className={cn("px-4 py-4 border-b border-white/10 flex items-center transition-all duration-300", isExpanded ? "justify-between" : "justify-center px-2")}>
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white text-sm font-bold shrink-0 shadow-inner">SM</div>
-            <div className={cn("whitespace-nowrap overflow-hidden transition-all duration-300", isExpanded ? "opacity-100 w-32 ml-1" : "opacity-0 w-0 ml-0")}>
-              <p className="text-xs text-brand font-bold">{defaultRoleLabel}</p>
-              <p className="text-sm text-white font-bold truncate max-w-[150px]">{displayName}</p>
->>>>>>> main
             </div>
           </div>
         </button>
@@ -358,19 +341,11 @@ export function SidebarLayout({ children, activeTab, onTabChange, navItems, onLo
           <button 
             onClick={onHome} 
             className={cn("flex items-center w-full py-3 rounded-xl text-sm font-bold text-white bg-white/10 border border-white/20 hover:bg-white/20 hover:scale-[1.02] active:scale-[0.98] shadow-sm transition-all group focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 focus-visible:ring-offset-1 focus-visible:ring-offset-forest", isExpanded ? "gap-3 px-4" : "justify-center px-0")} 
-<<<<<<< HEAD
             title={!isExpanded ? "Home" : undefined}
           >
             <Home className="w-5 h-5 shrink-0 text-white" />
             <span className={cn("whitespace-nowrap transition-all duration-300 capitalize", isExpanded ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4 absolute")}>
               Home
-=======
-            title={!isExpanded ? t("ui.home") : undefined}
-          >
-            <Home className="w-5 h-5 shrink-0 text-white" />
-            <span className={cn("whitespace-nowrap transition-all duration-300 capitalize", isExpanded ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-4 absolute")}>
-              {t("ui.home")}
->>>>>>> main
             </span>
           </button>
         </div>
@@ -389,14 +364,10 @@ export function SidebarLayout({ children, activeTab, onTabChange, navItems, onLo
 
             
             <div className="hidden lg:flex items-center gap-2 text-sm font-medium shrink-0 bg-slate-50/80 px-3 py-1.5 rounded-full border border-slate-100">
-              <span className="text-muted font-bold">{t("ui.dashboard")}</span>
+              <span className="text-muted font-bold">Dashboard</span>
               <ChevronRight className="w-4 h-4 text-slate-300" />
               <span className="text-forest font-extrabold">
-<<<<<<< HEAD
                 {navItems.find(n => n.id === activeTab)?.label || "Overview"}
-=======
-                  {navItems.find(n => n.id === activeTab)?.label || t("overview")}
->>>>>>> main
               </span>
             </div>
 
@@ -406,7 +377,7 @@ export function SidebarLayout({ children, activeTab, onTabChange, navItems, onLo
                 <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-400 group-focus-within:text-brand transition-colors" />
                 <input
                   type="text"
-                  placeholder={t("ui.searchPlaceholder")}
+                  placeholder="Search farmers, tokens, crops..."
                   className="w-full bg-slate-100/50 border border-slate-200/60 rounded-full pl-10 pr-4 py-2.5 text-sm font-medium placeholder:text-slate-400 focus:bg-white focus:border-brand/40 focus:ring-4 focus:ring-brand/10 transition-all outline-none shadow-sm"
                 />
               </div>
@@ -425,31 +396,18 @@ export function SidebarLayout({ children, activeTab, onTabChange, navItems, onLo
               <LanguagePicker value={language} onChange={onLanguageChange} />
 
               
-<<<<<<< HEAD
               <button onClick={markNotificationsRead} className="relative w-10 h-10 rounded-full flex items-center justify-center text-slate-500 hover:text-brand hover:bg-brand/5 transition-all focus:outline-none" title="Notifications">
-=======
-              <button className="relative w-10 h-10 rounded-full flex items-center justify-center text-slate-500 hover:text-brand hover:bg-brand/5 transition-all focus:outline-none">
->>>>>>> main
                 <Bell className="w-5 h-5" />
                 {unreadCount > 0 && <span className="absolute top-1.5 right-1.5 min-w-4 h-4 px-1 bg-red-500 text-white rounded-full border-2 border-white text-[9px] font-bold flex items-center justify-center">{unreadCount}</span>}
               </button>
 
               
-<<<<<<< HEAD
               <button onClick={openProfile} className="flex items-center gap-3 pl-2 sm:pl-4 border-l border-slate-200 text-left">
                 <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-brand to-emerald-400 flex items-center justify-center text-white text-sm font-extrabold shadow-md shrink-0 border border-white overflow-hidden">
                   {profile.avatar ? <img src={profile.avatar} alt="Profile" className="w-full h-full object-cover" /> : (profile.fullName || displayName).split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase()}
                 </div>
                 <div className="hidden lg:block leading-tight">
                   <p className="text-sm font-extrabold text-forest">{profile.fullName || displayName}</p>
-=======
-              <div className="flex items-center gap-3 pl-2 sm:pl-4 border-l border-slate-200">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-brand to-emerald-400 flex items-center justify-center text-white text-sm font-extrabold shadow-md shrink-0 border border-white">
-                  {displayName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase()}
-                </div>
-                <div className="hidden lg:block leading-tight">
-                  <p className="text-sm font-extrabold text-forest">{displayName}</p>
->>>>>>> main
                   <p className="text-[10px] text-muted font-bold tracking-wider uppercase mt-0.5">
                     {defaultRoleLabel}
                   </p>
@@ -473,7 +431,6 @@ export function SidebarLayout({ children, activeTab, onTabChange, navItems, onLo
         </div>
       </main>
 
-<<<<<<< HEAD
       {panel && (
         <div className="fixed inset-0 z-[100] bg-forest/30 backdrop-blur-sm flex justify-end min-h-0" onClick={() => setPanel(null)}>
           <section
@@ -507,17 +464,11 @@ export function SidebarLayout({ children, activeTab, onTabChange, navItems, onLo
         </div>
       )}
 
-=======
->>>>>>> main
       
       {moreOpen && secondaryNavItems.length > 0 && (
         <div className="lg:hidden fixed inset-x-3 bottom-[4.75rem] z-50 max-h-[min(70vh,28rem)] overflow-y-auto rounded-2xl border border-line bg-surface p-2 shadow-xl">
           <div className="flex items-center justify-between px-3 py-2">
-<<<<<<< HEAD
             <span className="text-sm font-bold text-forest">{t("more")}</span>
-=======
-            <span className="text-sm font-bold text-forest">{t("ui.more")}</span>
->>>>>>> main
             <button
               type="button"
               onClick={() => setMoreOpen(false)}
@@ -580,11 +531,7 @@ export function SidebarLayout({ children, activeTab, onTabChange, navItems, onLo
             )}
           >
             <MoreHorizontal className="h-6 w-6" />
-<<<<<<< HEAD
                 <span className="max-w-full break-words text-center text-[10px] leading-tight font-bold">{t("more")}</span>
-=======
-            <span className="max-w-full break-words text-center text-[10px] leading-tight font-bold">More</span>
->>>>>>> main
           </button>
         )}
       </nav>

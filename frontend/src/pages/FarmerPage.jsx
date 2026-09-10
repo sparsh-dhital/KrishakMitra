@@ -36,8 +36,6 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, onHom
   const [queueEntry, setQueueEntry] = useState(null);
   const [procurement, setProcurement] = useState(null);
   const [payment, setPayment] = useState(null);
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [paymentForm, setPaymentForm] = useState({ mobile: "", bank: "" });
   const [liveQueueStats, setLiveQueueStats] = useState({ farmers_in_queue: 0, estimated_wait_time: 0 });
 
   // Bidding states
@@ -179,41 +177,6 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, onHom
       setBooking(null);
     }
   }
-
-  useEffect(() => {
-    if (showPaymentModal && farmer) {
-      setPaymentForm({
-        mobile: booking?.booking?.farmer_mobile || farmer.mobile_number || "",
-        bank: booking?.booking?.farmer_bank || farmer.bank_account || ""
-      });
-    }
-  }, [showPaymentModal, farmer, booking]);
-
-  const handleRequestPayment = async (e) => {
-    e.preventDefault();
-    if (!paymentForm.mobile || !paymentForm.bank) {
-      toast.error("Please provide valid contact and bank details");
-      return;
-    }
-    try {
-      const result = await api.requestPayment(booking.booking.id, paymentForm.mobile, paymentForm.bank);
-      const newBooking = { ...booking, booking: { ...booking.booking, status: "PAYMENT_REQUESTED", farmer_mobile: paymentForm.mobile, farmer_bank: paymentForm.bank } };
-      setBooking(newBooking);
-      localStorage.setItem("krishak-mitra-booking", JSON.stringify(newBooking));
-      
-      const allB = await api.getAllBookings();
-      const bIdx = allB.findIndex(x => x.booking.id === booking.booking.id);
-      if(bIdx > -1) {
-         allB[bIdx] = newBooking;
-         localStorage.setItem("krishak-mitra-all-bookings", JSON.stringify(allB));
-      }
-      
-      toast.success("Payment requested successfully!");
-      setShowPaymentModal(false);
-    } catch (err) {
-      toast.error("Failed to request payment");
-    }
-  };
 
   async function createAuction(event) {
     event.preventDefault();
@@ -827,44 +790,21 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, onHom
       {activeTab === "payment" && (
         <div className="min-w-0 max-w-2xl mx-auto">
           <h1 className="font-display text-2xl font-bold text-forest mb-6">Payment Status</h1>
-          {booking?.booking ? (
+          {payment ? (
             <Card>
-              <div className="space-y-6">
-                <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-line">
-                  <span className="text-sm font-bold text-muted">Estimated Revenue (MSP)</span>
-                  <span className="text-xl font-extrabold text-forest">&#8377; {booking.booking.estimated_fare?.toLocaleString("en-IN") || 0}</span>
+              <div className="space-y-4">
+                <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <span className="text-sm font-bold text-muted">Amount</span>
+                  <span className="text-lg font-extrabold text-forest">&#8377;{payment.amount?.toLocaleString("en-IN")}</span>
                 </div>
                 <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <span className="text-sm font-bold text-muted">Status</span>
-                  <Badge tone={booking.booking.status === 'PAID' ? 'success' : booking.booking.status === 'PAYMENT_REQUESTED' ? 'warning' : 'default'} className="text-sm">
-                    {booking.booking.status.replace(/_/g, ' ')}
-                  </Badge>
+                  <Badge tone="warning">{payment.payment_status}</Badge>
                 </div>
-                
-                {booking.booking.status === "PAID" && booking.booking.receipt_url && (
-                  <div className="pt-4 mt-4 border-t border-line">
-                    <p className="text-sm font-bold text-forest mb-4">Payment Receipt</p>
-                    {booking.booking.receipt_url.startsWith("data:image") ? (
-                      <img src={booking.booking.receipt_url} alt="Receipt" className="max-w-full rounded-xl border border-line" />
-                    ) : (
-                      <a href={booking.booking.receipt_url} target="_blank" rel="noreferrer" className="text-brand hover:underline font-bold text-sm">Download Receipt (PDF)</a>
-                    )}
-                  </div>
-                )}
-
-                {["QUALITY_CHECK", "WEIGHING", "ACCEPTED"].includes(booking.booking.status) && (
-                  <div className="pt-4 border-t border-line">
-                    <Button variant="primary" className="w-full" onClick={() => setShowPaymentModal(true)}>
-                      Request Payment
-                    </Button>
-                  </div>
-                )}
-                
-                {booking.booking.status === "PAYMENT_REQUESTED" && (
-                  <div className="pt-4 border-t border-line text-center text-sm font-medium text-amber-600 bg-amber-50 p-4 rounded-xl border-amber-100">
-                    Payment request submitted. Awaiting processing by the administrator.
-                  </div>
-                )}
+                <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <span className="text-sm font-bold text-muted">Ref</span>
+                  <span className="text-sm font-mono text-muted">{payment.transaction_ref}</span>
+                </div>
               </div>
             </Card>
           ) : (
@@ -981,31 +921,6 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, onHom
               <p className="text-muted font-medium text-center py-8">No notifications yet.</p>
             )}
           </Card>
-        </div>
-      )}
-
-      {showPaymentModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="p-6 border-b border-line bg-slate-50">
-              <h3 className="font-display font-bold text-lg text-forest">Verify Contact Details</h3>
-              <p className="text-sm text-muted">Please provide your mobile number and bank account details for payment.</p>
-            </div>
-            <form onSubmit={handleRequestPayment} className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-bold text-forest mb-2">Mobile Number</label>
-                <Input type="text" value={paymentForm.mobile} onChange={e => setPaymentForm({ ...paymentForm, mobile: e.target.value })} required />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-forest mb-2">Bank Account</label>
-                <Input type="text" value={paymentForm.bank} onChange={e => setPaymentForm({ ...paymentForm, bank: e.target.value })} required placeholder="E.g., SBI A/C 1234..." />
-              </div>
-              <div className="flex gap-3 pt-4 border-t border-line mt-6">
-                <Button type="button" variant="outline" className="flex-1" onClick={() => setShowPaymentModal(false)}>Cancel</Button>
-                <Button type="submit" variant="primary" className="flex-1">Update & Request</Button>
-              </div>
-            </form>
-          </div>
         </div>
       )}
     </SidebarLayout>

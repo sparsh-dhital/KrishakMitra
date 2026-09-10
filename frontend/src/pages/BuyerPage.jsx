@@ -1,14 +1,9 @@
-<<<<<<< HEAD
 import { useState } from "react";
-=======
-﻿import { useState } from "react";
->>>>>>> main
 import { useTranslation } from "react-i18next";
 import { Gavel, LayoutDashboard, Bell, ArrowRight, CheckCircle2, XCircle, Clock } from "lucide-react";
 import { SidebarLayout, Card, Badge, Button } from "../components/ui";
 import BuyerMarketplace from "./BuyerMarketplace";
 
-<<<<<<< HEAD
 export default function BuyerPage({ language, onLanguageChange, onLogout, onHome, onNavigateProfile, buyerId, buyerName }) {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("marketplace");
@@ -16,15 +11,6 @@ export default function BuyerPage({ language, onLanguageChange, onLogout, onHome
     { id: "marketplace", label: t("marketplace"), icon: Gavel },
     { id: "activity", label: t("bidActivity"), icon: LayoutDashboard },
     { id: "notifications", label: t("alerts"), icon: Bell },
-=======
-export default function BuyerPage({ language, onLanguageChange, onLogout, onHome, buyerId }) {
-  const { t } = useTranslation();
-  const [activeTab, setActiveTab] = useState("marketplace");
-  const navItems = [
-    { id: "marketplace", label: t("buyer.browseAuctions"), icon: Gavel },
-    { id: "activity", label: t("buyer.bidActivity"), icon: LayoutDashboard },
-    { id: "notifications", label: t("recentUpdates"), icon: Bell },
->>>>>>> main
   ];
 
   return (
@@ -35,26 +21,16 @@ export default function BuyerPage({ language, onLanguageChange, onLogout, onHome
       onLogout={onLogout} onHome={onHome}
       language={language}
       onLanguageChange={onLanguageChange}
-<<<<<<< HEAD
       onNavigateProfile={onNavigateProfile}
       displayName={buyerName || "Buyer / Institution"}
       profileId={buyerId || "buyer-demo"}
       roleLabel="Private market"
-=======
-      displayName={t("buyer.role")}
-      roleLabel={t("buyer.privateMarket")}
->>>>>>> main
     >
       {activeTab === "marketplace" && <BuyerMarketplace role="buyer" buyerId={buyerId || "demo-buyer"} />}
       {activeTab === "activity" && (
         <div className="max-w-5xl mx-auto">
-<<<<<<< HEAD
           <p className="text-xs font-bold uppercase tracking-widest text-brand mb-2">{t("buyerWorkspace")}</p>
           <h1 className="font-display text-2xl font-bold text-forest mb-6">{t("myBidActivity")}</h1>
-=======
-          <p className="text-xs font-bold uppercase tracking-widest text-brand mb-2">{t("buyer.workspace")}</p>
-          <h1 className="font-display text-2xl font-bold text-forest mb-6">{t("buyer.bidActivity")}</h1>
->>>>>>> main
           
           <div className="space-y-4">
             <Card className="flex items-center justify-between hover:shadow-md transition-shadow border-l-4 border-l-brand">
@@ -69,17 +45,10 @@ export default function BuyerPage({ language, onLanguageChange, onLogout, onHome
               </div>
               <div className="text-right flex items-center gap-6">
                 <div>
-<<<<<<< HEAD
                   <p className="text-xs font-bold text-muted uppercase tracking-widest mb-1">{t("yourBid")}</p>
                   <p className="font-display text-xl font-extrabold text-forest">₹85,000</p>
                 </div>
                 <Badge tone="success" className="h-8">{t("winning")}</Badge>
-=======
-                  <p className="text-xs font-bold text-muted uppercase tracking-widest mb-1">{t("buyer.yourBid")}</p>
-                  <p className="font-display text-xl font-extrabold text-forest">85,000</p>
-                </div>
-                <Badge tone="success" className="h-8">{t("buyer.winning")}</Badge>
->>>>>>> main
                 <Button variant="outline" size="sm"><ArrowRight className="w-4 h-4" /></Button>
               </div>
             </Card>
@@ -96,19 +65,11 @@ export default function BuyerPage({ language, onLanguageChange, onLogout, onHome
               </div>
               <div className="text-right flex items-center gap-6">
                 <div>
-<<<<<<< HEAD
                   <p className="text-xs font-bold text-muted uppercase tracking-widest mb-1">{t("yourBid")}</p>
                   <p className="font-display text-xl font-extrabold line-through text-slate-400">₹42,000</p>
                 </div>
                 <Badge variant="warning" className="h-8">{t("outbid")}</Badge>
                 <Button variant="primary" size="sm">{t("bidHigher")}</Button>
-=======
-                  <p className="text-xs font-bold text-muted uppercase tracking-widest mb-1">{t("buyer.yourBid")}</p>
-                  <p className="font-display text-xl font-extrabold line-through text-slate-400">42,000</p>
-                </div>
-                <Badge variant="warning" className="h-8">{t("buyer.outbid")}</Badge>
-                <Button variant="primary" size="sm">{t("buyer.bidHigher")}</Button>
->>>>>>> main
               </div>
             </Card>
 
@@ -124,19 +85,11 @@ export default function BuyerPage({ language, onLanguageChange, onLogout, onHome
               </div>
               <div className="text-right flex items-center gap-6">
                 <div>
-<<<<<<< HEAD
                   <p className="text-xs font-bold text-muted uppercase tracking-widest mb-1">{t("winningBid")}</p>
                   <p className="font-display text-xl font-extrabold text-forest">₹61,000</p>
                 </div>
                 <Badge tone="default" className="h-8">{t("lost")}</Badge>
                 <Button variant="ghost" size="sm" disabled>{t("closed")}</Button>
-=======
-                  <p className="text-xs font-bold text-muted uppercase tracking-widest mb-1">{t("buyer.winningBid")}</p>
-                  <p className="font-display text-xl font-extrabold text-forest">61,000</p>
-                </div>
-                <Badge tone="default" className="h-8">{t("buyer.lost")}</Badge>
-                <Button variant="ghost" size="sm" disabled>{t("buyer.closed")}</Button>
->>>>>>> main
               </div>
             </Card>
           </div>
@@ -144,13 +97,8 @@ export default function BuyerPage({ language, onLanguageChange, onLogout, onHome
       )}
       {activeTab === "notifications" && (
         <div className="max-w-3xl mx-auto">
-<<<<<<< HEAD
           <p className="text-xs font-bold uppercase tracking-widest text-brand mb-2">{t("buyerWorkspace")}</p>
           <h1 className="font-display text-2xl font-bold text-forest mb-6">{t("notifications")}</h1>
-=======
-          <p className="text-xs font-bold uppercase tracking-widest text-brand mb-2">{t("buyer.workspace")}</p>
-          <h1 className="font-display text-2xl font-bold text-forest mb-6">{t("recentUpdates")}</h1>
->>>>>>> main
           <div className="space-y-4">
             <div className="flex items-start gap-4 p-4 bg-white rounded-2xl border border-line shadow-sm">
               <div className="w-2 h-2 mt-2 rounded-full bg-brand shrink-0" />

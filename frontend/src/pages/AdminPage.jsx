@@ -1,14 +1,8 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
-<<<<<<< HEAD
 import { LayoutDashboard, Users, Activity, FileText, Bell, DatabaseZap, ShieldAlert, CheckCircle2, Gavel, Clock, ShieldCheck } from "lucide-react";
 import { api } from "../services/api";
-=======
-import { LayoutDashboard, Users, Activity, FileText, Bell, DatabaseZap, ShieldAlert, CheckCircle2, Clock } from "lucide-react";
-import { api } from "../services/api";
-import { getAdminBidNotifications, getOpenAuctions } from "../services/biddingService";
->>>>>>> main
 import { SidebarLayout, Card, Badge, Button, Select, Input } from "../components/ui";
 import { Plus, Trash2, Edit2 } from "lucide-react";
 import BuyerMarketplace from "./BuyerMarketplace";
@@ -383,11 +377,7 @@ function TodaysBookingsTab({ bookings, onRemove, onViewDetails }) {
   };
 
   const handleExport = (format) => {
-<<<<<<< HEAD
     const rows = bookings.map(b => ({
-=======
-    const rows = (bookings || []).map(b => ({
->>>>>>> main
       id: b.token?.token_number || "N/A",
       farmer: b.booking.farmer_name,
       crop: (b.booking.crops || []).map(c => c.crop_name).join(', '),
@@ -608,219 +598,14 @@ function ActiveQueueTab({ bookings, onRemove, onViewDetails }) {
             </Card>
           );
         }) : (
-<<<<<<< HEAD
           <p className="text-muted text-center py-10">{t("noFarmersInQueue")}</p>
-=======
-          <p className="text-muted text-center py-10">No farmers currently in the queue.</p>
->>>>>>> main
         )}
       </div>
     </div>
   );
 }
 
-<<<<<<< HEAD
   export default function AdminPage({ language, onLanguageChange, onLogout, onHome, onNavigateProfile, adminName }) {
-=======
-function PaymentManagementTab({ bookings, onStatusChange }) {
-  const pendingPayments = bookings.filter(b => b.booking.status === "PAYMENT_REQUESTED");
-  const completedPayments = bookings.filter(b => b.booking.status === "PAID");
-  const [selectedPayment, setSelectedPayment] = useState(null);
-  const [isProcessing, setIsProcessing] = useState(false);
-  
-  const handleMarkPaid = async (e) => {
-    e.preventDefault();
-    if (!selectedPayment) return;
-    const fileInput = e.target.elements.receipt;
-    const file = fileInput.files[0];
-    if (!file) {
-      toast.error("Please select a payment receipt file");
-      return;
-    }
-
-    setIsProcessing(true);
-    try {
-      const reader = new FileReader();
-      reader.onload = async (event) => {
-        const dataUrl = event.target.result;
-        await api.processPayment(selectedPayment.booking.id, dataUrl);
-        toast.success("Payment marked as PAID for booking " + selectedPayment.booking.id);
-        setSelectedPayment(null);
-        if (onStatusChange) onStatusChange();
-        setIsProcessing(false);
-      };
-      reader.readAsDataURL(file);
-    } catch (e) {
-      toast.error("Failed to process payment");
-      setIsProcessing(false);
-    }
-  };
-
-  return (
-    <div className="max-w-[1400px] mx-auto space-y-6">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h2 className="text-2xl font-display font-extrabold text-forest">Payment Management</h2>
-          <p className="text-muted mt-1">Process pending farmer payments and view history.</p>
-        </div>
-      </div>
-      
-      <Card className="p-0 overflow-hidden mb-8">
-        <div className="p-4 bg-slate-50 border-b border-line">
-          <h3 className="font-bold text-forest">Pending Payment Requests</h3>
-        </div>
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="bg-slate-50 border-b border-line text-sm font-bold text-slate-500 uppercase tracking-wider">
-              <th className="p-4 pl-6">Farmer</th>
-              <th className="p-4">Contact</th>
-              <th className="p-4">Crop (Qty)</th>
-              <th className="p-4">Fare (Rs)</th>
-              <th className="p-4 pr-6 text-right">Action</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-line">
-            {pendingPayments.map(p => (
-              <tr key={p.booking.id} className="hover:bg-slate-50 transition-colors">
-                <td className="p-4 pl-6 font-bold text-forest">{p.booking.farmer_name}</td>
-                <td className="p-4 text-muted">{p.booking.farmer_mobile || "+91 98765 43210"}</td>
-                <td className="p-4 text-muted">{(p.booking.crops || []).map(c => c.crop_name).join(', ')} ({p.booking.estimated_quantity}q)</td>
-                <td className="p-4 font-mono font-bold text-brand">₹ {p.booking.estimated_fare}</td>
-                <td className="p-4 pr-6 text-right">
-                  <Button variant="primary" size="sm" onClick={() => setSelectedPayment(p)}>
-                    Process Payment
-                  </Button>
-                </td>
-              </tr>
-            ))}
-            {pendingPayments.length === 0 && (
-              <tr>
-                <td colSpan="5" className="p-8 text-center text-muted">No pending payment requests.</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </Card>
-
-      <Card className="p-0 overflow-hidden">
-        <div className="p-4 bg-slate-50 border-b border-line">
-          <h3 className="font-bold text-forest">Completed Payments</h3>
-        </div>
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="bg-slate-50 border-b border-line text-sm font-bold text-slate-500 uppercase tracking-wider">
-              <th className="p-4 pl-6">Farmer</th>
-              <th className="p-4">Contact</th>
-              <th className="p-4">Crop (Qty)</th>
-              <th className="p-4">Fare (Rs)</th>
-              <th className="p-4 pr-6 text-right">Status</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-line">
-            {completedPayments.map(p => (
-              <tr key={p.booking.id} className="hover:bg-slate-50 transition-colors">
-                <td className="p-4 pl-6 font-bold text-forest">{p.booking.farmer_name}</td>
-                <td className="p-4 text-muted">{p.booking.farmer_mobile || "+91 98765 43210"}</td>
-                <td className="p-4 text-muted">{(p.booking.crops || []).map(c => c.crop_name).join(', ')} ({p.booking.estimated_quantity}q)</td>
-                <td className="p-4 font-mono font-bold text-brand">₹ {p.booking.estimated_fare}</td>
-                <td className="p-4 pr-6 text-right">
-                  <Badge variant="success">PAID</Badge>
-                </td>
-              </tr>
-            ))}
-            {completedPayments.length === 0 && (
-              <tr>
-                <td colSpan="5" className="p-8 text-center text-muted">No completed payments yet.</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </Card>
-
-      {selectedPayment && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="p-6 border-b border-line bg-slate-50">
-              <h3 className="font-display font-bold text-lg text-forest">Upload Payment Receipt</h3>
-              <p className="text-sm text-muted">Upload proof of payment to mark as PAID.</p>
-            </div>
-            <form onSubmit={handleMarkPaid} className="p-6 space-y-4">
-              <div>
-                <p className="text-sm text-muted mb-1">Farmer: <strong className="text-forest">{selectedPayment.booking.farmer_name}</strong></p>
-                <p className="text-sm text-muted mb-1">Amount to pay: <strong className="text-brand font-mono">₹ {selectedPayment.booking.estimated_fare}</strong></p>
-                <p className="text-sm text-muted mb-4">Bank Details: <strong className="text-forest">{selectedPayment.booking.farmer_bank || "Not Provided"}</strong></p>
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-forest mb-2">Select Receipt (Image/PDF)</label>
-                <input type="file" name="receipt" accept="image/*,.pdf" className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-brand/10 file:text-brand hover:file:bg-brand/20" required />
-              </div>
-              <div className="flex gap-3 pt-4 border-t border-line mt-6">
-                <Button type="button" variant="outline" className="flex-1" onClick={() => setSelectedPayment(null)} disabled={isProcessing}>Cancel</Button>
-                <Button type="submit" variant="primary" className="flex-1" disabled={isProcessing}>{isProcessing ? "Processing..." : "Mark as PAID"}</Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function ProcurementTab({ bookings, records, onSelect }) {
-  const { t } = useTranslation();
-  return (
-    <div className="max-w-[1400px] mx-auto space-y-6">
-      <div><h2 className="text-2xl font-display font-extrabold text-forest">{t("procurementJourney")}</h2><p className="text-muted mt-1">Live quality, weighing, acceptance, and payment progress from farmer bookings.</p></div>
-      <div className="grid gap-4 md:grid-cols-2">
-        {bookings.map((item) => {
-          const record = records[item.booking.id] || {};
-          return <Card key={item.booking.id} className="cursor-pointer hover:border-brand/40" onClick={() => onSelect(item)}>
-            <div className="flex items-start justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-widest text-muted">{item.token?.token_number || t("notAvailable")}</p><h3 className="mt-1 font-bold text-forest">{item.booking.farmer_name}</h3><p className="text-sm text-muted mt-1">{(item.booking.crops || []).map((crop) => crop.crop_name).join(", ")} • {item.booking.estimated_quantity} q</p></div><Badge tone={item.booking.status === "PAID" ? "success" : "warning"}>{record.procurement_status || item.booking.status}</Badge></div>
-            <div className="mt-5 grid grid-cols-3 gap-3 text-center"><div className="rounded-xl bg-slate-50 p-3"><p className="text-xs text-muted">Status</p><p className="mt-1 text-sm font-bold text-forest">{record.procurement_status || item.booking.status}</p></div><div className="rounded-xl bg-slate-50 p-3"><p className="text-xs text-muted">Quality</p><p className="mt-1 text-sm font-bold text-forest">{record.quality_grade || "Pending"}</p></div><div className="rounded-xl bg-slate-50 p-3"><p className="text-xs text-muted">Quantity</p><p className="mt-1 text-sm font-bold text-forest">{record.actual_quantity || item.booking.estimated_quantity} q</p></div></div>
-          </Card>;
-        })}
-      </div>
-      {!bookings.length && <Card><p className="py-8 text-center text-muted">No procurement activity yet.</p></Card>}
-    </div>
-  );
-}
-
-function formatAdminAlert(alert, t) {
-  const statusKey = { BOOKED: "statusBooked", CHECKED_IN: "statusCheckedIn", WAITING: "statusWaiting", WEIGHING: "statusWeighing", QUALITY_CHECK: "statusQualityCheck", ACCEPTED: "statusAccepted", PAID: "statusPaid" };
-  if (alert?.type === "bookingCreated") return t("bookingCreated", alert.data);
-  if (alert?.type === "bidPlaced") return t("bidPlacedAlert", alert.data);
-  if (alert?.type === "bookingStatus") return t("bookingStatusAlert", { ...alert.data, status: t(statusKey[alert.data?.status]) || alert.data?.status });
-  if (alert?.type === "paymentRequested") return t("paymentRequestedAlert", alert.data);
-  if (alert?.type === "centrePublished") return t("centrePublishedAlert", alert.data);
-
-  const message = String(alert?.message || "");
-  const booking = message.match(/^New farmer booking: (.+) at (.+)$/);
-  if (booking) return t("bookingCreated", { farmer: booking[1], slot: booking[2] });
-  const bid = message.match(/bid of ([^ ]+) per quintal(?: on| for) (?:your )?(.+?)[.]?$/i);
-  if (bid) return t("bidPlacedAlert", { price: bid[1].replace(/^₹/, ""), crop: bid[2].replace(/[.]$/, "") });
-  const status = message.match(/^Booking (.+) updated to (.+)[.]$/);
-  if (status) return t("bookingStatusAlert", { farmer: status[1], status: t(statusKey[status[2]]) || status[2] });
-  const payment = message.match(/^Payment requested by (.+)[.]$/);
-  if (payment) return t("paymentRequestedAlert", { farmer: payment[1] });
-  return message;
-}
-
-function AlertsTab({ notifications, auctions }) {
-  const { t } = useTranslation();
-  const auctionAlerts = auctions.map((auction) => ({ id: auction.id, type: "auctionOpen", data: { crop: auction.crops?.name || auction.crop_name || t("marketplace.cropListing") }, date: auction.created_at }));
-  const alerts = [...notifications, ...auctionAlerts];
-  return <div className="max-w-[1000px] mx-auto space-y-6"><div><h2 className="text-2xl font-display font-extrabold text-forest">{t("alerts")}</h2><p className="text-muted mt-1">{t("alertsIntro")}</p></div><Card className="p-0 overflow-hidden">{alerts.length ? alerts.map((alert) => <div key={alert.id} className="flex items-start gap-4 border-b border-line p-5 last:border-b-0"><Bell className="mt-1 h-5 w-5 text-brand" /><div><p className="font-medium text-forest">{alert.type === "auctionOpen" ? t("auctionOpenAlert", alert.data) : formatAdminAlert(alert, t)}</p><p className="mt-1 text-xs text-muted">{alert.date ? new Date(alert.date).toLocaleString() : t("liveToday")}</p></div></div>) : <p className="py-12 text-center text-muted">{t("noAlertsYet") || "No alerts yet."}</p>}</Card></div>;
-}
-
-function ReportsTab({ bookings, auctions }) {
-  const { t } = useTranslation();
-  const paid = bookings.filter((item) => item.booking.status === "PAID").length;
-  const active = bookings.filter((item) => !["PAID", "COMPLETED"].includes(item.booking.status)).length;
-  return <div className="max-w-[1000px] mx-auto space-y-6"><div><h2 className="text-2xl font-display font-extrabold text-forest">{t("reports")}</h2><p className="text-muted mt-1">Current marketplace and procurement summary.</p></div><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"><Card><p className="text-xs font-bold uppercase tracking-widest text-muted">Bookings</p><p className="mt-2 text-3xl font-extrabold text-forest">{bookings.length}</p></Card><Card><p className="text-xs font-bold uppercase tracking-widest text-muted">Active queue</p><p className="mt-2 text-3xl font-extrabold text-brand">{active}</p></Card><Card><p className="text-xs font-bold uppercase tracking-widest text-muted">Paid</p><p className="mt-2 text-3xl font-extrabold text-forest">{paid}</p></Card><Card><p className="text-xs font-bold uppercase tracking-widest text-muted">Open auctions</p><p className="mt-2 text-3xl font-extrabold text-forest">{auctions.length}</p></Card></div></div>;
-}
-
-export default function AdminPage({ language, onLanguageChange, onLogout, onHome }) {
->>>>>>> main
   const { t } = useTranslation();
   const [centre, setCentre] = useState(null);
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -832,10 +617,6 @@ export default function AdminPage({ language, onLanguageChange, onLogout, onHome
   const [status, setStatus] = useState("BOOKED");
   const [procurement, setProcurement] = useState(null);
   const [payment, setPayment] = useState(null);
-  const [notifications, setNotifications] = useState([]);
-  const [auctions, setAuctions] = useState([]);
-  const [bidNotifications, setBidNotifications] = useState([]);
-  const [procurementRecords, setProcurementRecords] = useState({});
   const [loading, setLoading] = useState(true);
   const statusTranslationKeys = {
     BOOKED: "statusBooked",
@@ -847,30 +628,9 @@ export default function AdminPage({ language, onLanguageChange, onLogout, onHome
     PAID: "statusPaid",
   };
 
-  const loadAdminData = async () => {
-    const [centres, bookings, notifs, openAuctions, bidNotifs] = await Promise.all([api.getCentres(), api.getAllBookings(), api.getNotifications(), getOpenAuctions().catch(() => []), getAdminBidNotifications()]);
-    setCentre(centres?.[0] || null);
-    setAllBookings(bookings || []);
-    setNotifications(notifs || []);
-    setAuctions(openAuctions || []);
-    setBidNotifications(bidNotifs || []);
-    const records = {};
-    await Promise.all((bookings || []).map(async (item) => { records[item.booking.id] = await api.getProcurement(item.booking.id); }));
-    setProcurementRecords(records);
-    setLoading(false);
-  };
-
   useEffect(() => {
-<<<<<<< HEAD
     api.getCentres().then((data) => setCentre(data?.[0] || null)).finally(() => setLoading(false));
     api.getAllBookings().then(setAllBookings);
-=======
-    loadAdminData().catch(() => setLoading(false));
-    const timer = window.setInterval(() => { loadAdminData().catch(() => {}); }, 5000);
-    const onStorage = () => loadAdminData().catch(() => {});
-    window.addEventListener("storage", onStorage);
-    return () => { window.clearInterval(timer); window.removeEventListener("storage", onStorage); };
->>>>>>> main
   }, []);
 
   useEffect(() => {
@@ -893,11 +653,6 @@ export default function AdminPage({ language, onLanguageChange, onLogout, onHome
       const newBookings = allBookings.map(b => b.booking.id === selectedBooking.booking.id ? { ...b, booking: updated } : b);
       setAllBookings(newBookings);
       setSelectedBooking(newBookings.find(b => b.booking.id === selectedBooking.booking.id));
-<<<<<<< HEAD
-=======
-      const updatedProcurement = await api.getProcurement(selectedBooking.booking.id);
-      setProcurementRecords((current) => ({ ...current, [selectedBooking.booking.id]: updatedProcurement }));
->>>>>>> main
       toast.success(`${t("statusUpdated")}: ${t(statusTranslationKeys[status]) || status}`);
     } catch (requestError) {
       toast.error(requestError.message || t("statusUpdateFailed"));
@@ -924,8 +679,8 @@ export default function AdminPage({ language, onLanguageChange, onLogout, onHome
 
   const navItems = [
     { id: "dashboard", label: t("overview"), icon: LayoutDashboard },
-    { id: "centres", label: t("centres"), icon: DatabaseZap },
-    { id: "crops", label: t("cropsMsp"), icon: FileText },
+    { id: "centres", label: "Centres", icon: DatabaseZap },
+    { id: "crops", label: t("cropsMsp") || "Crops & MSP", icon: FileText },
     { id: "bookings", label: t("todayBookings"), icon: Users },
     { id: "queue", label: t("activeQueue"), icon: Activity },
     { id: "procurement", label: t("procurementJourney"), icon: FileText },
@@ -937,13 +692,9 @@ export default function AdminPage({ language, onLanguageChange, onLogout, onHome
   ];
 
   return (
-<<<<<<< HEAD
     <SidebarLayout
       displayName={adminName || "Centre Administrator"}
       profileId="admin-user"
-=======
-    <SidebarLayout 
->>>>>>> main
       navItems={navItems} 
       activeTab={activeTab} 
       onTabChange={setActiveTab}
@@ -1115,19 +866,10 @@ export default function AdminPage({ language, onLanguageChange, onLogout, onHome
       {activeTab === "crops" && <CropsTab />}
       {activeTab === "bookings" && <TodaysBookingsTab bookings={allBookings} onRemove={handleDeleteBooking} onViewDetails={setDetailModalBooking} />}
       {activeTab === "queue" && <ActiveQueueTab bookings={inQueueBookings} onRemove={handleDeleteBooking} onViewDetails={setDetailModalBooking} />}
-<<<<<<< HEAD
       {activeTab === "marketplace" && <BuyerMarketplace userType="admin" />}
       {activeTab === "kyc" && <KycReviewTab />}
 
       {activeTab !== "dashboard" && activeTab !== "crops" && activeTab !== "centres" && activeTab !== "bookings" && activeTab !== "queue" && activeTab !== "marketplace" && activeTab !== "kyc" && (
-=======
-      {activeTab === "payments" && <PaymentManagementTab bookings={allBookings} onStatusChange={loadAdminData} />}
-      {activeTab === "procurement" && <ProcurementTab bookings={allBookings} records={procurementRecords} onSelect={setDetailModalBooking} />}
-      {activeTab === "alerts" && <AlertsTab notifications={[...notifications, ...bidNotifications]} auctions={auctions} />}
-      {activeTab === "reports" && <ReportsTab bookings={allBookings} auctions={auctions} />}
-
-      {activeTab !== "dashboard" && activeTab !== "crops" && activeTab !== "centres" && activeTab !== "bookings" && activeTab !== "queue" && activeTab !== "payments" && activeTab !== "procurement" && activeTab !== "alerts" && activeTab !== "reports" && (
->>>>>>> main
         <div className="flex flex-col items-center justify-center py-32 text-center">
           <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 mb-6">
             <LayoutDashboard className="w-10 h-10" />
