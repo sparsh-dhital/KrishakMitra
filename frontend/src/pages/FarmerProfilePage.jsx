@@ -57,6 +57,8 @@ export default function FarmerProfilePage({ farmerId, farmerName }) {
   if (!profile)
     return <div className="p-8 text-center text-muted">Loading profile...</div>;
   const status = profile.kyc_status || "pending";
+  const statusLabel =
+    status === "pending" ? "Verify KYC" : status.replace("_", " ");
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <div>
@@ -84,7 +86,7 @@ export default function FarmerProfilePage({ farmerId, farmerName }) {
           <span
             className={`rounded-full border px-3 py-1 text-xs font-bold uppercase ${statusStyles[status] || statusStyles.pending}`}
           >
-            {status.replace("_", " ")}
+            {statusLabel}
           </span>
         </div>
         {status === "approved" && (
@@ -95,8 +97,8 @@ export default function FarmerProfilePage({ farmerId, farmerName }) {
         )}
         {status === "pending" && (
           <p className="mt-5 flex items-center gap-2 text-sm font-bold text-muted">
-            <Clock3 className="h-5 w-5" /> Admin review is required before your
-            next booking.
+            <Clock3 className="h-5 w-5" /> Complete your KYC details and submit
+            them for Admin review before booking.
           </p>
         )}
         {status === "changes_requested" && (

@@ -345,7 +345,27 @@ export const api = {
   getFarmer: async (farmerId) => {
     await delay(300);
     const stored = getStoredFarmers().find((item) => item.id === farmerId);
-    if (stored) return stored;
+    if (stored) {
+      const hasReview = Boolean(stored.kyc_reviewed_at);
+      if (
+        !hasReview &&
+        ["denied", "approved", "changes_requested"].includes(stored.kyc_status)
+      ) {
+        const migrated = {
+          ...stored,
+          kyc_status: "pending",
+          kyc_note: "",
+          kyc_reviewed_at: null,
+        };
+        saveFarmers(
+          getStoredFarmers().map((item) =>
+            item.id === farmerId ? migrated : item,
+          ),
+        );
+        return migrated;
+      }
+      return stored;
+    }
     const farmer = {
       id: farmerId,
       full_name: "Ramesh Kumar",
@@ -356,6 +376,8 @@ export const api = {
       bank_account: "**** **** 4567",
       kyc_status: "pending",
       kyc_note: "",
+      kyc_submitted_at: null,
+      kyc_reviewed_at: null,
     };
     saveFarmers([...getStoredFarmers(), farmer]);
     return farmer;
@@ -390,6 +412,10 @@ export const api = {
       ...payload,
       kyc_status: "pending",
       kyc_note: "",
+      kyc_submitted_at: null,
+      kyc_reviewed_at: null,
+      kyc_submitted_at: new Date().toISOString(),
+      kyc_reviewed_at: null,
     };
     if (index >= 0) farmers[index] = updated;
     else farmers.push(updated);
@@ -401,7 +427,12 @@ export const api = {
     const farmers = getStoredFarmers();
     const index = farmers.findIndex((item) => item.id === farmerId);
     if (index < 0) throw new Error("Farmer profile not found");
-    farmers[index] = { ...farmers[index], kyc_status: status, kyc_note: note };
+    farmers[index] = {
+      ...farmers[index],
+      kyc_status: status,
+      kyc_note: note,
+      kyc_reviewed_at: new Date().toISOString(),
+    };
     saveFarmers(farmers);
     const type =
       status === "approved"

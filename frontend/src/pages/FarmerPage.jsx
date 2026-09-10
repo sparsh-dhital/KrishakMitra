@@ -544,7 +544,9 @@ export default function FarmerPage({
               >
                 <p className="text-xs font-extrabold uppercase tracking-widest text-brand">
                   KYC verification:{" "}
-                  {(farmerProfile.kyc_status || "pending").replace("_", " ")}
+                  {farmerProfile.kyc_status === "pending"
+                    ? "Verify KYC"
+                    : (farmerProfile.kyc_status || "pending").replace("_", " ")}
                 </p>
                 <p className="mt-1 text-sm font-bold text-forest">
                   {farmerProfile.kyc_note ||
