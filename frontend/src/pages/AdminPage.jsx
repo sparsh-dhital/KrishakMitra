@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
-import { LayoutDashboard, Users, Activity, FileText, Bell, DatabaseZap, ShieldAlert, CheckCircle2, Gavel, Clock, ShieldCheck } from "lucide-react";
-import { api } from "../services/api";
-import { SidebarLayout, Card, Badge, Button, Select, Input } from "../components/ui";
+import { LayoutDashboard, Users, Activity, FileText, Bell, DatabaseZap, ShieldAlert, CheckCircle2, Clock } from "lucide-react";
+import { api, useLiveSync } from "../services/api";
+import { SidebarLayout, Card, Badge, Button, Select, Input, Eyebrow } from "../components/ui";
+import QRCode from "react-qr-code";
 import { Plus, Trash2, Edit2 } from "lucide-react";
-import BuyerMarketplace from "./BuyerMarketplace";
 
 function CentresTab() {
   const [centres, setCentres] = useState([]);
@@ -159,7 +159,10 @@ function CentresTab() {
   return (
     <div className="space-y-6 max-w-[1000px] mx-auto">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold font-display text-forest">Procurement Centres</h2>
+        <div>
+          <Eyebrow className="mb-2">MANAGEMENT</Eyebrow>
+          <h2 className="text-4xl font-bold font-display text-forest">Procurement Centres</h2>
+        </div>
         {!isAdding && (
           <Button onClick={() => setIsAdding(true)} className="gap-2 shadow-lg shadow-brand/20">
             <Plus className="w-4 h-4" /> Add Centre
@@ -253,7 +256,7 @@ function CentresTab() {
 
       <Card className="p-0 overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left">
+          <table className="w-full min-w-max text-sm text-left">
             <thead className="bg-slate-50 text-muted font-bold border-b border-line uppercase tracking-widest text-[10px]">
               <tr>
                  <th className="px-6 py-4">Centre Name</th>
@@ -377,7 +380,7 @@ function TodaysBookingsTab({ bookings, onRemove, onViewDetails }) {
   };
 
   const handleExport = (format) => {
-    const rows = bookings.map(b => ({
+    const rows = (bookings || []).map(b => ({
       id: b.token?.token_number || "N/A",
       farmer: b.booking.farmer_name,
       crop: (b.booking.crops || []).map(c => c.crop_name).join(', '),
@@ -426,8 +429,9 @@ function TodaysBookingsTab({ bookings, onRemove, onViewDetails }) {
     <div className="max-w-[1400px] mx-auto space-y-6">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h2 className="text-2xl font-display font-extrabold text-forest">{t("todaysBookings") || "Today's Bookings"}</h2>
-          <p className="text-muted mt-1">Manage scheduled arrivals for today.</p>
+          <Eyebrow className="mb-2">DAILY OPERATIONS</Eyebrow>
+          <h2 className="text-4xl font-display font-extrabold text-forest">{t("todaysBookings") || "Today's Bookings"}</h2>
+          <p className="text-muted mt-2">Manage scheduled arrivals for today.</p>
         </div>
         <div className="relative">
           <Button variant="primary" className="gap-2" onClick={() => setExportMenuOpen((open) => !open)}>
@@ -445,7 +449,7 @@ function TodaysBookingsTab({ bookings, onRemove, onViewDetails }) {
 
       <Card className="overflow-hidden p-0 shadow-md">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full min-w-max text-left border-collapse">
             <thead>
               <tr className="bg-slate-50 border-b border-line text-sm font-bold text-slate-500 uppercase tracking-wider">
                 <th className="p-4 pl-6">Token ID</th>
@@ -498,45 +502,6 @@ function TodaysBookingsTab({ bookings, onRemove, onViewDetails }) {
   );
 }
 
-function KycReviewTab() {
-  const [requests, setRequests] = useState([]);
-
-  useEffect(() => {
-    const found = [];
-    for (let index = 0; index < localStorage.length; index += 1) {
-      const key = localStorage.key(index);
-      if (!key?.startsWith("krishak-mitra-profile-")) continue;
-      try {
-        const profile = JSON.parse(localStorage.getItem(key) || "null");
-        if (profile?.kycStatus && profile.kycStatus !== "Not submitted") {
-          const id = key.replace("krishak-mitra-profile-", "");
-          found.push({ id, applicantType: id.startsWith("buyer-") || id.startsWith("buyer") ? "Buyer" : "Farmer", ...profile });
-        }
-      } catch { /* Ignore malformed profile entries. */ }
-    }
-    setRequests(found);
-  }, []);
-
-  function updateStatus(request, status) {
-    const next = { ...request, kycStatus: status };
-    localStorage.setItem(`krishak-mitra-profile-${request.id}`, JSON.stringify(next));
-    setRequests((current) => current.map((item) => item.id === request.id ? next : item));
-  }
-
-  return (
-    <div className="max-w-5xl mx-auto space-y-6">
-      <div><p className="text-sm font-bold uppercase tracking-widest text-brand">Verification queue</p><h1 className="font-display text-3xl font-extrabold text-forest mt-2">KYC Review</h1><p className="text-muted mt-2">Admin Verification Team reviews identity documents and approves or rejects submissions.</p></div>
-      {requests.length === 0 ? <Card className="text-center py-12"><ShieldCheck className="w-10 h-10 mx-auto text-brand mb-4" /><p className="font-bold text-forest">No KYC requests yet</p><p className="text-sm text-muted mt-2">Submitted user documents will appear here.</p></Card> : requests.map((request) => (
-        <Card key={request.id} className="space-y-4">
-          <div className="flex items-start justify-between gap-4"><div><div className="flex items-center gap-2"><h2 className="font-bold text-forest text-lg">{request.fullName || request.id}</h2><Badge tone="default">{request.applicantType}</Badge></div><p className="text-sm text-muted">{request.email || "No email provided"} · {request.phone || "No phone provided"}</p></div><Badge tone={request.kycStatus === "Approved" ? "success" : request.kycStatus === "Rejected" ? "warning" : "default"}>{request.kycStatus}</Badge></div>
-          <div className="rounded-xl bg-slate-50 p-4 text-sm space-y-2"><p className="font-bold">Submitted KYC details</p><p className="text-muted">{request.kycDocumentType || "Document type missing"} · {request.kycDocumentNumber || "Document number missing"}</p><p className="text-muted">DOB: {request.kycDateOfBirth || "Not provided"} · Gender: {request.kycGender || "Not provided"}</p><p className="text-muted">Address: {request.kycAddress || "Not provided"}</p><p className="text-muted">File: {request.kycDocument || "No document attached"}</p>{request.kycDocumentData && <a href={request.kycDocumentData} download={request.kycDocument} className="inline-block text-brand font-bold text-xs">Download document</a>}</div>
-          <div className="flex gap-3"><Button size="sm" onClick={() => updateStatus(request, "Approved")}>Approve KYC</Button><Button size="sm" variant="outline" onClick={() => updateStatus(request, "Rejected")}>Reject</Button></div>
-        </Card>
-      ))}
-    </div>
-  );
-}
-
 function ActiveQueueTab({ bookings, onRemove, onViewDetails }) {
   const { t } = useTranslation();
   const [showAllQueue, setShowAllQueue] = useState(false);
@@ -546,8 +511,9 @@ function ActiveQueueTab({ bookings, onRemove, onViewDetails }) {
     <div className="max-w-[1400px] mx-auto space-y-6">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h2 className="text-2xl font-display font-extrabold text-forest">{t("liveQueue") || "Active Queue"}</h2>
-          <p className="text-muted mt-1">Real-time status of farmers currently at the centre.</p>
+          <Eyebrow className="mb-2">LIVE STATUS</Eyebrow>
+          <h2 className="text-4xl font-display font-extrabold text-forest">{t("liveQueue") || "Active Queue"}</h2>
+          <p className="text-muted mt-2">Real-time status of farmers currently at the centre.</p>
         </div>
         <div className="flex items-center gap-3">
            <Badge variant="primary" className="bg-green-100 text-green-700">{bookings.length} Currently Active</Badge>
@@ -598,17 +564,270 @@ function ActiveQueueTab({ bookings, onRemove, onViewDetails }) {
             </Card>
           );
         }) : (
-          <p className="text-muted text-center py-10">{t("noFarmersInQueue")}</p>
+          <p className="text-muted text-center py-10">No farmers currently in the queue.</p>
         )}
       </div>
     </div>
   );
 }
 
-  export default function AdminPage({ language, onLanguageChange, onLogout, onHome, onNavigateProfile, adminName }) {
+function PaymentManagementTab({ bookings, onStatusChange }) {
+  const pendingPayments = bookings.filter(b => b.booking.status === "PAYMENT_REQUESTED");
+  const completedPayments = bookings.filter(b => b.booking.status === "PAID");
+  const [selectedPayment, setSelectedPayment] = useState(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  
+  const handleMarkPaid = async (e) => {
+    e.preventDefault();
+    if (!selectedPayment) return;
+    const fileInput = e.target.elements.receipt;
+    const file = fileInput.files[0];
+    if (!file) {
+      toast.error("Please select a payment receipt file");
+      return;
+    }
+
+    setIsProcessing(true);
+    try {
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        const dataUrl = event.target.result;
+        await api.processPayment(selectedPayment.booking.id, dataUrl);
+        toast.success("Payment marked as PAID for booking " + selectedPayment.booking.id);
+        setSelectedPayment(null);
+        if (onStatusChange) onStatusChange();
+        setIsProcessing(false);
+      };
+      reader.readAsDataURL(file);
+    } catch (e) {
+      toast.error("Failed to process payment");
+      setIsProcessing(false);
+    }
+  };
+
+  return (
+    <div className="max-w-[1400px] mx-auto space-y-6">
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h2 className="text-2xl font-display font-extrabold text-forest">Payment Management</h2>
+          <p className="text-muted mt-1">Process pending farmer payments and view history.</p>
+        </div>
+      </div>
+      
+      <Card className="p-0 overflow-hidden mb-8">
+        <div className="p-4 bg-slate-50 border-b border-line">
+          <h3 className="font-bold text-forest">Pending Payment Requests</h3>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-max text-left border-collapse">
+            <thead>
+              <tr className="bg-slate-50 border-b border-line text-sm font-bold text-slate-500 uppercase tracking-wider">
+                <th className="p-4 pl-6">Farmer</th>
+                <th className="p-4">Contact</th>
+                <th className="p-4">Crop (Qty)</th>
+                <th className="p-4">Fare (Rs)</th>
+                <th className="p-4 pr-6 text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-line">
+              {pendingPayments.map(p => (
+                <tr key={p.booking.id} className="hover:bg-slate-50 transition-colors">
+                  <td className="p-4 pl-6 font-bold text-forest">{p.booking.farmer_name}</td>
+                  <td className="p-4 text-muted">{p.booking.farmer_mobile || "+91 98765 43210"}</td>
+                  <td className="p-4 text-muted">{(p.booking.crops || []).map(c => c.crop_name).join(', ')} ({p.booking.estimated_quantity}q)</td>
+                  <td className="p-4 font-mono font-bold text-brand">₹ {p.booking.estimated_fare}</td>
+                  <td className="p-4 pr-6 text-right">
+                    <Button variant="primary" size="sm" onClick={() => setSelectedPayment(p)}>
+                      Process Payment
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+              {pendingPayments.length === 0 && (
+                <tr>
+                  <td colSpan="5" className="p-8 text-center text-muted">No pending payment requests.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </Card>
+
+      <Card className="p-0 overflow-hidden">
+        <div className="p-4 bg-slate-50 border-b border-line">
+          <h3 className="font-bold text-forest">Completed Payments</h3>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-max text-left border-collapse">
+            <thead>
+              <tr className="bg-slate-50 border-b border-line text-sm font-bold text-slate-500 uppercase tracking-wider">
+                <th className="p-4 pl-6">Farmer</th>
+                <th className="p-4">Contact</th>
+                <th className="p-4">Crop (Qty)</th>
+                <th className="p-4">Fare (Rs)</th>
+                <th className="p-4 pr-6 text-right">Status</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-line">
+              {completedPayments.map(p => (
+                <tr key={p.booking.id} className="hover:bg-slate-50 transition-colors">
+                  <td className="p-4 pl-6 font-bold text-forest">{p.booking.farmer_name}</td>
+                  <td className="p-4 text-muted">{p.booking.farmer_mobile || "-"}</td>
+                  <td className="p-4 text-muted">{(p.booking.crops || []).map(c => c.crop_name).join(', ')} ({p.booking.estimated_quantity}q)</td>
+                  <td className="p-4 font-mono font-bold text-brand">₹ {p.booking.estimated_fare}</td>
+                  <td className="p-4 pr-6 text-right">
+                    <Badge tone="success" className="gap-1.5 px-3 py-1.5"><Check className="w-3.5 h-3.5" /> Paid</Badge>
+                  </td>
+                </tr>
+              ))}
+              {completedPayments.length === 0 && (
+                <tr>
+                  <td colSpan="5" className="p-8 text-center text-muted">No completed payments yet.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </Card>
+
+      {selectedPayment && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="p-6 border-b border-line bg-slate-50">
+              <h3 className="font-display font-bold text-lg text-forest">Upload Payment Receipt</h3>
+              <p className="text-sm text-muted">Upload proof of payment to mark as PAID.</p>
+            </div>
+            <form onSubmit={handleMarkPaid} className="p-6 space-y-4">
+              <div>
+                <p className="text-sm text-muted mb-1">Farmer: <strong className="text-forest">{selectedPayment.booking.farmer_name}</strong></p>
+                <p className="text-sm text-muted mb-1">Amount to pay: <strong className="text-brand font-mono">₹ {selectedPayment.booking.estimated_fare}</strong></p>
+                <p className="text-sm text-muted mb-4">Bank Details: <strong className="text-forest">{selectedPayment.booking.farmer_bank || "Not Provided"}</strong></p>
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-forest mb-2">Select Receipt (Image/PDF)</label>
+                <input type="file" name="receipt" accept="image/*,.pdf" className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-brand/10 file:text-brand hover:file:bg-brand/20" required />
+              </div>
+              <div className="flex gap-3 pt-4 border-t border-line mt-6">
+                <Button type="button" variant="outline" className="flex-1" onClick={() => setSelectedPayment(null)} disabled={isProcessing}>Cancel</Button>
+                <Button type="submit" variant="primary" className="flex-1" disabled={isProcessing}>{isProcessing ? "Processing..." : "Mark as PAID"}</Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ProcurementJourneyTab({ bookings, onStatusChange, onViewDetails }) {
+  const { t } = useTranslation();
+  const processingBookings = bookings.filter(b => b.booking.status === "QUALITY_CHECK" || b.booking.status === "WEIGHING" || b.booking.status === "ACCEPTED");
+
+  return (
+    <div className="max-w-[1400px] mx-auto space-y-6">
+      <div className="mb-6">
+        <Eyebrow className="mb-2">WORKFLOW</Eyebrow>
+        <h2 className="text-4xl font-display font-extrabold text-forest">{t("procurementJourney")}</h2>
+        <p className="text-muted mt-2">Manage farmers currently undergoing quality check, weighing, or accepted stages.</p>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4">
+        {processingBookings && processingBookings.length > 0 ? processingBookings.map((b) => {
+          const item = b.booking;
+          return (
+            <Card key={item.id} className="p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-l-4" style={{ borderLeftColor: '#3B82F6' }}>
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <h3 className="font-bold text-forest text-lg">{item.farmer_name}</h3>
+                  <span className="text-xs font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">{b.token?.token_number}</span>
+                </div>
+                <p className="text-sm text-muted">{(item.crops || []).map(c => c.crop_name).join(', ')} • {item.estimated_quantity} q</p>
+              </div>
+              <div className="flex items-center gap-4">
+                 <Badge tone="primary" className="text-sm">{item.status}</Badge>
+                 <Button variant="outline" size="sm" onClick={() => onViewDetails(b)}>View Details</Button>
+              </div>
+            </Card>
+          );
+        }) : (
+          <p className="text-muted text-center py-10">No procurement in progress.</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function AlertsTab({ notifications, onMarkRead }) {
+  const { t } = useTranslation();
+  return (
+    <div className="max-w-[1000px] mx-auto space-y-6">
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <Eyebrow className="mb-2">NOTIFICATIONS</Eyebrow>
+          <h2 className="text-4xl font-display font-extrabold text-forest">{t("alerts")}</h2>
+        </div>
+        <Button onClick={onMarkRead} variant="outline" size="sm">Mark All Read</Button>
+      </div>
+      <div className="space-y-4">
+        {notifications.length > 0 ? notifications.map(n => (
+          <Card key={n.id} className={`p-4 border-l-4 ${n.read ? 'border-slate-200 opacity-70' : 'border-amber-500 shadow-md'}`}>
+            <p className="text-forest font-medium">{n.message}</p>
+            <p className="text-xs text-muted mt-2">{new Date(n.date).toLocaleString()}</p>
+          </Card>
+        )) : (
+          <p className="text-muted text-center py-10">No alerts found.</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ReportsTab({ bookings }) {
+  const { t } = useTranslation();
+  const total = bookings.length;
+  const paid = bookings.filter(b => b.booking.status === "PAID").length;
+  const inQueue = bookings.filter(b => ["BOOKED", "CHECKED_IN", "WAITING", "QUALITY_CHECK", "WEIGHING", "ACCEPTED"].includes(b.booking.status)).length;
+  
+  return (
+    <div className="max-w-[1000px] mx-auto space-y-6">
+      <div className="mb-6">
+        <Eyebrow className="mb-2">ANALYTICS</Eyebrow>
+        <h2 className="text-4xl font-display font-extrabold text-forest">{t("reports")}</h2>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <Card className="text-center p-6 bg-brand/5 border-brand/20 shadow-none">
+           <p className="text-4xl font-display font-bold text-brand">{total}</p>
+           <p className="text-xs font-bold uppercase tracking-widest text-muted mt-2">Total Bookings</p>
+        </Card>
+        <Card className="text-center p-6 bg-blue-50 border-blue-100 shadow-none">
+           <p className="text-4xl font-display font-bold text-blue-600">{inQueue}</p>
+           <p className="text-xs font-bold uppercase tracking-widest text-muted mt-2">In Progress</p>
+        </Card>
+        <Card className="text-center p-6 bg-green-50 border-green-100 shadow-none">
+           <p className="text-4xl font-display font-bold text-green-600">{paid}</p>
+           <p className="text-xs font-bold uppercase tracking-widest text-muted mt-2">Completed & Paid</p>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+export default function AdminPage({ language, onLanguageChange, onLogout, onHome }) {
   const { t } = useTranslation();
   const [centre, setCentre] = useState(null);
-  const [activeTab, setActiveTab] = useState("dashboard");
+  const [activeTab, setActiveTab] = useState(() => sessionStorage.getItem("krishak-mitra-admin-tab") || "dashboard");
+
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "GOOD MORNING";
+    if (hour < 17) return "GOOD AFTERNOON";
+    return "GOOD EVENING";
+  };
+  const greeting = getGreeting();
+
+  useEffect(() => {
+    sessionStorage.setItem("krishak-mitra-admin-tab", activeTab);
+  }, [activeTab]);
 
   const [allBookings, setAllBookings] = useState([]);
   const [selectedBooking, setSelectedBooking] = useState(null);
@@ -628,10 +847,19 @@ function ActiveQueueTab({ bookings, onRemove, onViewDetails }) {
     PAID: "statusPaid",
   };
 
+  const [notifications, setNotifications] = useState([]);
+  
+  const syncTick = useLiveSync();
   useEffect(() => {
     api.getCentres().then((data) => setCentre(data?.[0] || null)).finally(() => setLoading(false));
     api.getAllBookings().then(setAllBookings);
-  }, []);
+    api.getNotifications().then(setNotifications);
+  }, [syncTick]);
+
+  const handleMarkRead = async () => {
+    await api.markNotificationsRead();
+    api.getNotifications().then(setNotifications);
+  };
 
   useEffect(() => {
     if (!selectedBooking?.booking?.id) return;
@@ -687,27 +915,25 @@ function ActiveQueueTab({ bookings, onRemove, onViewDetails }) {
     { id: "payments", label: t("paymentStatus"), icon: DatabaseZap },
     { id: "alerts", label: t("alerts"), icon: ShieldAlert },
     { id: "reports", label: t("reports"), icon: Bell },
-    { id: "kyc", label: "KYC Review", icon: ShieldCheck },
-    { id: "marketplace", label: t("marketplace") || "Private Marketplace", icon: Gavel },
   ];
 
   return (
-    <SidebarLayout
-      displayName={adminName || "Centre Administrator"}
-      profileId="admin-user"
+    <SidebarLayout 
       navItems={navItems} 
       activeTab={activeTab} 
       onTabChange={setActiveTab}
       onLogout={onLogout} onHome={onHome}
       language={language}
       onLanguageChange={onLanguageChange}
-      onNavigateProfile={onNavigateProfile}
     >
       {activeTab === "dashboard" && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 max-w-[1400px] mx-auto">
           {/* Main Content Area */}
           <div className="lg:col-span-8 space-y-6">
-            <h1 className="font-display text-2xl font-bold text-forest mb-6">{t("adminPortal")}</h1>
+            <div className="mb-6">
+               <Eyebrow className="mb-2">OVERVIEW</Eyebrow>
+               <h1 className="font-display text-4xl font-bold text-forest">{greeting}</h1>
+            </div>
             
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <Card className="flex items-center gap-4">
@@ -739,18 +965,13 @@ function ActiveQueueTab({ bookings, onRemove, onViewDetails }) {
               </Card>
             </div>
 
-            <Card className="border-brand/20 bg-brand/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="flex items-center gap-3"><ShieldCheck className="w-7 h-7 text-brand" /><div><h2 className="font-bold text-forest">KYC verification requests</h2><p className="text-sm text-muted">Review and approve Farmer and Buyer identity submissions.</p></div></div>
-              <Button onClick={() => setActiveTab("kyc")} className="shrink-0">Open KYC Review</Button>
-            </Card>
-
             <Card className="p-0 overflow-hidden">
               <div className="px-6 py-4 border-b border-line flex items-center justify-between">
-                <h2 className="font-bold text-forest text-lg">{t("liveQueue")}</h2>
+                <Eyebrow>{t("liveQueue")}</Eyebrow>
                 <Badge tone="default">{t("viewAll")}</Badge>
               </div>
               <div className="overflow-x-auto">
-                <table className="w-full text-sm text-left">
+                <table className="w-full min-w-max text-sm text-left">
                   <thead className="bg-slate-50 text-muted font-bold border-b border-line">
                     <tr>
                        <th className="px-6 py-3">#</th>
@@ -866,10 +1087,13 @@ function ActiveQueueTab({ bookings, onRemove, onViewDetails }) {
       {activeTab === "crops" && <CropsTab />}
       {activeTab === "bookings" && <TodaysBookingsTab bookings={allBookings} onRemove={handleDeleteBooking} onViewDetails={setDetailModalBooking} />}
       {activeTab === "queue" && <ActiveQueueTab bookings={inQueueBookings} onRemove={handleDeleteBooking} onViewDetails={setDetailModalBooking} />}
-      {activeTab === "marketplace" && <BuyerMarketplace userType="admin" />}
-      {activeTab === "kyc" && <KycReviewTab />}
+      {activeTab === "payments" && <PaymentManagementTab bookings={allBookings} />}
 
-      {activeTab !== "dashboard" && activeTab !== "crops" && activeTab !== "centres" && activeTab !== "bookings" && activeTab !== "queue" && activeTab !== "marketplace" && activeTab !== "kyc" && (
+      {activeTab === "procurement" && <ProcurementJourneyTab bookings={allBookings} onViewDetails={setDetailModalBooking} />}
+      {activeTab === "alerts" && <AlertsTab notifications={notifications} onMarkRead={handleMarkRead} />}
+      {activeTab === "reports" && <ReportsTab bookings={allBookings} />}
+
+      {activeTab !== "dashboard" && activeTab !== "crops" && activeTab !== "centres" && activeTab !== "bookings" && activeTab !== "queue" && activeTab !== "payments" && activeTab !== "procurement" && activeTab !== "alerts" && activeTab !== "reports" && (
         <div className="flex flex-col items-center justify-center py-32 text-center">
           <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 mb-6">
             <LayoutDashboard className="w-10 h-10" />
@@ -934,6 +1158,29 @@ function ActiveQueueTab({ bookings, onRemove, onViewDetails }) {
                     <Badge tone={detailModalBooking.booking.status === "PAID" ? "success" : "warning"}>{detailModalBooking.booking.status}</Badge>
                   </div>
                 </div>
+              </div>
+
+              {/* QR Gate Pass for this booking */}
+              <div className="flex flex-col items-center gap-3 p-4 bg-white rounded-xl border border-line">
+                <p className="text-xs font-bold uppercase tracking-widest text-muted">Farmer's Gate Pass QR</p>
+                <div className="p-4 bg-white rounded-xl border-2 border-brand/20 shadow-sm">
+                  <QRCode
+                    value={JSON.stringify({
+                      ticketId: detailModalBooking.booking.id,
+                      tokenNumber: detailModalBooking.token?.token_number,
+                      farmerName: detailModalBooking.booking.farmer_name,
+                      crops: (detailModalBooking.booking.crops || []).map(c => ({ name: c.crop_name, quantity: c.quantity })),
+                      totalQuantity: detailModalBooking.booking.estimated_quantity || 0,
+                      centerId: detailModalBooking.booking.centre_id,
+                      status: detailModalBooking.booking.status || "BOOKED",
+                      date: detailModalBooking.booking.date,
+                      estimatedFare: detailModalBooking.booking.estimated_fare || 0,
+                    })}
+                    size={140}
+                    level="H"
+                  />
+                </div>
+                <p className="text-xs text-muted font-medium">Scan to verify farmer entry</p>
               </div>
             </div>
 
@@ -1023,27 +1270,29 @@ function CropsTab() {
       )}
 
       <Card className="p-0 overflow-hidden">
-        <table className="w-full text-left">
-          <thead className="bg-slate-50 text-muted font-bold border-b border-line uppercase text-[10px] tracking-wider">
-            <tr>
-              <th className="p-4 pl-6">Crop Name</th>
-              <th className="p-4">Minimum Support Price (MSP)</th>
-              <th className="p-4 pr-6 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-line">
-            {crops.map(c => (
-              <tr key={c.id} className="hover:bg-slate-50">
-                <td className="p-4 pl-6 font-bold text-forest">{c.name}</td>
-                <td className="p-4 font-mono font-bold text-brand">₹ {c.minimum_support_price}</td>
-                <td className="p-4 pr-6 text-right space-x-2">
-                  <button onClick={() => { setEditingId(c.id); setFormData({ name: c.name, minimum_support_price: c.minimum_support_price }); }} className="p-2 text-slate-400 hover:text-brand rounded-full hover:bg-brand/10"><Edit2 className="w-4 h-4" /></button>
-                  <button onClick={() => handleDelete(c.id)} className="p-2 text-slate-400 hover:text-red-500 rounded-full hover:bg-red-50"><Trash2 className="w-4 h-4" /></button>
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-max text-left">
+            <thead className="bg-slate-50 text-muted font-bold border-b border-line uppercase text-[10px] tracking-wider">
+              <tr>
+                <th className="p-4 pl-6">Crop Name</th>
+                <th className="p-4">Minimum Support Price (MSP)</th>
+                <th className="p-4 pr-6 text-right">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-line">
+              {crops.map(c => (
+                <tr key={c.id} className="hover:bg-slate-50">
+                  <td className="p-4 pl-6 font-bold text-forest">{c.name}</td>
+                  <td className="p-4 font-mono font-bold text-brand">₹ {c.minimum_support_price}</td>
+                  <td className="p-4 pr-6 text-right space-x-2">
+                    <button onClick={() => { setEditingId(c.id); setFormData({ name: c.name, minimum_support_price: c.minimum_support_price }); }} className="p-2 text-slate-400 hover:text-brand rounded-full hover:bg-brand/10"><Edit2 className="w-4 h-4" /></button>
+                    <button onClick={() => handleDelete(c.id)} className="p-2 text-slate-400 hover:text-red-500 rounded-full hover:bg-red-50"><Trash2 className="w-4 h-4" /></button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </Card>
     </div>
   );
