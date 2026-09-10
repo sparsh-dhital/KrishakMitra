@@ -58,7 +58,7 @@ function BrandMark() {
     <span className="flex items-center gap-2.5">
       <Logo variant="emblem" className="h-12 w-12" />
       <span className="font-display text-xl font-extrabold tracking-[-.04em] text-white">
-        Krishak<span className="text-harvest">Mitra</span>
+        Krishak<span className="text-[#b7ef62]">Mitra</span>
       </span>
     </span>
   );
