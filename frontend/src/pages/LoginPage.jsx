@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ShieldCheck, Building2 } from "lucide-react";
 import { Button, Input, Card } from "../components/ui";
@@ -67,9 +67,12 @@ export default function LoginPage({
         animate={{ opacity: 1, scale: 1 }}
         className="w-full min-w-0 max-w-md"
       >
-        <Button variant="ghost" className="mb-6 gap-2" onClick={onBack}>
-          <ArrowLeft className="w-4 h-4" /> {t("login.backHome")}
-        </Button>
+        <button 
+          onClick={onBack}
+          className="mb-6 inline-flex items-center gap-2 text-xs font-bold text-muted bg-white border border-line px-4 py-2 rounded-full hover:border-brand/30 hover:text-forest hover:bg-slate-50 transition-all shadow-sm"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" /> {t("login.backHome")}
+        </button>
 
         <Card className="shadow-xl shadow-brand/5 border-line p-5 sm:p-10">
           <div className="flex flex-col items-center mb-6">

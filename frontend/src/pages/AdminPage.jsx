@@ -816,6 +816,14 @@ export default function AdminPage({ language, onLanguageChange, onLogout, onHome
   const [centre, setCentre] = useState(null);
   const [activeTab, setActiveTab] = useState(() => sessionStorage.getItem("krishak-mitra-admin-tab") || "dashboard");
 
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "GOOD MORNING";
+    if (hour < 17) return "GOOD AFTERNOON";
+    return "GOOD EVENING";
+  };
+  const greeting = getGreeting();
+
   useEffect(() => {
     sessionStorage.setItem("krishak-mitra-admin-tab", activeTab);
   }, [activeTab]);
@@ -923,7 +931,7 @@ export default function AdminPage({ language, onLanguageChange, onLogout, onHome
           <div className="lg:col-span-8 space-y-6">
             <div className="mb-6">
                <Eyebrow className="mb-2">OVERVIEW</Eyebrow>
-               <h1 className="font-display text-4xl font-bold text-forest">{t("adminPortal")}</h1>
+               <h1 className="font-display text-4xl font-bold text-forest">{greeting}</h1>
             </div>
             
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

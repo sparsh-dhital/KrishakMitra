@@ -1,4 +1,4 @@
-﻿import i18n from "i18next";
+import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 
 // 12 major Indian languages + English
@@ -58,6 +58,13 @@ const base = {
   adminGreeting:      "Admin Operations Control",
   adminIntro:         "Monitor live queue entries, verify crop quality grades, and manage daily mandi capacity.",
   todayBookings:      "Today's Bookings",
+  bookMandiSlot: "Book Mandi Slot",
+  chooseCentreTimeQuantity: "Choose Centre, Time & Quantity",
+  apmcWorkflow: "APMC Workflow",
+  privateMarket: "Private Market",
+  sellToDirectBuyers: "Sell to Direct Buyers",
+  postCropReceiveBids: "Post your crop and receive competing bids.",
+  liveBidding: "Live Bidding",
   capacityUsed:       "Centre Capacity",
   processedToday:     "Processed Today",
   liveOperations:     "Live Operations",
@@ -102,7 +109,7 @@ const base = {
     dashboardIntro: "Access your procurement dashboard",
     farmer: "Farmer",
     admin: "Officer (Admin)",
-    buyer: "Buyer / Institution",
+    buyer: "Buyer",
     fullName: "Full Name",
     namePlaceholder: "Enter your name",
     mobileNumber: "Mobile Number",
