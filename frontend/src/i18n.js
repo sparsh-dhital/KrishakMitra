@@ -1,4 +1,4 @@
-﻿import i18n from "i18next";
+import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 
 // 12 major Indian languages + English
@@ -102,7 +102,7 @@ const base = {
     dashboardIntro: "Access your procurement dashboard",
     farmer: "Farmer",
     admin: "Officer (Admin)",
-    buyer: "Buyer / Institution",
+    buyer: "Buyer",
     fullName: "Full Name",
     namePlaceholder: "Enter your name",
     mobileNumber: "Mobile Number",

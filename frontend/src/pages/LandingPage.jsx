@@ -107,7 +107,6 @@ export default function LandingPage({
             <LanguagePicker
               value={language}
               onChange={onLanguageChange}
-              className="[&>button]:border-white/25 [&>button]:bg-white/10 [&>button]:text-white [&>button]:shadow-none [&>button:hover]:bg-white/10! [&>button:focus]:bg-white/10! [&>button:active]:bg-white/10! [&>button[aria-expanded=true]]:bg-white/10!"
             />
             <button
               onClick={onNavigateLogin}

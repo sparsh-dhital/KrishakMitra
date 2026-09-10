@@ -314,7 +314,7 @@ export function SidebarLayout({
     <div className="flex min-h-screen min-w-0 overflow-x-hidden bg-cream">
       <aside
         className={cn(
-          "hidden lg:flex bg-[#0b291d] flex-col fixed inset-y-0 left-0 z-50 transition-all duration-300 ease-in-out shadow-2xl overflow-hidden",
+          "hidden lg:flex bg-[#113524] flex-col fixed inset-y-0 left-0 z-50 transition-all duration-300 ease-in-out shadow-2xl overflow-hidden",
           isExpanded ? "w-[260px]" : "w-[72px]",
         )}
       >
@@ -350,7 +350,7 @@ export function SidebarLayout({
             onClick={() => setIsExpanded(false)}
             className={cn(
               "ml-2 w-8 h-8 rounded-lg flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition-all shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60",
-              isExpanded ? "opacity-100" : "opacity-0 pointer-events-none",
+              isExpanded ? "opacity-100" : "opacity-0 w-0 overflow-hidden pointer-events-none p-0 ml-0 border-none",
             )}
             title="Collapse sidebar"
           >
@@ -509,7 +509,13 @@ export function SidebarLayout({
 
               <LanguagePicker value={language} onChange={onLanguageChange} />
 
-              <button className="relative w-10 h-10 rounded-full flex items-center justify-center text-slate-500 hover:text-brand hover:bg-brand/5 transition-all focus:outline-none">
+              <button 
+                onClick={() => {
+                  const target = navItems.find((n) => n.id === "notifications" || n.id === "reports");
+                  if (target) onTabChange(target.id);
+                }}
+                className="relative w-10 h-10 rounded-full flex items-center justify-center text-slate-500 hover:text-brand hover:bg-brand/5 transition-all focus:outline-none"
+              >
                 <Bell className="w-5 h-5" />
                 <span className="absolute top-2 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white shadow-sm" />
               </button>
