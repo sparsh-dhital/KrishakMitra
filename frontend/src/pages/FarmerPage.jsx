@@ -7,6 +7,7 @@ import { LayoutDashboard, MapPin, CalendarDays, QrCode, ListOrdered, ShoppingCar
 import { api, config, toUiSlot, useLiveSync } from "../services/api";
 import { Badge, Card, Button, Input, Select, SidebarLayout, CircularProgress, ProgressTimeline, Eyebrow } from "../components/ui";
 import AuctionCard from "../components/AuctionCard";
+import QRCodeModal from "../components/QRCodeModal";
 import { createAuctionDirectly, getFarmerAuctions, getFarmerBidNotifications } from "../services/biddingService";
 
 export default function FarmerPage({ language, onLanguageChange, onLogout, onHome, farmerId, farmerName }) {
@@ -57,6 +58,7 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, onHom
   const [auctionGrade, setAuctionGrade] = useState("A");
   const [useManualCrop, setUseManualCrop] = useState(false);
   const [manualCropName, setManualCropName] = useState("");
+  const [showQRModal, setShowQRModal] = useState(false);
 
   useEffect(() => {
     async function loadCentres() {
@@ -346,8 +348,8 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, onHom
                 {booking ? (
                   <>
                     <div className="flex items-center gap-4 mb-6">
-                      <div className="p-3 bg-white rounded-xl shadow-sm border border-line">
-                        {booking?.token?.token_number && <QRCode value={booking.token.token_number} size={64} />}
+                      <div className="p-3 bg-white rounded-xl shadow-sm border border-line cursor-pointer" onClick={() => setShowQRModal(true)}>
+                        {booking?.token?.token_number && <QRCode value={JSON.stringify({ ticketId: booking?.booking?.id, tokenNumber: booking?.token?.token_number, farmerName: farmerName || booking?.booking?.farmer_name || "Unknown", crops: (booking?.booking?.crops || []).map(c => ({ name: c.crop_name, quantity: c.quantity })), centerId: booking?.booking?.centre_id, centreName: centres.find(c => c.id === booking?.booking?.centre_id)?.name || "Unknown", status: booking?.booking?.status || "BOOKED" })} size={64} level="H" />}
                       </div>
                       <div className="min-w-0">
                         <p className="text-sm font-bold text-muted">{t("yourToken")} <span className="text-forest font-extrabold text-xl">#{booking?.token?.token_number || "N/A"}</span></p>
@@ -362,7 +364,8 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, onHom
                         <Clock className="w-4 h-4 text-brand" /> {booking?.booking?.date || "TBD"}
                       </div>
                     </div>
-                    <Button className="w-full mt-6 gap-2" onClick={() => setActiveTab("token")}>{t("yourToken")} <ChevronRight className="w-4 h-4" /></Button>
+                    <Button className="w-full mt-4 gap-2 bg-emerald-700 hover:bg-emerald-800" onClick={() => setShowQRModal(true)}><QrCode className="w-4 h-4" /> View Gate Pass</Button>
+                    <Button className="w-full mt-2 gap-2" variant="outline" onClick={() => setActiveTab("token")}>{t("yourToken")} <ChevronRight className="w-4 h-4" /></Button>
                   </>
                 ) : (
                   <div className="text-center py-8">
@@ -734,7 +737,7 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, onHom
               
               <div className="p-8 flex flex-col items-center text-center">
                 <div className="bg-white p-6 rounded-2xl border-2 border-brand/20 shadow-inner flex flex-col items-center gap-4">
-                  <QRCode value={`${window.location.origin}/status/${booking.token.id}`} size={200} className="w-48 h-48 sm:w-64 sm:h-64" />
+                  <QRCode value={JSON.stringify({ ticketId: booking.booking?.id, tokenNumber: booking.token.token_number, farmerName: farmerName || booking.booking?.farmer_name || "Unknown", crops: (booking.booking?.crops || []).map(c => ({ name: c.crop_name, quantity: c.quantity })), totalQuantity: booking.booking?.estimated_quantity || 0, centerId: booking.booking?.centre_id, centreName: centres.find(c => c.id === booking.booking?.centre_id)?.name || "Unknown", slotTime: booking.booking?.slot_time || "N/A", date: booking.booking?.date || new Date().toISOString().split("T")[0], status: booking.booking?.status || "BOOKED", estimatedFare: booking.booking?.estimated_fare || 0 })} size={200} level="H" className="w-48 h-48 sm:w-64 sm:h-64" />
                   <p className="font-mono text-xl sm:text-2xl font-extrabold tracking-widest text-brand bg-brand/5 px-6 py-2 rounded-xl border border-brand/20">
                     {booking.token.token_number}
                   </p>
@@ -754,6 +757,10 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, onHom
                      </div>
                    </div>
                 </div>
+
+                <Button className="w-full mt-6 gap-2 bg-emerald-700 hover:bg-emerald-800" onClick={() => setShowQRModal(true)}>
+                  <QrCode className="w-4 h-4" /> View Full Gate Pass
+                </Button>
               </div>
               
               
@@ -1010,6 +1017,18 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, onHom
           </div>
         </div>
       )}
+
+      {/* QR Gate Pass Modal */}
+      <QRCodeModal
+        isOpen={showQRModal}
+        onClose={() => setShowQRModal(false)}
+        slotData={{
+          booking: booking?.booking,
+          token: booking?.token,
+          farmerName: farmerName || booking?.booking?.farmer_name,
+          centreName: centres.find(c => c.id === booking?.booking?.centre_id)?.name || "Unknown Centre",
+        }}
+      />
     </SidebarLayout>
   );
 }
