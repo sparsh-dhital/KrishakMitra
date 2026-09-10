@@ -432,7 +432,7 @@ function TodaysBookingsTab({ bookings, onRemove, onViewDetails, highlightedBooki
       <div className="flex justify-between items-center mb-6">
         <div>
           <Eyebrow className="mb-2">DAILY OPERATIONS</Eyebrow>
-          <h2 className="text-4xl font-display font-extrabold text-forest">{t("todaysBookings") || "Today's Bookings"}</h2>
+          <h2 className="text-4xl font-display font-extrabold text-forest">{t("todayBookings") || "Today's Bookings"}</h2>
           <p className="text-muted mt-2">Manage scheduled arrivals for today.</p>
         </div>
         <div className="relative">
@@ -817,6 +817,7 @@ function ReportsTab({ bookings }) {
 function ScanQrTab({ bookings, centre, onBookingFound }) {
   const videoRef = useRef(null);
   const scannerRef = useRef(null);
+  const imageInputRef = useRef(null);
   const [scanValue, setScanValue] = useState("");
   const [scanError, setScanError] = useState("");
   const [isScanning, setIsScanning] = useState(false);
@@ -899,6 +900,20 @@ function ScanQrTab({ bookings, centre, onBookingFound }) {
     }
   };
 
+  const handleImageUpload = async (event) => {
+    const imageFile = event.target.files?.[0];
+    event.target.value = "";
+    if (!imageFile) return;
+
+    setScanError("");
+    try {
+      const result = await QrScanner.scanImage(imageFile, { returnDetailedScanResult: true });
+      handleScan(result.data);
+    } catch {
+      setScanError("No QR code was found in this image. Upload a clear QR image and try again.");
+    }
+  };
+
   const booking = matchedBooking?.booking;
   const slotLabel = booking?.slot_name || booking?.slotName || qrPayload?.slotName || booking?.slot_id || "Booked slot";
 
@@ -921,9 +936,17 @@ function ScanQrTab({ bookings, centre, onBookingFound }) {
               </div>
             )}
           </div>
-          <Button type="button" onClick={toggleCamera} className="w-full gap-2">
-            <Camera className="w-4 h-4" /> {isScanning ? "Stop Camera" : "Scan QR with Camera"}
-          </Button>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Button type="button" onClick={toggleCamera} className="group min-h-[64px] w-full gap-2 px-4 text-center leading-tight hover:-translate-y-0.5 hover:shadow-lg">
+              <Camera className="w-5 h-5 shrink-0 transition-transform group-hover:scale-110" />
+              <span className="max-w-[150px]">{isScanning ? "Stop Camera" : "Scan QR with Camera"}</span>
+            </Button>
+            <Button type="button" variant="outline" onClick={() => imageInputRef.current?.click()} className="group min-h-[64px] w-full gap-2 px-4 text-center leading-tight hover:-translate-y-0.5 hover:border-brand hover:bg-brand/5 hover:shadow-lg">
+              <QrCode className="w-5 h-5 shrink-0 text-brand transition-transform group-hover:rotate-6 group-hover:scale-110" />
+              <span className="max-w-[150px]">Upload QR Image</span>
+            </Button>
+          </div>
+          <input ref={imageInputRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
           <div className="flex gap-2">
             <Input value={scanValue} onChange={(event) => setScanValue(event.target.value)} placeholder="Paste QR URL, token ID, or token number" />
             <Button type="button" variant="outline" onClick={() => handleScan(scanValue)} className="gap-2 whitespace-nowrap">
