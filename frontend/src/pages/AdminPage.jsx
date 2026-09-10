@@ -2,9 +2,8 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import { LayoutDashboard, Users, Activity, FileText, Bell, DatabaseZap, ShieldAlert, CheckCircle2, Clock } from "lucide-react";
-import { api } from "../services/api";
-import { getAdminBidNotifications, getOpenAuctions } from "../services/biddingService";
-import { SidebarLayout, Card, Badge, Button, Select, Input } from "../components/ui";
+import { api, useLiveSync } from "../services/api";
+import { SidebarLayout, Card, Badge, Button, Select, Input, Eyebrow } from "../components/ui";
 import { Plus, Trash2, Edit2 } from "lucide-react";
 
 function CentresTab() {
@@ -159,7 +158,10 @@ function CentresTab() {
   return (
     <div className="space-y-6 max-w-[1000px] mx-auto">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold font-display text-forest">Procurement Centres</h2>
+        <div>
+          <Eyebrow className="mb-2">MANAGEMENT</Eyebrow>
+          <h2 className="text-4xl font-bold font-display text-forest">Procurement Centres</h2>
+        </div>
         {!isAdding && (
           <Button onClick={() => setIsAdding(true)} className="gap-2 shadow-lg shadow-brand/20">
             <Plus className="w-4 h-4" /> Add Centre
@@ -253,7 +255,7 @@ function CentresTab() {
 
       <Card className="p-0 overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left">
+          <table className="w-full min-w-max text-sm text-left">
             <thead className="bg-slate-50 text-muted font-bold border-b border-line uppercase tracking-widest text-[10px]">
               <tr>
                  <th className="px-6 py-4">Centre Name</th>
@@ -426,8 +428,9 @@ function TodaysBookingsTab({ bookings, onRemove, onViewDetails }) {
     <div className="max-w-[1400px] mx-auto space-y-6">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h2 className="text-2xl font-display font-extrabold text-forest">{t("todaysBookings") || "Today's Bookings"}</h2>
-          <p className="text-muted mt-1">Manage scheduled arrivals for today.</p>
+          <Eyebrow className="mb-2">DAILY OPERATIONS</Eyebrow>
+          <h2 className="text-4xl font-display font-extrabold text-forest">{t("todaysBookings") || "Today's Bookings"}</h2>
+          <p className="text-muted mt-2">Manage scheduled arrivals for today.</p>
         </div>
         <div className="relative">
           <Button variant="primary" className="gap-2" onClick={() => setExportMenuOpen((open) => !open)}>
@@ -445,7 +448,7 @@ function TodaysBookingsTab({ bookings, onRemove, onViewDetails }) {
 
       <Card className="overflow-hidden p-0 shadow-md">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full min-w-max text-left border-collapse">
             <thead>
               <tr className="bg-slate-50 border-b border-line text-sm font-bold text-slate-500 uppercase tracking-wider">
                 <th className="p-4 pl-6">Token ID</th>
@@ -507,8 +510,9 @@ function ActiveQueueTab({ bookings, onRemove, onViewDetails }) {
     <div className="max-w-[1400px] mx-auto space-y-6">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h2 className="text-2xl font-display font-extrabold text-forest">{t("liveQueue") || "Active Queue"}</h2>
-          <p className="text-muted mt-1">Real-time status of farmers currently at the centre.</p>
+          <Eyebrow className="mb-2">LIVE STATUS</Eyebrow>
+          <h2 className="text-4xl font-display font-extrabold text-forest">{t("liveQueue") || "Active Queue"}</h2>
+          <p className="text-muted mt-2">Real-time status of farmers currently at the centre.</p>
         </div>
         <div className="flex items-center gap-3">
            <Badge variant="primary" className="bg-green-100 text-green-700">{bookings.length} Currently Active</Badge>
@@ -613,72 +617,76 @@ function PaymentManagementTab({ bookings, onStatusChange }) {
         <div className="p-4 bg-slate-50 border-b border-line">
           <h3 className="font-bold text-forest">Pending Payment Requests</h3>
         </div>
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="bg-slate-50 border-b border-line text-sm font-bold text-slate-500 uppercase tracking-wider">
-              <th className="p-4 pl-6">Farmer</th>
-              <th className="p-4">Contact</th>
-              <th className="p-4">Crop (Qty)</th>
-              <th className="p-4">Fare (Rs)</th>
-              <th className="p-4 pr-6 text-right">Action</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-line">
-            {pendingPayments.map(p => (
-              <tr key={p.booking.id} className="hover:bg-slate-50 transition-colors">
-                <td className="p-4 pl-6 font-bold text-forest">{p.booking.farmer_name}</td>
-                <td className="p-4 text-muted">{p.booking.farmer_mobile || "+91 98765 43210"}</td>
-                <td className="p-4 text-muted">{(p.booking.crops || []).map(c => c.crop_name).join(', ')} ({p.booking.estimated_quantity}q)</td>
-                <td className="p-4 font-mono font-bold text-brand">₹ {p.booking.estimated_fare}</td>
-                <td className="p-4 pr-6 text-right">
-                  <Button variant="primary" size="sm" onClick={() => setSelectedPayment(p)}>
-                    Process Payment
-                  </Button>
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-max text-left border-collapse">
+            <thead>
+              <tr className="bg-slate-50 border-b border-line text-sm font-bold text-slate-500 uppercase tracking-wider">
+                <th className="p-4 pl-6">Farmer</th>
+                <th className="p-4">Contact</th>
+                <th className="p-4">Crop (Qty)</th>
+                <th className="p-4">Fare (Rs)</th>
+                <th className="p-4 pr-6 text-right">Action</th>
               </tr>
-            ))}
-            {pendingPayments.length === 0 && (
-              <tr>
-                <td colSpan="5" className="p-8 text-center text-muted">No pending payment requests.</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-line">
+              {pendingPayments.map(p => (
+                <tr key={p.booking.id} className="hover:bg-slate-50 transition-colors">
+                  <td className="p-4 pl-6 font-bold text-forest">{p.booking.farmer_name}</td>
+                  <td className="p-4 text-muted">{p.booking.farmer_mobile || "+91 98765 43210"}</td>
+                  <td className="p-4 text-muted">{(p.booking.crops || []).map(c => c.crop_name).join(', ')} ({p.booking.estimated_quantity}q)</td>
+                  <td className="p-4 font-mono font-bold text-brand">₹ {p.booking.estimated_fare}</td>
+                  <td className="p-4 pr-6 text-right">
+                    <Button variant="primary" size="sm" onClick={() => setSelectedPayment(p)}>
+                      Process Payment
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+              {pendingPayments.length === 0 && (
+                <tr>
+                  <td colSpan="5" className="p-8 text-center text-muted">No pending payment requests.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </Card>
 
       <Card className="p-0 overflow-hidden">
         <div className="p-4 bg-slate-50 border-b border-line">
           <h3 className="font-bold text-forest">Completed Payments</h3>
         </div>
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="bg-slate-50 border-b border-line text-sm font-bold text-slate-500 uppercase tracking-wider">
-              <th className="p-4 pl-6">Farmer</th>
-              <th className="p-4">Contact</th>
-              <th className="p-4">Crop (Qty)</th>
-              <th className="p-4">Fare (Rs)</th>
-              <th className="p-4 pr-6 text-right">Status</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-line">
-            {completedPayments.map(p => (
-              <tr key={p.booking.id} className="hover:bg-slate-50 transition-colors">
-                <td className="p-4 pl-6 font-bold text-forest">{p.booking.farmer_name}</td>
-                <td className="p-4 text-muted">{p.booking.farmer_mobile || "+91 98765 43210"}</td>
-                <td className="p-4 text-muted">{(p.booking.crops || []).map(c => c.crop_name).join(', ')} ({p.booking.estimated_quantity}q)</td>
-                <td className="p-4 font-mono font-bold text-brand">₹ {p.booking.estimated_fare}</td>
-                <td className="p-4 pr-6 text-right">
-                  <Badge variant="success">PAID</Badge>
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-max text-left border-collapse">
+            <thead>
+              <tr className="bg-slate-50 border-b border-line text-sm font-bold text-slate-500 uppercase tracking-wider">
+                <th className="p-4 pl-6">Farmer</th>
+                <th className="p-4">Contact</th>
+                <th className="p-4">Crop (Qty)</th>
+                <th className="p-4">Fare (Rs)</th>
+                <th className="p-4 pr-6 text-right">Status</th>
               </tr>
-            ))}
-            {completedPayments.length === 0 && (
-              <tr>
-                <td colSpan="5" className="p-8 text-center text-muted">No completed payments yet.</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-line">
+              {completedPayments.map(p => (
+                <tr key={p.booking.id} className="hover:bg-slate-50 transition-colors">
+                  <td className="p-4 pl-6 font-bold text-forest">{p.booking.farmer_name}</td>
+                  <td className="p-4 text-muted">{p.booking.farmer_mobile || "-"}</td>
+                  <td className="p-4 text-muted">{(p.booking.crops || []).map(c => c.crop_name).join(', ')} ({p.booking.estimated_quantity}q)</td>
+                  <td className="p-4 font-mono font-bold text-brand">₹ {p.booking.estimated_fare}</td>
+                  <td className="p-4 pr-6 text-right">
+                    <Badge tone="success" className="gap-1.5 px-3 py-1.5"><Check className="w-3.5 h-3.5" /> Paid</Badge>
+                  </td>
+                </tr>
+              ))}
+              {completedPayments.length === 0 && (
+                <tr>
+                  <td colSpan="5" className="p-8 text-center text-muted">No completed payments yet.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </Card>
 
       {selectedPayment && (
@@ -710,63 +718,107 @@ function PaymentManagementTab({ bookings, onStatusChange }) {
   );
 }
 
-function ProcurementTab({ bookings, records, onSelect }) {
+function ProcurementJourneyTab({ bookings, onStatusChange, onViewDetails }) {
   const { t } = useTranslation();
+  const processingBookings = bookings.filter(b => b.booking.status === "QUALITY_CHECK" || b.booking.status === "WEIGHING" || b.booking.status === "ACCEPTED");
+
   return (
     <div className="max-w-[1400px] mx-auto space-y-6">
-      <div><h2 className="text-2xl font-display font-extrabold text-forest">{t("procurementJourney")}</h2><p className="text-muted mt-1">Live quality, weighing, acceptance, and payment progress from farmer bookings.</p></div>
-      <div className="grid gap-4 md:grid-cols-2">
-        {bookings.map((item) => {
-          const record = records[item.booking.id] || {};
-          return <Card key={item.booking.id} className="cursor-pointer hover:border-brand/40" onClick={() => onSelect(item)}>
-            <div className="flex items-start justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-widest text-muted">{item.token?.token_number || t("notAvailable")}</p><h3 className="mt-1 font-bold text-forest">{item.booking.farmer_name}</h3><p className="text-sm text-muted mt-1">{(item.booking.crops || []).map((crop) => crop.crop_name).join(", ")} • {item.booking.estimated_quantity} q</p></div><Badge tone={item.booking.status === "PAID" ? "success" : "warning"}>{record.procurement_status || item.booking.status}</Badge></div>
-            <div className="mt-5 grid grid-cols-3 gap-3 text-center"><div className="rounded-xl bg-slate-50 p-3"><p className="text-xs text-muted">Status</p><p className="mt-1 text-sm font-bold text-forest">{record.procurement_status || item.booking.status}</p></div><div className="rounded-xl bg-slate-50 p-3"><p className="text-xs text-muted">Quality</p><p className="mt-1 text-sm font-bold text-forest">{record.quality_grade || "Pending"}</p></div><div className="rounded-xl bg-slate-50 p-3"><p className="text-xs text-muted">Quantity</p><p className="mt-1 text-sm font-bold text-forest">{record.actual_quantity || item.booking.estimated_quantity} q</p></div></div>
-          </Card>;
-        })}
+      <div className="mb-6">
+        <Eyebrow className="mb-2">WORKFLOW</Eyebrow>
+        <h2 className="text-4xl font-display font-extrabold text-forest">{t("procurementJourney")}</h2>
+        <p className="text-muted mt-2">Manage farmers currently undergoing quality check, weighing, or accepted stages.</p>
       </div>
-      {!bookings.length && <Card><p className="py-8 text-center text-muted">No procurement activity yet.</p></Card>}
+
+      <div className="grid grid-cols-1 gap-4">
+        {processingBookings && processingBookings.length > 0 ? processingBookings.map((b) => {
+          const item = b.booking;
+          return (
+            <Card key={item.id} className="p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-l-4" style={{ borderLeftColor: '#3B82F6' }}>
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <h3 className="font-bold text-forest text-lg">{item.farmer_name}</h3>
+                  <span className="text-xs font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">{b.token?.token_number}</span>
+                </div>
+                <p className="text-sm text-muted">{(item.crops || []).map(c => c.crop_name).join(', ')} • {item.estimated_quantity} q</p>
+              </div>
+              <div className="flex items-center gap-4">
+                 <Badge tone="primary" className="text-sm">{item.status}</Badge>
+                 <Button variant="outline" size="sm" onClick={() => onViewDetails(b)}>View Details</Button>
+              </div>
+            </Card>
+          );
+        }) : (
+          <p className="text-muted text-center py-10">No procurement in progress.</p>
+        )}
+      </div>
     </div>
   );
 }
 
-function formatAdminAlert(alert, t) {
-  const statusKey = { BOOKED: "statusBooked", CHECKED_IN: "statusCheckedIn", WAITING: "statusWaiting", WEIGHING: "statusWeighing", QUALITY_CHECK: "statusQualityCheck", ACCEPTED: "statusAccepted", PAID: "statusPaid" };
-  if (alert?.type === "bookingCreated") return t("bookingCreated", alert.data);
-  if (alert?.type === "bidPlaced") return t("bidPlacedAlert", alert.data);
-  if (alert?.type === "bookingStatus") return t("bookingStatusAlert", { ...alert.data, status: t(statusKey[alert.data?.status]) || alert.data?.status });
-  if (alert?.type === "paymentRequested") return t("paymentRequestedAlert", alert.data);
-  if (alert?.type === "centrePublished") return t("centrePublishedAlert", alert.data);
-
-  const message = String(alert?.message || "");
-  const booking = message.match(/^New farmer booking: (.+) at (.+)$/);
-  if (booking) return t("bookingCreated", { farmer: booking[1], slot: booking[2] });
-  const bid = message.match(/bid of ([^ ]+) per quintal(?: on| for) (?:your )?(.+?)[.]?$/i);
-  if (bid) return t("bidPlacedAlert", { price: bid[1].replace(/^₹/, ""), crop: bid[2].replace(/[.]$/, "") });
-  const status = message.match(/^Booking (.+) updated to (.+)[.]$/);
-  if (status) return t("bookingStatusAlert", { farmer: status[1], status: t(statusKey[status[2]]) || status[2] });
-  const payment = message.match(/^Payment requested by (.+)[.]$/);
-  if (payment) return t("paymentRequestedAlert", { farmer: payment[1] });
-  return message;
+function AlertsTab({ notifications, onMarkRead }) {
+  const { t } = useTranslation();
+  return (
+    <div className="max-w-[1000px] mx-auto space-y-6">
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <Eyebrow className="mb-2">NOTIFICATIONS</Eyebrow>
+          <h2 className="text-4xl font-display font-extrabold text-forest">{t("alerts")}</h2>
+        </div>
+        <Button onClick={onMarkRead} variant="outline" size="sm">Mark All Read</Button>
+      </div>
+      <div className="space-y-4">
+        {notifications.length > 0 ? notifications.map(n => (
+          <Card key={n.id} className={`p-4 border-l-4 ${n.read ? 'border-slate-200 opacity-70' : 'border-amber-500 shadow-md'}`}>
+            <p className="text-forest font-medium">{n.message}</p>
+            <p className="text-xs text-muted mt-2">{new Date(n.date).toLocaleString()}</p>
+          </Card>
+        )) : (
+          <p className="text-muted text-center py-10">No alerts found.</p>
+        )}
+      </div>
+    </div>
+  );
 }
 
-function AlertsTab({ notifications, auctions }) {
+function ReportsTab({ bookings }) {
   const { t } = useTranslation();
-  const auctionAlerts = auctions.map((auction) => ({ id: auction.id, type: "auctionOpen", data: { crop: auction.crops?.name || auction.crop_name || t("marketplace.cropListing") }, date: auction.created_at }));
-  const alerts = [...notifications, ...auctionAlerts];
-  return <div className="max-w-[1000px] mx-auto space-y-6"><div><h2 className="text-2xl font-display font-extrabold text-forest">{t("alerts")}</h2><p className="text-muted mt-1">{t("alertsIntro")}</p></div><Card className="p-0 overflow-hidden">{alerts.length ? alerts.map((alert) => <div key={alert.id} className="flex items-start gap-4 border-b border-line p-5 last:border-b-0"><Bell className="mt-1 h-5 w-5 text-brand" /><div><p className="font-medium text-forest">{alert.type === "auctionOpen" ? t("auctionOpenAlert", alert.data) : formatAdminAlert(alert, t)}</p><p className="mt-1 text-xs text-muted">{alert.date ? new Date(alert.date).toLocaleString() : t("liveToday")}</p></div></div>) : <p className="py-12 text-center text-muted">{t("noAlertsYet") || "No alerts yet."}</p>}</Card></div>;
-}
-
-function ReportsTab({ bookings, auctions }) {
-  const { t } = useTranslation();
-  const paid = bookings.filter((item) => item.booking.status === "PAID").length;
-  const active = bookings.filter((item) => !["PAID", "COMPLETED"].includes(item.booking.status)).length;
-  return <div className="max-w-[1000px] mx-auto space-y-6"><div><h2 className="text-2xl font-display font-extrabold text-forest">{t("reports")}</h2><p className="text-muted mt-1">Current marketplace and procurement summary.</p></div><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"><Card><p className="text-xs font-bold uppercase tracking-widest text-muted">Bookings</p><p className="mt-2 text-3xl font-extrabold text-forest">{bookings.length}</p></Card><Card><p className="text-xs font-bold uppercase tracking-widest text-muted">Active queue</p><p className="mt-2 text-3xl font-extrabold text-brand">{active}</p></Card><Card><p className="text-xs font-bold uppercase tracking-widest text-muted">Paid</p><p className="mt-2 text-3xl font-extrabold text-forest">{paid}</p></Card><Card><p className="text-xs font-bold uppercase tracking-widest text-muted">Open auctions</p><p className="mt-2 text-3xl font-extrabold text-forest">{auctions.length}</p></Card></div></div>;
+  const total = bookings.length;
+  const paid = bookings.filter(b => b.booking.status === "PAID").length;
+  const inQueue = bookings.filter(b => ["BOOKED", "CHECKED_IN", "WAITING", "QUALITY_CHECK", "WEIGHING", "ACCEPTED"].includes(b.booking.status)).length;
+  
+  return (
+    <div className="max-w-[1000px] mx-auto space-y-6">
+      <div className="mb-6">
+        <Eyebrow className="mb-2">ANALYTICS</Eyebrow>
+        <h2 className="text-4xl font-display font-extrabold text-forest">{t("reports")}</h2>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <Card className="text-center p-6 bg-brand/5 border-brand/20 shadow-none">
+           <p className="text-4xl font-display font-bold text-brand">{total}</p>
+           <p className="text-xs font-bold uppercase tracking-widest text-muted mt-2">Total Bookings</p>
+        </Card>
+        <Card className="text-center p-6 bg-blue-50 border-blue-100 shadow-none">
+           <p className="text-4xl font-display font-bold text-blue-600">{inQueue}</p>
+           <p className="text-xs font-bold uppercase tracking-widest text-muted mt-2">In Progress</p>
+        </Card>
+        <Card className="text-center p-6 bg-green-50 border-green-100 shadow-none">
+           <p className="text-4xl font-display font-bold text-green-600">{paid}</p>
+           <p className="text-xs font-bold uppercase tracking-widest text-muted mt-2">Completed & Paid</p>
+        </Card>
+      </div>
+    </div>
+  );
 }
 
 export default function AdminPage({ language, onLanguageChange, onLogout, onHome }) {
   const { t } = useTranslation();
   const [centre, setCentre] = useState(null);
-  const [activeTab, setActiveTab] = useState("dashboard");
+  const [activeTab, setActiveTab] = useState(() => sessionStorage.getItem("krishak-mitra-admin-tab") || "dashboard");
+
+  useEffect(() => {
+    sessionStorage.setItem("krishak-mitra-admin-tab", activeTab);
+  }, [activeTab]);
 
   const [allBookings, setAllBookings] = useState([]);
   const [selectedBooking, setSelectedBooking] = useState(null);
@@ -775,10 +827,6 @@ export default function AdminPage({ language, onLanguageChange, onLogout, onHome
   const [status, setStatus] = useState("BOOKED");
   const [procurement, setProcurement] = useState(null);
   const [payment, setPayment] = useState(null);
-  const [notifications, setNotifications] = useState([]);
-  const [auctions, setAuctions] = useState([]);
-  const [bidNotifications, setBidNotifications] = useState([]);
-  const [procurementRecords, setProcurementRecords] = useState({});
   const [loading, setLoading] = useState(true);
   const statusTranslationKeys = {
     BOOKED: "statusBooked",
@@ -790,26 +838,19 @@ export default function AdminPage({ language, onLanguageChange, onLogout, onHome
     PAID: "statusPaid",
   };
 
-  const loadAdminData = async () => {
-    const [centres, bookings, notifs, openAuctions, bidNotifs] = await Promise.all([api.getCentres(), api.getAllBookings(), api.getNotifications(), getOpenAuctions().catch(() => []), getAdminBidNotifications()]);
-    setCentre(centres?.[0] || null);
-    setAllBookings(bookings || []);
-    setNotifications(notifs || []);
-    setAuctions(openAuctions || []);
-    setBidNotifications(bidNotifs || []);
-    const records = {};
-    await Promise.all((bookings || []).map(async (item) => { records[item.booking.id] = await api.getProcurement(item.booking.id); }));
-    setProcurementRecords(records);
-    setLoading(false);
-  };
-
+  const [notifications, setNotifications] = useState([]);
+  
+  const syncTick = useLiveSync();
   useEffect(() => {
-    loadAdminData().catch(() => setLoading(false));
-    const timer = window.setInterval(() => { loadAdminData().catch(() => {}); }, 5000);
-    const onStorage = () => loadAdminData().catch(() => {});
-    window.addEventListener("storage", onStorage);
-    return () => { window.clearInterval(timer); window.removeEventListener("storage", onStorage); };
-  }, []);
+    api.getCentres().then((data) => setCentre(data?.[0] || null)).finally(() => setLoading(false));
+    api.getAllBookings().then(setAllBookings);
+    api.getNotifications().then(setNotifications);
+  }, [syncTick]);
+
+  const handleMarkRead = async () => {
+    await api.markNotificationsRead();
+    api.getNotifications().then(setNotifications);
+  };
 
   useEffect(() => {
     if (!selectedBooking?.booking?.id) return;
@@ -831,8 +872,6 @@ export default function AdminPage({ language, onLanguageChange, onLogout, onHome
       const newBookings = allBookings.map(b => b.booking.id === selectedBooking.booking.id ? { ...b, booking: updated } : b);
       setAllBookings(newBookings);
       setSelectedBooking(newBookings.find(b => b.booking.id === selectedBooking.booking.id));
-      const updatedProcurement = await api.getProcurement(selectedBooking.booking.id);
-      setProcurementRecords((current) => ({ ...current, [selectedBooking.booking.id]: updatedProcurement }));
       toast.success(`${t("statusUpdated")}: ${t(statusTranslationKeys[status]) || status}`);
     } catch (requestError) {
       toast.error(requestError.message || t("statusUpdateFailed"));
@@ -859,8 +898,8 @@ export default function AdminPage({ language, onLanguageChange, onLogout, onHome
 
   const navItems = [
     { id: "dashboard", label: t("overview"), icon: LayoutDashboard },
-    { id: "centres", label: t("centres"), icon: DatabaseZap },
-    { id: "crops", label: t("cropsMsp"), icon: FileText },
+    { id: "centres", label: "Centres", icon: DatabaseZap },
+    { id: "crops", label: t("cropsMsp") || "Crops & MSP", icon: FileText },
     { id: "bookings", label: t("todayBookings"), icon: Users },
     { id: "queue", label: t("activeQueue"), icon: Activity },
     { id: "procurement", label: t("procurementJourney"), icon: FileText },
@@ -882,7 +921,10 @@ export default function AdminPage({ language, onLanguageChange, onLogout, onHome
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 max-w-[1400px] mx-auto">
           {/* Main Content Area */}
           <div className="lg:col-span-8 space-y-6">
-            <h1 className="font-display text-2xl font-bold text-forest mb-6">{t("adminPortal")}</h1>
+            <div className="mb-6">
+               <Eyebrow className="mb-2">OVERVIEW</Eyebrow>
+               <h1 className="font-display text-4xl font-bold text-forest">{t("adminPortal")}</h1>
+            </div>
             
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <Card className="flex items-center gap-4">
@@ -916,11 +958,11 @@ export default function AdminPage({ language, onLanguageChange, onLogout, onHome
 
             <Card className="p-0 overflow-hidden">
               <div className="px-6 py-4 border-b border-line flex items-center justify-between">
-                <h2 className="font-bold text-forest text-lg">{t("liveQueue")}</h2>
+                <Eyebrow>{t("liveQueue")}</Eyebrow>
                 <Badge tone="default">{t("viewAll")}</Badge>
               </div>
               <div className="overflow-x-auto">
-                <table className="w-full text-sm text-left">
+                <table className="w-full min-w-max text-sm text-left">
                   <thead className="bg-slate-50 text-muted font-bold border-b border-line">
                     <tr>
                        <th className="px-6 py-3">#</th>
@@ -1036,10 +1078,11 @@ export default function AdminPage({ language, onLanguageChange, onLogout, onHome
       {activeTab === "crops" && <CropsTab />}
       {activeTab === "bookings" && <TodaysBookingsTab bookings={allBookings} onRemove={handleDeleteBooking} onViewDetails={setDetailModalBooking} />}
       {activeTab === "queue" && <ActiveQueueTab bookings={inQueueBookings} onRemove={handleDeleteBooking} onViewDetails={setDetailModalBooking} />}
-      {activeTab === "payments" && <PaymentManagementTab bookings={allBookings} onStatusChange={loadAdminData} />}
-      {activeTab === "procurement" && <ProcurementTab bookings={allBookings} records={procurementRecords} onSelect={setDetailModalBooking} />}
-      {activeTab === "alerts" && <AlertsTab notifications={[...notifications, ...bidNotifications]} auctions={auctions} />}
-      {activeTab === "reports" && <ReportsTab bookings={allBookings} auctions={auctions} />}
+      {activeTab === "payments" && <PaymentManagementTab bookings={allBookings} />}
+
+      {activeTab === "procurement" && <ProcurementJourneyTab bookings={allBookings} onViewDetails={setDetailModalBooking} />}
+      {activeTab === "alerts" && <AlertsTab notifications={notifications} onMarkRead={handleMarkRead} />}
+      {activeTab === "reports" && <ReportsTab bookings={allBookings} />}
 
       {activeTab !== "dashboard" && activeTab !== "crops" && activeTab !== "centres" && activeTab !== "bookings" && activeTab !== "queue" && activeTab !== "payments" && activeTab !== "procurement" && activeTab !== "alerts" && activeTab !== "reports" && (
         <div className="flex flex-col items-center justify-center py-32 text-center">
@@ -1195,27 +1238,29 @@ function CropsTab() {
       )}
 
       <Card className="p-0 overflow-hidden">
-        <table className="w-full text-left">
-          <thead className="bg-slate-50 text-muted font-bold border-b border-line uppercase text-[10px] tracking-wider">
-            <tr>
-              <th className="p-4 pl-6">Crop Name</th>
-              <th className="p-4">Minimum Support Price (MSP)</th>
-              <th className="p-4 pr-6 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-line">
-            {crops.map(c => (
-              <tr key={c.id} className="hover:bg-slate-50">
-                <td className="p-4 pl-6 font-bold text-forest">{c.name}</td>
-                <td className="p-4 font-mono font-bold text-brand">₹ {c.minimum_support_price}</td>
-                <td className="p-4 pr-6 text-right space-x-2">
-                  <button onClick={() => { setEditingId(c.id); setFormData({ name: c.name, minimum_support_price: c.minimum_support_price }); }} className="p-2 text-slate-400 hover:text-brand rounded-full hover:bg-brand/10"><Edit2 className="w-4 h-4" /></button>
-                  <button onClick={() => handleDelete(c.id)} className="p-2 text-slate-400 hover:text-red-500 rounded-full hover:bg-red-50"><Trash2 className="w-4 h-4" /></button>
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-max text-left">
+            <thead className="bg-slate-50 text-muted font-bold border-b border-line uppercase text-[10px] tracking-wider">
+              <tr>
+                <th className="p-4 pl-6">Crop Name</th>
+                <th className="p-4">Minimum Support Price (MSP)</th>
+                <th className="p-4 pr-6 text-right">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-line">
+              {crops.map(c => (
+                <tr key={c.id} className="hover:bg-slate-50">
+                  <td className="p-4 pl-6 font-bold text-forest">{c.name}</td>
+                  <td className="p-4 font-mono font-bold text-brand">₹ {c.minimum_support_price}</td>
+                  <td className="p-4 pr-6 text-right space-x-2">
+                    <button onClick={() => { setEditingId(c.id); setFormData({ name: c.name, minimum_support_price: c.minimum_support_price }); }} className="p-2 text-slate-400 hover:text-brand rounded-full hover:bg-brand/10"><Edit2 className="w-4 h-4" /></button>
+                    <button onClick={() => handleDelete(c.id)} className="p-2 text-slate-400 hover:text-red-500 rounded-full hover:bg-red-50"><Trash2 className="w-4 h-4" /></button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </Card>
     </div>
   );

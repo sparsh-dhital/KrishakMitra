@@ -1130,6 +1130,7 @@ i18n.use(initReactI18next).init({
   resources,
   lng: localStorage.getItem("krishak-mitra-language") || "en",
   fallbackLng: "en",
+  returnEmptyString: false,
   interpolation: { escapeValue: false },
 });
 
