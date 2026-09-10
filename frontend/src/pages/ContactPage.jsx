@@ -67,17 +67,24 @@ export default function ContactPage({ onBack, language, onLanguageChange }) {
   return (
     <div className="min-h-screen bg-[#F8F9FA] font-body text-forest selection:bg-brand selection:text-white flex flex-col">
       {/* Header */}
-      <header className="w-full py-6 px-6 max-w-7xl mx-auto flex items-center justify-between border-b border-line">
-        <div className="flex items-center gap-6">
+      <header className="w-full py-4 px-4 sm:py-6 sm:px-6 max-w-7xl mx-auto flex flex-wrap sm:flex-nowrap items-center justify-between gap-4 border-b border-line">
+        <div className="flex items-center gap-3 sm:gap-6 min-w-0">
           <button 
             onClick={onBack}
-            className="w-10 h-10 rounded-full bg-white border border-line flex items-center justify-center hover:bg-gray-50 transition-colors shadow-sm"
+            className="w-9 h-9 sm:w-10 sm:h-10 shrink-0 rounded-full bg-white border border-line flex items-center justify-center hover:bg-gray-50 transition-colors shadow-sm"
           >
-            <ArrowLeft className="w-5 h-5 text-forest" />
+            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 text-forest" />
           </button>
-          <Logo variant="full" className="h-10 cursor-pointer" onClick={onBack} />
+          <div className="hidden sm:block">
+            <Logo variant="full" className="h-10 cursor-pointer shrink-0" onClick={onBack} />
+          </div>
+          <div className="sm:hidden">
+            <Logo variant="emblem" className="h-9 cursor-pointer shrink-0" onClick={onBack} />
+          </div>
         </div>
-        <LanguagePicker value={language} onChange={onLanguageChange} />
+        <div className="ml-auto shrink-0">
+          <LanguagePicker value={language} onChange={onLanguageChange} />
+        </div>
       </header>
 
       {/* Main Content */}

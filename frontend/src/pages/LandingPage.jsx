@@ -103,26 +103,23 @@ export default function LandingPage({
               {t("landing.nav.contact")}
             </button>
           </nav>
-          <div className="hidden items-center gap-3 sm:flex">
-            <LanguagePicker
-              value={language}
-              onChange={onLanguageChange}
-            />
+          <div className="flex items-center gap-3">
+            <LanguagePicker value={language} onChange={onLanguageChange} />
             <button
               onClick={onNavigateLogin}
-              className="rounded-full bg-harvest px-5 py-3 text-sm font-extrabold text-forest hover:bg-white"
+              className="hidden sm:block rounded-full bg-harvest px-5 py-3 text-sm font-extrabold text-forest hover:bg-white"
             >
               {hasSession ? t("landing.nav.dashboard") : t("landing.nav.login")}
             </button>
+            <button
+              type="button"
+              aria-label={t("landing.nav.menu")}
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="rounded-full border border-white/25 p-2.5 sm:hidden"
+            >
+              {menuOpen ? <X /> : <Menu />}
+            </button>
           </div>
-          <button
-            type="button"
-            aria-label={t("landing.nav.menu")}
-            onClick={() => setMenuOpen(!menuOpen)}
-            className="rounded-full border border-white/25 p-2.5 sm:hidden"
-          >
-            {menuOpen ? <X /> : <Menu />}
-          </button>
         </div>
         {menuOpen && (
           <nav className="flex flex-col gap-1 border-t border-white/15 bg-[#103c2a] p-5 text-sm font-semibold sm:hidden">

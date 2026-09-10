@@ -15,6 +15,11 @@ import StatusPage from "./pages/StatusPage";
 
 function SmoothScroll({ children }) {
   useEffect(() => {
+    // Disable Lenis on touch devices to prevent it from hijacking touch events
+    // and causing input focus issues on mobile.
+    const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+    if (isTouch) return;
+
     const lenis = new Lenis({
       duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),

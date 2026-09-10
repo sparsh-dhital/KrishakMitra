@@ -58,7 +58,7 @@ export default function LoginPage({
 
   return (
     <div className="min-h-screen bg-cream flex items-center justify-center p-4 sm:p-6 selection:bg-brand selection:text-white">
-      <div className="fixed top-3 right-3 z-50 sm:top-4 sm:right-4">
+      <div className="absolute top-3 right-3 z-50 sm:fixed sm:top-4 sm:right-4">
         <LanguagePicker value={language} onChange={onLanguageChange} />
       </div>
 
