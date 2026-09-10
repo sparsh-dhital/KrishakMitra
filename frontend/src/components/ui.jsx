@@ -102,6 +102,14 @@ export const Card = forwardRef(({ className, ...props }, ref) => {
 });
 Card.displayName = "Card";
 
+export function Eyebrow({ children, dark = false, className }) {
+  return (
+    <span className={cn("inline-flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[.18em]", dark ? "text-harvest" : "text-brand", className)}>
+      {children}
+    </span>
+  );
+}
+
 export function CircularProgress({ value, label, subLabel }) {
   const radius = 36;
   const circumference = 2 * Math.PI * radius;
