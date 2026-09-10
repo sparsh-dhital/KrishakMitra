@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
+import { useRef } from "react";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
+import QrScanner from "qr-scanner";
 import {
   LayoutDashboard,
   Users,
@@ -11,6 +13,9 @@ import {
   ShieldAlert,
   CheckCircle2,
   Clock,
+  QrCode,
+  Camera,
+  Search,
 } from "lucide-react";
 import { api, useLiveSync } from "../services/api";
 import {
@@ -1284,6 +1289,217 @@ function AlertsTab({ notifications, onMarkRead }) {
   );
 }
 
+function ScanQrTab({ bookings, centre, onBookingFound }) {
+  const videoRef = useRef(null);
+  const scannerRef = useRef(null);
+  const imageInputRef = useRef(null);
+  const [value, setValue] = useState("");
+  const [error, setError] = useState("");
+  const [scanning, setScanning] = useState(false);
+  const [match, setMatch] = useState(null);
+
+  useEffect(
+    () => () => {
+      scannerRef.current?.stop();
+      scannerRef.current?.destroy();
+    },
+    [],
+  );
+
+  const findBooking = (rawValue) => {
+    const raw = rawValue.trim();
+    if (!raw) return null;
+    let payload = null;
+    try {
+      payload = JSON.parse(raw);
+    } catch {
+      /* token values can be plain text */
+    }
+    const tokenId =
+      payload?.ticketId || payload?.tokenId || payload?.bookingId || raw;
+    const tokenNumber = String(
+      payload?.tokenNumber || payload?.token || raw,
+    ).toLowerCase();
+    return (
+      bookings.find(
+        (entry) =>
+          entry.token?.id === tokenId ||
+          entry.booking?.id === tokenId ||
+          entry.token?.token_number?.toLowerCase() === tokenNumber,
+      ) || null
+    );
+  };
+
+  const handleScan = (rawValue) => {
+    const found = findBooking(rawValue);
+    setValue(rawValue);
+    setMatch(found);
+    setError(found ? "" : "No booking found for this QR code.");
+    if (found) {
+      scannerRef.current?.stop();
+      setScanning(false);
+      onBookingFound(found.booking.id);
+      toast.success("Farmer booking found");
+    }
+  };
+
+  const toggleCamera = async () => {
+    if (scanning) {
+      scannerRef.current?.stop();
+      setScanning(false);
+      return;
+    }
+    try {
+      const scanner = new QrScanner(
+        videoRef.current,
+        ({ data }) => handleScan(data),
+        {
+          preferredCamera: "environment",
+          highlightScanRegion: true,
+          highlightCodeOutline: true,
+        },
+      );
+      scannerRef.current = scanner;
+      await scanner.start();
+      setScanning(true);
+    } catch {
+      setError("Camera access is unavailable. Enter the QR value manually.");
+    }
+  };
+
+  const uploadImage = async (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    try {
+      handleScan(
+        (await QrScanner.scanImage(file, { returnDetailedScanResult: true }))
+          .data,
+      );
+    } catch {
+      setError("No QR code was found in this image.");
+    }
+  };
+
+  return (
+    <div className="mx-auto max-w-5xl space-y-6">
+      <div>
+        <Eyebrow>ARRIVAL CHECK-IN</Eyebrow>
+        <h2 className="mt-2 font-display text-4xl font-extrabold text-forest">
+          Scan farmer QR
+        </h2>
+        <p className="mt-2 text-muted">
+          Scan a gate pass to open the matching booking.
+        </p>
+      </div>
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card className="space-y-4">
+          <div className="relative aspect-video overflow-hidden rounded-xl bg-slate-900">
+            <video
+              ref={videoRef}
+              className="h-full w-full object-cover"
+              muted
+              playsInline
+            />
+            {!scanning && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-white/80">
+                <QrCode className="h-14 w-14" />
+                <p className="text-sm font-bold">Scanner ready</p>
+              </div>
+            )}
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Button
+              type="button"
+              onClick={toggleCamera}
+              className="min-h-14 gap-2"
+            >
+              <Camera className="h-5 w-5" />
+              {scanning ? "Stop camera" : "Scan with camera"}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => imageInputRef.current?.click()}
+              className="min-h-14 gap-2"
+            >
+              <QrCode className="h-5 w-5 text-brand" />
+              Upload QR image
+            </Button>
+          </div>
+          <input
+            ref={imageInputRef}
+            type="file"
+            accept="image/*"
+            onChange={uploadImage}
+            className="hidden"
+          />
+          <div className="flex gap-2">
+            <Input
+              value={value}
+              onChange={(event) => setValue(event.target.value)}
+              placeholder="Paste token number or QR value"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => handleScan(value)}
+            >
+              <Search className="h-4 w-4" />
+            </Button>
+          </div>
+          {error && <p className="text-sm font-bold text-red-600">{error}</p>}
+        </Card>
+        <Card className={match ? "border-brand/30" : "bg-slate-50"}>
+          {match ? (
+            <div className="space-y-5">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-widest text-brand">
+                  Booking verified
+                </p>
+                <h3 className="mt-1 text-2xl font-display font-extrabold text-forest">
+                  {match.booking.farmer_name || "Unknown farmer"}
+                </h3>
+              </div>
+              <div className="space-y-3 rounded-xl border border-line bg-surface-warm p-4 text-sm">
+                <p>
+                  <b className="text-muted">Centre:</b>{" "}
+                  <span className="font-bold text-forest">
+                    {centre?.name || "Not available"}
+                  </span>
+                </p>
+                <p>
+                  <b className="text-muted">Date:</b>{" "}
+                  <span className="font-bold text-forest">
+                    {match.booking.date || "Not available"}
+                  </span>
+                </p>
+                <p>
+                  <b className="text-muted">Token:</b>{" "}
+                  <span className="font-mono font-bold text-brand">
+                    {match.token?.token_number || "Not available"}
+                  </span>
+                </p>
+              </div>
+              <p className="text-xs text-muted">
+                The booking is highlighted in Today&apos;s Bookings.
+              </p>
+            </div>
+          ) : (
+            <div className="flex min-h-[280px] flex-col items-center justify-center text-center text-muted">
+              <QrCode className="mb-4 h-12 w-12 text-slate-300" />
+              <h3 className="font-bold text-forest">No booking scanned</h3>
+              <p className="mt-1 text-sm">
+                Scan a farmer gate pass to see the booking.
+              </p>
+            </div>
+          )}
+        </Card>
+      </div>
+    </div>
+  );
+}
+
 function KycTab() {
   const [farmers, setFarmers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -1485,6 +1701,7 @@ export default function AdminPage({
   const [allBookings, setAllBookings] = useState([]);
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [detailModalBooking, setDetailModalBooking] = useState(null);
+  const [highlightedBookingId, setHighlightedBookingId] = useState(null);
 
   const [status, setStatus] = useState("BOOKED");
   const [procurement, setProcurement] = useState(null);
@@ -1587,11 +1804,17 @@ export default function AdminPage({
       b.booking.status === "ACCEPTED",
   );
 
+  const handleBookingFound = (bookingId) => {
+    setHighlightedBookingId(bookingId);
+    setActiveTab("bookings");
+  };
+
   const navItems = [
     { id: "dashboard", label: t("overview"), icon: LayoutDashboard },
     { id: "centres", label: "Centres", icon: DatabaseZap },
     { id: "crops", label: t("cropsMsp") || "Crops & MSP", icon: FileText },
     { id: "bookings", label: t("todayBookings"), icon: Users },
+    { id: "scan-qr", label: "Scan QR", icon: QrCode },
     { id: "queue", label: t("activeQueue"), icon: Activity },
     { id: "procurement", label: t("procurementJourney"), icon: FileText },
     { id: "payments", label: t("paymentStatus"), icon: DatabaseZap },
@@ -1876,8 +2099,16 @@ export default function AdminPage({
       {activeTab === "bookings" && (
         <TodaysBookingsTab
           bookings={allBookings}
+          highlightedBookingId={highlightedBookingId}
           onRemove={handleDeleteBooking}
           onViewDetails={setDetailModalBooking}
+        />
+      )}
+      {activeTab === "scan-qr" && (
+        <ScanQrTab
+          bookings={allBookings}
+          centre={centre}
+          onBookingFound={handleBookingFound}
         />
       )}
       {activeTab === "queue" && (
@@ -1907,6 +2138,7 @@ export default function AdminPage({
         activeTab !== "crops" &&
         activeTab !== "centres" &&
         activeTab !== "bookings" &&
+        activeTab !== "scan-qr" &&
         activeTab !== "queue" &&
         activeTab !== "payments" &&
         activeTab !== "procurement" &&
