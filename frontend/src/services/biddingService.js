@@ -1,4 +1,4 @@
-﻿import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@supabase/supabase-js";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -94,8 +94,11 @@ export async function placeBidDirectly(auctionId, buyerId, offeredPrice) {
     if (!auction || auction.status !== "open") throw new Error("This auction is no longer open.");
     if (price < Number(auction.base_price || 0)) throw new Error(`Bid must be at least ${auction.base_price}.`);
     if (price <= Number(highestBid?.offered_price || 0)) throw new Error(`Bid must be higher than ${highestBid.offered_price}.`);
+    
     const bid = { id: `demo-bid-${Date.now()}`, auction_id: auctionId, buyer_id: buyerId, offered_price: price, created_at: new Date().toISOString() };
     writeDemo(demoBidsKey, [...readDemo(demoBidsKey, []), bid]);
+    
+    // Notify farmer
     addDemoNotification({
       id: `demo-notification-${Date.now()}`,
       farmer_id: auction.farmer_id,
@@ -106,13 +109,28 @@ export async function placeBidDirectly(auctionId, buyerId, offeredPrice) {
       created_at: new Date().toISOString(),
       read: false,
     });
+    
+    // Notify previous highest bidder
+    if (highestBid && highestBid.buyer_id !== buyerId) {
+       addDemoNotification({
+         id: `demo-notification-outbid-${Date.now()}`,
+         buyer_id: highestBid.buyer_id,
+         type: "outbid",
+         title: "You have been outbid!",
+         message: `A new bid of ${price.toLocaleString("en-IN")} was placed on ${auction.crops?.name || "a crop you bid on"}. Place a higher bid to win.`,
+         auction_id: auctionId,
+         created_at: new Date().toISOString(),
+         read: false,
+       });
+    }
+    
     return bid;
   }
 
   const client = requireClient();
   const { data: auction, error: auctionError } = await client
     .from("auctions")
-    .select("id, base_price, status")
+    .select("id, base_price, status, crop_name")
     .eq("id", auctionId)
     .maybeSingle();
 
@@ -143,6 +161,20 @@ export async function placeBidDirectly(auctionId, buyerId, offeredPrice) {
       message: `A buyer placed a bid of ${price.toLocaleString("en-IN")} per quintal.`,
       is_read: false,
     }).catch(() => {});
+  }
+  
+  if (highestBid && highestBid.buyer_id !== buyerId) {
+     // Notify previous bidder (Using same table or a generic one. Since auction_notifications has farmer_id, we might need a buyer_notifications table. For demo, we just use local storage fallback)
+     addDemoNotification({
+         id: `demo-notification-outbid-${Date.now()}`,
+         buyer_id: highestBid.buyer_id,
+         type: "outbid",
+         title: "You have been outbid!",
+         message: `A new bid of ${price.toLocaleString("en-IN")} was placed on ${auction.crop_name || "a crop you bid on"}.`,
+         auction_id: auctionId,
+         created_at: new Date().toISOString(),
+         read: false,
+     });
   }
   return data;
 }
@@ -265,4 +297,41 @@ export async function getFarmerBidNotifications(farmerId) {
   } catch {
     return localNotifications;
   }
+}
+
+export async function getBuyerBids(buyerId) {
+  if (!buyerId) return [];
+  const allAuctions = demoListings();
+  const localBids = readDemo(demoBidsKey, [])
+    .filter(bid => bid.buyer_id === buyerId)
+    .map(bid => {
+       const auction = allAuctions.find(a => a.id === bid.auction_id);
+       return { ...bid, auctions: auction };
+    });
+  
+  if (!supabase) return localBids;
+
+  try {
+    const { data } = await supabase
+      .from("bids")
+      .select("id, auction_id, offered_price, created_at, auctions!inner(id, status, base_price, expires_at, crop_name)")
+      .eq("buyer_id", buyerId)
+      .order("created_at", { ascending: false });
+    
+    const dbBids = (data || []).map(b => ({
+       ...b,
+       auctions: { ...b.auctions, crops: { name: b.auctions.crop_name } }
+    }));
+    return [...localBids, ...dbBids];
+  } catch (error) {
+    if (useDemoFallback(error) || isMissingBiddingTable(error)) return localBids;
+    throw error;
+  }
+}
+
+export async function getBuyerNotifications(buyerId) {
+  if (!buyerId) return [];
+  const localNotifications = readDemo(demoNotificationsKey, []).filter((notification) => notification?.buyer_id === buyerId);
+  // Real implementation for buyers might need a different table, for demo we rely entirely on local storage fallback.
+  return localNotifications;
 }

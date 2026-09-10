@@ -4,13 +4,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import QRCode from "react-qr-code";
 import { LayoutDashboard, MapPin, CalendarDays, QrCode, ListOrdered, ShoppingCart, CreditCard, Bell, ChevronRight, Activity, Clock, ArrowRight, Gavel } from "lucide-react";
-import { api, config, toUiSlot } from "../services/api";
+import { api, config, toUiSlot, useLiveSync } from "../services/api";
 import { Badge, Card, Button, Input, Select, SidebarLayout, CircularProgress, ProgressTimeline, Eyebrow } from "../components/ui";
 import AuctionCard from "../components/AuctionCard";
 import { createAuctionDirectly, getFarmerAuctions, getFarmerBidNotifications } from "../services/biddingService";
 
 export default function FarmerPage({ language, onLanguageChange, onLogout, onHome, farmerId, farmerName }) {
   const { t } = useTranslation();
+  const syncTick = useLiveSync();
   const [activeTab, setActiveTab] = useState(() => sessionStorage.getItem("krishak-mitra-farmer-tab") || "dashboard");
   
   useEffect(() => {
@@ -127,7 +128,7 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, onHom
     });
 
     return () => { active = false; };
-  }, [selectedCentre]);
+  }, [selectedCentre, syncTick]);
 
   useEffect(() => {
     const bookingId = booking?.booking?.id;
@@ -136,7 +137,8 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, onHom
     Promise.allSettled([
       api.getQueueEntry(tokenId),
       api.getProcurement(bookingId),
-    ]).then(([qRes, pRes]) => {
+      api.getBooking(bookingId),
+    ]).then(([qRes, pRes, bRes]) => {
       if (qRes.status === "fulfilled") setQueueEntry(qRes.value);
       if (pRes.status === "fulfilled") {
         const record = Array.isArray(pRes.value) ? pRes.value[0] : pRes.value;
@@ -144,8 +146,11 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, onHom
         if (record?.id)
           api.getPayment(record.id, bookingId).then((d) => setPayment(Array.isArray(d) ? d[0] : d)).catch(() => {});
       }
+      if (bRes.status === "fulfilled" && bRes.value) {
+        setBooking(prev => ({ ...prev, booking: { ...prev.booking, ...bRes.value } }));
+      }
     });
-  }, [booking?.booking?.id, booking?.token?.id]);
+  }, [booking?.booking?.id, booking?.token?.id, syncTick]);
 
   useEffect(() => {
     if (!farmerId) return;
@@ -728,12 +733,11 @@ export default function FarmerPage({ language, onLanguageChange, onLogout, onHom
 
               
               <div className="p-8 flex flex-col items-center text-center">
-                <div className="max-w-full p-4 bg-white rounded-2xl border-4 border-slate-50 shadow-sm mb-6">
-                  <QRCode value={booking.token.token_number} size={200} style={{ maxWidth: "100%", height: "auto" }} />
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Token Number</p>
-                  <p className="font-display text-5xl font-extrabold text-forest tracking-tight">#{booking.token.token_number}</p>
+                <div className="bg-white p-6 rounded-2xl border-2 border-brand/20 shadow-inner flex flex-col items-center gap-4">
+                  <QRCode value={`${window.location.origin}/status/${booking.token.id}`} size={200} className="w-48 h-48 sm:w-64 sm:h-64" />
+                  <p className="font-mono text-xl sm:text-2xl font-extrabold tracking-widest text-brand bg-brand/5 px-6 py-2 rounded-xl border border-brand/20">
+                    {booking.token.token_number}
+                  </p>
                 </div>
                 
                 <div className="w-full mt-8 bg-slate-50 rounded-2xl p-4 flex justify-between items-center text-left">

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Toaster } from "react-hot-toast";
 import { useTranslation } from "react-i18next";
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import Lenis from "lenis";
 import "./i18n";
 import FarmerPage from "./pages/FarmerPage";
@@ -8,7 +9,9 @@ import AdminPage from "./pages/AdminPage";
 import LoginPage from "./pages/LoginPage";
 import LandingPage from "./pages/LandingPage";
 import BuyerPage from "./pages/BuyerPage";
+import BuyerMarketplace from "./pages/BuyerMarketplace";
 import ContactPage from "./pages/ContactPage";
+import StatusPage from "./pages/StatusPage";
 
 function SmoothScroll({ children }) {
   useEffect(() => {
@@ -37,9 +40,9 @@ function SmoothScroll({ children }) {
   return <>{children}</>;
 }
 
-// Views: "landing" | "login" | "farmer" | "admin" | "buyer"
 export default function App() {
   const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
   const [language, setLanguage] = useState(() => i18n.resolvedLanguage || i18n.language || "en");
 
   useEffect(() => {
@@ -47,28 +50,6 @@ export default function App() {
     i18n.on("languageChanged", handleLanguageChanged);
     return () => i18n.off("languageChanged", handleLanguageChanged);
   }, [i18n]);
-
-  // Initialize view from sessionStorage, ensuring dashboards have a valid session
-  const [view, setView] = useState(() => {
-    const savedView = sessionStorage.getItem("krishak-mitra-view");
-    let initialSession = null;
-    try {
-      initialSession = JSON.parse(localStorage.getItem("krishak-mitra-session") || "null");
-    } catch {}
-
-    if (savedView && ["farmer", "admin", "buyer"].includes(savedView)) {
-      if (initialSession) {
-        const expectedView = initialSession.role === "admin" ? "admin" : initialSession.role === "buyer" ? "buyer" : "farmer";
-        if (expectedView === savedView) return savedView;
-      }
-      return "landing";
-    }
-    return savedView || "landing";
-  });
-
-  useEffect(() => {
-    sessionStorage.setItem("krishak-mitra-view", view);
-  }, [view]);
 
   // Load persisted session
   const [session, setSession] = useState(() => {
@@ -87,30 +68,37 @@ export default function App() {
 
   const logout = () => {
     setSession(null);
-    setView("landing");
     localStorage.removeItem("krishak-mitra-session");
     localStorage.removeItem("krishak-mitra-booking");
     sessionStorage.removeItem("krishak-mitra-view");
     sessionStorage.removeItem("krishak-mitra-farmer-tab");
     sessionStorage.removeItem("krishak-mitra-admin-tab");
     sessionStorage.removeItem("krishak-mitra-buyer-tab");
+    navigate("/");
   };
 
   const handleLogin = (role, mobile, farmerId, buyerId, name) => {
     const next = { role, mobile, farmerId, buyerId, name };
     setSession(next);
-    setView(role === "admin" ? "admin" : role === "buyer" ? "buyer" : "farmer");
     localStorage.setItem("krishak-mitra-session", JSON.stringify(next));
+    navigate(`/${role}`);
   };
 
-  // Always let the user choose a dashboard explicitly from the landing page.
   const handleNavigateLogin = () => {
     if (session) {
-      // Already logged in  go straight to their dashboard
-      setView(session.role === "admin" ? "admin" : session.role === "buyer" ? "buyer" : "farmer");
+      navigate(`/${session.role}`);
     } else {
-      setView("login");
+      navigate("/login");
     }
+  };
+
+  // Protected route wrapper
+  const ProtectedRoute = ({ children, allowedRole }) => {
+    if (!session) return <Navigate to="/login" replace />;
+    if (allowedRole && session.role !== allowedRole) {
+      return <Navigate to={`/${session.role}`} replace />;
+    }
+    return children;
   };
 
   return (
@@ -132,40 +120,57 @@ export default function App() {
         }}
       />
 
-      {view === "landing" && (
-        <LandingPage
-          onNavigateLogin={handleNavigateLogin}
-          onNavigateContact={() => setView("contact")}
-          hasSession={!!session}
-          language={language}
-          onLanguageChange={changeLanguage}
-        />
-      )}
+      <Routes>
+        <Route path="/" element={
+          <LandingPage
+            onNavigateLogin={handleNavigateLogin}
+            onNavigateContact={() => navigate("/contact")}
+            hasSession={!!session}
+            language={language}
+            onLanguageChange={changeLanguage}
+          />
+        } />
 
-      {view === "contact" && (
-        <ContactPage
+        <Route path="/contact" element={
+          <ContactPage
+            onBack={() => navigate("/")}
+            language={language}
+            onLanguageChange={changeLanguage}
+          />
+        } />
 
-          onBack={() => setView("landing")}
-          language={language}
-          onLanguageChange={changeLanguage}
-        />
-      )}
+        <Route path="/status/:tokenId" element={<StatusPage />} />
 
+        <Route path="/login" element={
+          <LoginPage
+            language={language}
+            onLanguageChange={changeLanguage}
+            t={t}
+            onBack={() => navigate("/")}
+            onLogin={handleLogin}
+          />
+        } />
 
+        <Route path="/farmer" element={
+          <ProtectedRoute allowedRole="farmer">
+            <FarmerPage language={language} onLanguageChange={changeLanguage} onLogout={logout} onHome={() => navigate("/")} farmerId={session?.farmerId} farmerName={session?.name} />
+          </ProtectedRoute>
+        } />
 
-      {view === "login" && (
-        <LoginPage
-          language={language}
-          onLanguageChange={changeLanguage}
-          t={t}
-          onBack={() => setView("landing")}
-          onLogin={handleLogin}
-        />
-      )}
+        <Route path="/admin" element={
+          <ProtectedRoute allowedRole="admin">
+            <AdminPage language={language} onLanguageChange={changeLanguage} onLogout={logout} onHome={() => navigate("/")} adminName={session?.name} />
+          </ProtectedRoute>
+        } />
 
-      {view === "farmer" && <FarmerPage language={language} onLanguageChange={changeLanguage} onLogout={logout} onHome={() => setView("landing")} farmerId={session?.farmerId} farmerName={session?.name} />}
-      {view === "admin" && <AdminPage language={language} onLanguageChange={changeLanguage} onLogout={logout} onHome={() => setView("landing")} adminName={session?.name} />}
-      {view === "buyer" && <BuyerPage language={language} onLanguageChange={changeLanguage} onLogout={logout} onHome={() => setView("landing")} buyerId={session?.buyerId || "demo-buyer"} buyerName={session?.name} />}
+        <Route path="/buyer" element={
+          <ProtectedRoute allowedRole="buyer">
+            <BuyerPage language={language} onLanguageChange={changeLanguage} onLogout={logout} onHome={() => navigate("/")} buyerId={session?.buyerId || "demo-buyer"} buyerName={session?.name} />
+          </ProtectedRoute>
+        } />
+
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </SmoothScroll>
   );
-}
+}

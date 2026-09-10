@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import { LayoutDashboard, Users, Activity, FileText, Bell, DatabaseZap, ShieldAlert, CheckCircle2, Clock } from "lucide-react";
-import { api } from "../services/api";
+import { api, useLiveSync } from "../services/api";
 import { SidebarLayout, Card, Badge, Button, Select, Input, Eyebrow } from "../components/ui";
 import { Plus, Trash2, Edit2 } from "lucide-react";
 
@@ -718,6 +718,99 @@ function PaymentManagementTab({ bookings, onStatusChange }) {
   );
 }
 
+function ProcurementJourneyTab({ bookings, onStatusChange, onViewDetails }) {
+  const { t } = useTranslation();
+  const processingBookings = bookings.filter(b => b.booking.status === "QUALITY_CHECK" || b.booking.status === "WEIGHING" || b.booking.status === "ACCEPTED");
+
+  return (
+    <div className="max-w-[1400px] mx-auto space-y-6">
+      <div className="mb-6">
+        <Eyebrow className="mb-2">WORKFLOW</Eyebrow>
+        <h2 className="text-4xl font-display font-extrabold text-forest">{t("procurementJourney")}</h2>
+        <p className="text-muted mt-2">Manage farmers currently undergoing quality check, weighing, or accepted stages.</p>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4">
+        {processingBookings && processingBookings.length > 0 ? processingBookings.map((b) => {
+          const item = b.booking;
+          return (
+            <Card key={item.id} className="p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-l-4" style={{ borderLeftColor: '#3B82F6' }}>
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <h3 className="font-bold text-forest text-lg">{item.farmer_name}</h3>
+                  <span className="text-xs font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">{b.token?.token_number}</span>
+                </div>
+                <p className="text-sm text-muted">{(item.crops || []).map(c => c.crop_name).join(', ')} • {item.estimated_quantity} q</p>
+              </div>
+              <div className="flex items-center gap-4">
+                 <Badge tone="primary" className="text-sm">{item.status}</Badge>
+                 <Button variant="outline" size="sm" onClick={() => onViewDetails(b)}>View Details</Button>
+              </div>
+            </Card>
+          );
+        }) : (
+          <p className="text-muted text-center py-10">No procurement in progress.</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function AlertsTab({ notifications, onMarkRead }) {
+  const { t } = useTranslation();
+  return (
+    <div className="max-w-[1000px] mx-auto space-y-6">
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <Eyebrow className="mb-2">NOTIFICATIONS</Eyebrow>
+          <h2 className="text-4xl font-display font-extrabold text-forest">{t("alerts")}</h2>
+        </div>
+        <Button onClick={onMarkRead} variant="outline" size="sm">Mark All Read</Button>
+      </div>
+      <div className="space-y-4">
+        {notifications.length > 0 ? notifications.map(n => (
+          <Card key={n.id} className={`p-4 border-l-4 ${n.read ? 'border-slate-200 opacity-70' : 'border-amber-500 shadow-md'}`}>
+            <p className="text-forest font-medium">{n.message}</p>
+            <p className="text-xs text-muted mt-2">{new Date(n.date).toLocaleString()}</p>
+          </Card>
+        )) : (
+          <p className="text-muted text-center py-10">No alerts found.</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ReportsTab({ bookings }) {
+  const { t } = useTranslation();
+  const total = bookings.length;
+  const paid = bookings.filter(b => b.booking.status === "PAID").length;
+  const inQueue = bookings.filter(b => ["BOOKED", "CHECKED_IN", "WAITING", "QUALITY_CHECK", "WEIGHING", "ACCEPTED"].includes(b.booking.status)).length;
+  
+  return (
+    <div className="max-w-[1000px] mx-auto space-y-6">
+      <div className="mb-6">
+        <Eyebrow className="mb-2">ANALYTICS</Eyebrow>
+        <h2 className="text-4xl font-display font-extrabold text-forest">{t("reports")}</h2>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <Card className="text-center p-6 bg-brand/5 border-brand/20 shadow-none">
+           <p className="text-4xl font-display font-bold text-brand">{total}</p>
+           <p className="text-xs font-bold uppercase tracking-widest text-muted mt-2">Total Bookings</p>
+        </Card>
+        <Card className="text-center p-6 bg-blue-50 border-blue-100 shadow-none">
+           <p className="text-4xl font-display font-bold text-blue-600">{inQueue}</p>
+           <p className="text-xs font-bold uppercase tracking-widest text-muted mt-2">In Progress</p>
+        </Card>
+        <Card className="text-center p-6 bg-green-50 border-green-100 shadow-none">
+           <p className="text-4xl font-display font-bold text-green-600">{paid}</p>
+           <p className="text-xs font-bold uppercase tracking-widest text-muted mt-2">Completed & Paid</p>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
 export default function AdminPage({ language, onLanguageChange, onLogout, onHome }) {
   const { t } = useTranslation();
   const [centre, setCentre] = useState(null);
@@ -745,10 +838,19 @@ export default function AdminPage({ language, onLanguageChange, onLogout, onHome
     PAID: "statusPaid",
   };
 
+  const [notifications, setNotifications] = useState([]);
+  
+  const syncTick = useLiveSync();
   useEffect(() => {
     api.getCentres().then((data) => setCentre(data?.[0] || null)).finally(() => setLoading(false));
     api.getAllBookings().then(setAllBookings);
-  }, []);
+    api.getNotifications().then(setNotifications);
+  }, [syncTick]);
+
+  const handleMarkRead = async () => {
+    await api.markNotificationsRead();
+    api.getNotifications().then(setNotifications);
+  };
 
   useEffect(() => {
     if (!selectedBooking?.booking?.id) return;
@@ -978,7 +1080,11 @@ export default function AdminPage({ language, onLanguageChange, onLogout, onHome
       {activeTab === "queue" && <ActiveQueueTab bookings={inQueueBookings} onRemove={handleDeleteBooking} onViewDetails={setDetailModalBooking} />}
       {activeTab === "payments" && <PaymentManagementTab bookings={allBookings} />}
 
-      {activeTab !== "dashboard" && activeTab !== "crops" && activeTab !== "centres" && activeTab !== "bookings" && activeTab !== "queue" && activeTab !== "payments" && (
+      {activeTab === "procurement" && <ProcurementJourneyTab bookings={allBookings} onViewDetails={setDetailModalBooking} />}
+      {activeTab === "alerts" && <AlertsTab notifications={notifications} onMarkRead={handleMarkRead} />}
+      {activeTab === "reports" && <ReportsTab bookings={allBookings} />}
+
+      {activeTab !== "dashboard" && activeTab !== "crops" && activeTab !== "centres" && activeTab !== "bookings" && activeTab !== "queue" && activeTab !== "payments" && activeTab !== "procurement" && activeTab !== "alerts" && activeTab !== "reports" && (
         <div className="flex flex-col items-center justify-center py-32 text-center">
           <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 mb-6">
             <LayoutDashboard className="w-10 h-10" />

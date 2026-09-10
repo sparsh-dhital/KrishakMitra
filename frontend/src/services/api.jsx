@@ -1,3 +1,19 @@
+import { useEffect, useState } from "react";
+
+export function useLiveSync() {
+  const [tick, setTick] = useState(0);
+  useEffect(() => {
+    const handleStorage = (e) => {
+      if (e.key && e.key.startsWith("krishak-mitra")) {
+        setTick(t => t + 1);
+      }
+    };
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, []);
+  return tick;
+}
+
 const delay = (ms) => new Promise(res => setTimeout(res, ms));
 
 const defaultCentres = [
