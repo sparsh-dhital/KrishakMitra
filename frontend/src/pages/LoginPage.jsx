@@ -69,9 +69,9 @@ export default function LoginPage({
       >
         <button 
           onClick={onBack}
-          className="mb-6 flex items-center gap-2 text-sm font-bold text-muted hover:text-forest transition-colors"
+          className="mb-6 inline-flex items-center gap-2 text-xs font-bold text-muted bg-white border border-line px-4 py-2 rounded-full hover:border-brand/30 hover:text-forest hover:bg-slate-50 transition-all shadow-sm"
         >
-          <ArrowLeft className="w-4 h-4" /> {t("login.backHome")}
+          <ArrowLeft className="w-3.5 h-3.5" /> {t("login.backHome")}
         </button>
 
         <Card className="shadow-xl shadow-brand/5 border-line p-5 sm:p-10">
