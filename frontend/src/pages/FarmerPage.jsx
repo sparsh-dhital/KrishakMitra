@@ -536,26 +536,42 @@ export default function FarmerPage({
               <p className="text-muted text-base mt-2">{t("journeyIntro")}</p>
             </div>
 
-            {farmerProfile && farmerProfile.kyc_status !== "approved" && (
+            {farmerProfile && (
               <button
                 type="button"
                 onClick={() => setActiveTab("profile")}
-                className={`w-full rounded-2xl border p-4 text-left transition-colors ${farmerProfile.kyc_status === "denied" ? "border-red-200 bg-red-50 hover:border-red-300" : farmerProfile.kyc_status === "changes_requested" ? "border-amber-200 bg-amber-50 hover:border-amber-300" : "border-line bg-surface-warm hover:border-brand/40"}`}
+                className={`w-full rounded-2xl border p-4 text-left transition-colors ${
+                  farmerProfile.kyc_status === "approved"
+                    ? "border-green-200 bg-green-50 hover:border-green-300"
+                    : farmerProfile.kyc_status === "denied"
+                    ? "border-red-200 bg-red-50 hover:border-red-300"
+                    : farmerProfile.kyc_status === "changes_requested"
+                    ? "border-amber-200 bg-amber-50 hover:border-amber-300"
+                    : "border-blue-200 bg-blue-50 hover:border-blue-300"
+                }`}
               >
-                <p className="text-xs font-extrabold uppercase tracking-widest text-brand">
+                <p className={`text-xs font-extrabold uppercase tracking-widest ${
+                  farmerProfile.kyc_status === "approved" ? "text-green-700" :
+                  farmerProfile.kyc_status === "denied" ? "text-red-700" :
+                  farmerProfile.kyc_status === "changes_requested" ? "text-amber-700" :
+                  "text-blue-700"
+                }`}>
                   KYC verification:{" "}
-                  {farmerProfile.kyc_status === "pending"
+                  {farmerProfile.kyc_status === "pending" || !farmerProfile.kyc_status
                     ? "Verify KYC"
-                    : (farmerProfile.kyc_status || "pending").replace("_", " ")}
+                    : String(farmerProfile.kyc_status || "pending").replace("_", " ")}
                 </p>
-                <p className="mt-1 text-sm font-bold text-forest">
-                  {farmerProfile.kyc_note ||
-                    "Complete your profile to request verification."}
+                <p className={`mt-1 text-sm font-bold ${farmerProfile.kyc_status === "approved" ? "text-green-900" : "text-forest"}`}>
+                  {farmerProfile.kyc_status === "approved"
+                    ? "Your profile is verified. You can book slots now."
+                    : farmerProfile.kyc_note || "Complete your profile to request verification."}
                 </p>
-                <p className="mt-2 text-xs font-medium text-muted">
-                  Open your profile to review details. Booking is available
-                  after approval.
-                </p>
+                {farmerProfile.kyc_status !== "approved" && (
+                  <p className="mt-2 text-xs font-medium text-slate-600">
+                    Open your profile to review details. Booking is available
+                    after approval.
+                  </p>
+                )}
               </button>
             )}
 
@@ -995,7 +1011,7 @@ export default function FarmerPage({
                         <h2 className="font-display text-xl font-bold text-forest mb-4">
                           Select your Crops
                         </h2>
-                        <div className="space-y-2 max-h-60 overflow-y-auto">
+                        <div className="space-y-2 max-h-60 overflow-y-auto" data-lenis-prevent="true">
                           {availableCrops.map((c) => (
                             <label
                               key={c.id}
@@ -1118,7 +1134,7 @@ export default function FarmerPage({
                         <h2 className="font-display text-xl font-bold text-forest mb-4">
                           Choose a Time Slot
                         </h2>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[400px] overflow-y-auto pr-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[400px] overflow-y-auto pr-2" data-lenis-prevent="true">
                           {slots.length > 0 ? (
                             slots.map((slot, i) => {
                               const isAvailable = slot.tone === "green";

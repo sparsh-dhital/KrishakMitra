@@ -26,11 +26,11 @@ export default function FarmerProfilePage({ farmerId, farmerName }) {
     api.getFarmer(farmerId).then((data) => {
       setProfile(data);
       setForm({
-        name: data.name || data.full_name || farmerName || "",
-        phone: data.phone || data.mobile_number || "",
-        village: data.village || "",
-        aadhaar_ref: data.aadhaar_ref || "",
-        land_details: data.land_details?.description || data.land_details || "",
+        name: "",
+        phone: "",
+        village: "",
+        aadhaar_ref: "",
+        land_details: "",
       });
     });
   }, [farmerId, farmerName]);
@@ -58,7 +58,7 @@ export default function FarmerProfilePage({ farmerId, farmerName }) {
     return <div className="p-8 text-center text-muted">Loading profile...</div>;
   const status = profile.kyc_status || "pending";
   const statusLabel =
-    status === "pending" ? "Verify KYC" : status.replace("_", " ");
+    status === "pending" ? "Verify KYC" : String(status).replace("_", " ");
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <div>
@@ -113,6 +113,7 @@ export default function FarmerProfilePage({ farmerId, farmerName }) {
             <Input
               value={form.name}
               onChange={(e) => update("name", e.target.value)}
+              placeholder={profile?.name || profile?.full_name || farmerName || "Enter full name"}
               required
               className="mt-2"
             />
@@ -122,6 +123,7 @@ export default function FarmerProfilePage({ farmerId, farmerName }) {
             <Input
               value={form.phone}
               onChange={(e) => update("phone", e.target.value)}
+              placeholder={profile?.phone || profile?.mobile_number || "Enter phone number"}
               required
               className="mt-2"
             />
@@ -131,6 +133,7 @@ export default function FarmerProfilePage({ farmerId, farmerName }) {
             <Input
               value={form.village}
               onChange={(e) => update("village", e.target.value)}
+              placeholder={profile?.village || "Enter your village"}
               required
               className="mt-2"
             />
@@ -140,6 +143,7 @@ export default function FarmerProfilePage({ farmerId, farmerName }) {
             <Input
               value={form.aadhaar_ref}
               onChange={(e) => update("aadhaar_ref", e.target.value)}
+              placeholder={profile?.aadhaar_ref || "Enter Aadhaar number"}
               required
               className="mt-2"
             />
@@ -149,6 +153,7 @@ export default function FarmerProfilePage({ farmerId, farmerName }) {
             <Input
               value={form.land_details}
               onChange={(e) => update("land_details", e.target.value)}
+              placeholder={(typeof profile?.land_details === "string" ? profile.land_details : profile?.land_details?.description) || "e.g. 5.4 Acres of Paddy field"}
               className="mt-2"
             />
           </label>

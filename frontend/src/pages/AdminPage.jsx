@@ -1561,47 +1561,47 @@ function KycTab() {
         </Card>
       ) : (
         <div className="grid gap-4">
-          {farmers.map((farmer) => (
-            <Card key={farmer.id} className="space-y-4">
+          {farmers.filter(Boolean).map((farmer) => (
+            <Card key={farmer?.id || Math.random()} className="space-y-4">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
                   <h3 className="text-lg font-bold text-forest">
-                    {farmer.name || farmer.full_name || "Unnamed farmer"}
+                    {farmer?.name || farmer?.full_name || "Unnamed farmer"}
                   </h3>
                   <p className="text-sm text-muted">
-                    {farmer.phone || farmer.mobile_number || "No phone"} ·{" "}
-                    {farmer.village || "Village not provided"}
+                    {farmer?.phone || farmer?.mobile_number || "No phone"} ·{" "}
+                    {farmer?.village || "Village not provided"}
                   </p>
                 </div>
                 <Badge
                   tone={
-                    farmer.kyc_status === "approved"
+                    farmer?.kyc_status === "approved"
                       ? "success"
-                      : farmer.kyc_status === "denied"
+                      : farmer?.kyc_status === "denied"
                         ? "error"
                         : "warning"
                   }
                 >
-                  {(farmer.kyc_status || "pending").replace("_", " ")}
+                  {String(farmer?.kyc_status || "pending").replace("_", " ")}
                 </Badge>
               </div>
               <div className="grid gap-3 rounded-2xl bg-surface-warm p-4 text-sm sm:grid-cols-3">
                 <div>
                   <span className="text-muted">Aadhaar reference</span>
                   <p className="font-bold text-forest">
-                    {farmer.aadhaar_ref || "Not provided"}
+                    {farmer?.aadhaar_ref || "Not provided"}
                   </p>
                 </div>
                 <div>
                   <span className="text-muted">Land details</span>
                   <p className="font-bold text-forest">
-                    {farmer.land_details?.description || "Not provided"}
+                    {farmer?.land_details?.description || "Not provided"}
                   </p>
                 </div>
                 <div>
                   <span className="text-muted">Review note</span>
                   <p className="font-bold text-forest">
-                    {farmer.kyc_note || "Awaiting review"}
+                    {farmer?.kyc_note || "Awaiting review"}
                   </p>
                 </div>
               </div>
@@ -2019,7 +2019,7 @@ export default function AdminPage({
                     {t("queue")}
                   </span>
                   <span className="text-sm font-bold text-forest">
-                    23 {t("farmers")}
+                    {inQueueBookings.length} {t("farmers")}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
@@ -2027,7 +2027,7 @@ export default function AdminPage({
                     {t("estimatedWait")}
                   </span>
                   <span className="text-sm font-bold text-forest">
-                    35 {t("minutes")}
+                    {inQueueBookings.length * 15} {t("minutes")}
                   </span>
                 </div>
               </div>
@@ -2037,12 +2037,12 @@ export default function AdminPage({
                   <span className="text-xs font-bold text-muted uppercase tracking-widest">
                     {t("capacity")}
                   </span>
-                  <span className="text-xs font-bold text-forest">51%</span>
+                  <span className="text-xs font-bold text-forest">{Math.min(100, Math.round((allBookings.length / 50) * 100))}%</span>
                 </div>
                 <div className="w-full bg-slate-100 rounded-full h-2">
                   <div
                     className="bg-brand h-2 rounded-full"
-                    style={{ width: "51%" }}
+                    style={{ width: `${Math.min(100, Math.round((allBookings.length / 50) * 100))}%` }}
                   ></div>
                 </div>
               </div>
@@ -2060,13 +2060,13 @@ export default function AdminPage({
                       {t("qualityAndWeight")}
                     </span>
                     <span className="text-xs text-muted font-bold">
-                      12 / 20
+                      {allBookings.filter(b => b.booking.status === "QUALITY_CHECK" || b.booking.status === "WEIGHING").length} / {allBookings.length || 1}
                     </span>
                   </div>
                   <div className="w-full bg-slate-100 rounded-full h-1.5">
                     <div
                       className="bg-amber-500 h-1.5 rounded-full"
-                      style={{ width: "60%" }}
+                      style={{ width: `${allBookings.length ? (allBookings.filter(b => b.booking.status === "QUALITY_CHECK" || b.booking.status === "WEIGHING").length / allBookings.length) * 100 : 0}%` }}
                     ></div>
                   </div>
                 </div>
@@ -2076,12 +2076,12 @@ export default function AdminPage({
                       <CheckCircle2 className="w-4 h-4 text-blue-500" />{" "}
                       {t("procurement")}
                     </span>
-                    <span className="text-xs text-muted font-bold">0 / 30</span>
+                    <span className="text-xs text-muted font-bold">{allBookings.filter(b => b.booking.status === "ACCEPTED").length} / {allBookings.length || 1}</span>
                   </div>
                   <div className="w-full bg-slate-100 rounded-full h-1.5">
                     <div
                       className="bg-blue-500 h-1.5 rounded-full"
-                      style={{ width: "0%" }}
+                      style={{ width: `${allBookings.length ? (allBookings.filter(b => b.booking.status === "ACCEPTED").length / allBookings.length) * 100 : 0}%` }}
                     ></div>
                   </div>
                 </div>
@@ -2092,13 +2092,13 @@ export default function AdminPage({
                       {t("payment")}
                     </span>
                     <span className="text-xs text-muted font-bold">
-                      54 / 78
+                      {allBookings.filter(b => b.booking.status === "PAID").length} / {allBookings.length || 1}
                     </span>
                   </div>
                   <div className="w-full bg-slate-100 rounded-full h-1.5">
                     <div
                       className="bg-brand h-1.5 rounded-full"
-                      style={{ width: "70%" }}
+                      style={{ width: `${allBookings.length ? (allBookings.filter(b => b.booking.status === "PAID").length / allBookings.length) * 100 : 0}%` }}
                     ></div>
                   </div>
                 </div>
