@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
+import { useRef } from "react";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
-import { LayoutDashboard, Users, Activity, FileText, Bell, DatabaseZap, ShieldAlert, CheckCircle2, Clock } from "lucide-react";
+import QrScanner from "qr-scanner";
+import { LayoutDashboard, Users, Activity, FileText, Bell, DatabaseZap, ShieldAlert, CheckCircle2, Clock, QrCode, Camera, Search } from "lucide-react";
 import { api, useLiveSync } from "../services/api";
 import { SidebarLayout, Card, Badge, Button, Select, Input, Eyebrow } from "../components/ui";
 import QRCode from "react-qr-code";
@@ -299,7 +301,7 @@ function CentresTab() {
     );
   }
 
-function TodaysBookingsTab({ bookings, onRemove, onViewDetails }) {
+function TodaysBookingsTab({ bookings, onRemove, onViewDetails, highlightedBookingId }) {
   const { t } = useTranslation();
   const [exportMenuOpen, setExportMenuOpen] = useState(false);
 
@@ -465,7 +467,7 @@ function TodaysBookingsTab({ bookings, onRemove, onViewDetails }) {
                 const booking = b.booking;
                 const token = b.token;
                 return (
-                  <tr key={booking.id} className="hover:bg-slate-50 transition-colors">
+                  <tr key={booking.id} className={`transition-colors ${highlightedBookingId === booking.id ? "bg-brand/10 ring-2 ring-inset ring-brand" : "hover:bg-slate-50"}`}>
                     <td className="p-4 pl-6 font-bold text-forest">{token?.token_number || "N/A"}</td>
                     <td className="p-4 font-medium">{booking.farmer_name}</td>
                     <td className="p-4">
@@ -812,6 +814,157 @@ function ReportsTab({ bookings }) {
   );
 }
 
+function ScanQrTab({ bookings, centre, onBookingFound }) {
+  const videoRef = useRef(null);
+  const scannerRef = useRef(null);
+  const [scanValue, setScanValue] = useState("");
+  const [scanError, setScanError] = useState("");
+  const [isScanning, setIsScanning] = useState(false);
+  const [matchedBooking, setMatchedBooking] = useState(null);
+  const [qrPayload, setQrPayload] = useState(null);
+
+  useEffect(() => () => {
+    scannerRef.current?.stop();
+    scannerRef.current?.destroy();
+  }, []);
+
+  const findBooking = (value) => {
+    const rawValue = value.trim();
+    if (!rawValue) return null;
+
+    let payload = null;
+    try {
+      payload = JSON.parse(rawValue);
+    } catch {
+      // QR values can also be legacy URLs or plain token numbers.
+    }
+
+    let tokenId = rawValue;
+    let tokenNumber = rawValue;
+    if (payload && typeof payload === "object") {
+      tokenId = payload.ticketId || payload.tokenId || payload.bookingId || rawValue;
+      tokenNumber = payload.tokenNumber || payload.token || rawValue;
+      setQrPayload(payload);
+    } else {
+      setQrPayload(null);
+    }
+
+    try {
+      const parsedUrl = new URL(tokenId);
+      const statusIndex = parsedUrl.pathname.split("/").indexOf("status");
+      if (statusIndex >= 0) tokenId = parsedUrl.pathname.split("/")[statusIndex + 1] || rawValue;
+    } catch {
+      // The value may be a token ID or token number rather than a URL.
+    }
+
+    return bookings.find((entry) => (
+      entry.token?.id === tokenId ||
+      entry.token?.token_number?.toLowerCase() === tokenNumber.toLowerCase() ||
+      entry.booking?.id === tokenId
+    )) || null;
+  };
+
+  const handleScan = (value) => {
+    const booking = findBooking(value);
+    setScanValue(value);
+    setMatchedBooking(booking);
+    setScanError(booking ? "" : "No booking found for this QR code.");
+    if (booking) {
+      scannerRef.current?.stop();
+      setIsScanning(false);
+      onBookingFound?.(booking.booking.id);
+      toast.success("Farmer booking found");
+    }
+  };
+
+  const toggleCamera = async () => {
+    if (isScanning) {
+      scannerRef.current?.stop();
+      setIsScanning(false);
+      return;
+    }
+
+    setScanError("");
+    try {
+      const scanner = new QrScanner(videoRef.current, ({ data }) => handleScan(data), {
+        preferredCamera: "environment",
+        highlightScanRegion: true,
+        highlightCodeOutline: true,
+      });
+      scannerRef.current = scanner;
+      await scanner.start();
+      setIsScanning(true);
+    } catch (error) {
+      setScanError("Camera access is unavailable. Enter the QR value manually below.");
+    }
+  };
+
+  const booking = matchedBooking?.booking;
+  const slotLabel = booking?.slot_name || booking?.slotName || qrPayload?.slotName || booking?.slot_id || "Booked slot";
+
+  return (
+    <div className="max-w-[1000px] mx-auto space-y-6">
+      <div>
+        <Eyebrow className="mb-2">ARRIVAL CHECK-IN</Eyebrow>
+        <h2 className="text-4xl font-display font-extrabold text-forest">Scan Farmer QR</h2>
+        <p className="text-muted mt-2">Scan the farmer&apos;s booking QR to view their slot and arrival details.</p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card className="space-y-4">
+          <div className="aspect-video rounded-xl bg-slate-900 overflow-hidden relative">
+            <video ref={videoRef} className="w-full h-full object-cover" muted playsInline />
+            {!isScanning && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-white/80 gap-3">
+                <QrCode className="w-14 h-14" />
+                <p className="text-sm font-bold">Camera scanner is ready</p>
+              </div>
+            )}
+          </div>
+          <Button type="button" onClick={toggleCamera} className="w-full gap-2">
+            <Camera className="w-4 h-4" /> {isScanning ? "Stop Camera" : "Scan QR with Camera"}
+          </Button>
+          <div className="flex gap-2">
+            <Input value={scanValue} onChange={(event) => setScanValue(event.target.value)} placeholder="Paste QR URL, token ID, or token number" />
+            <Button type="button" variant="outline" onClick={() => handleScan(scanValue)} className="gap-2 whitespace-nowrap">
+              <Search className="w-4 h-4" /> Find
+            </Button>
+          </div>
+          {scanError && <p className="text-sm font-bold text-red-600">{scanError}</p>}
+        </Card>
+
+        <Card className={matchedBooking ? "border-brand/30" : "bg-slate-50"}>
+          {matchedBooking ? (
+            <div className="space-y-5">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-brand/10 text-brand flex items-center justify-center"><CheckCircle2 className="w-6 h-6" /></div>
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-widest text-brand">Booking verified</p>
+                  <h3 className="text-2xl font-display font-extrabold text-forest">{booking.farmer_name || "Unknown farmer"}</h3>
+                </div>
+              </div>
+              <div className="space-y-3 rounded-xl bg-slate-50 border border-line p-4">
+                <div className="flex justify-between gap-4"><span className="text-sm font-bold text-muted">Slot</span><span className="text-sm font-bold text-forest text-right">{slotLabel}</span></div>
+                <div className="flex justify-between gap-4"><span className="text-sm font-bold text-muted">Timing</span><span className="text-sm font-bold text-forest text-right">{booking.slot_time || "Not available"}</span></div>
+                <div className="flex justify-between gap-4"><span className="text-sm font-bold text-muted">Date</span><span className="text-sm font-bold text-forest text-right">{booking.date || "Not available"}</span></div>
+                <div className="flex justify-between gap-4"><span className="text-sm font-bold text-muted">Centre</span><span className="text-sm font-bold text-forest text-right">{centre?.name || "Not available"}</span></div>
+                <div className="flex justify-between gap-4"><span className="text-sm font-bold text-muted">Token</span><span className="font-mono font-bold text-brand">{matchedBooking.token?.token_number || "Not available"}</span></div>
+              </div>
+              <p className="text-xs text-muted">The booking was read from the QR JSON payload and is ready in Today&apos;s Bookings for PDF extraction.</p>
+            </div>
+          ) : (
+            <div className="h-full min-h-[280px] flex flex-col items-center justify-center text-center text-muted">
+              <QrCode className="w-12 h-12 mb-4 text-slate-300" />
+              <h3 className="font-bold text-forest">No booking scanned</h3>
+              <p className="text-sm mt-1 max-w-xs">The farmer&apos;s slot name and timing will appear here after a successful scan.</p>
+            </div>
+          )}
+        </Card>
+      </div>
+    </div>
+  );
+}
+
 export default function AdminPage({ language, onLanguageChange, onLogout, onHome }) {
   const { t } = useTranslation();
   const [centre, setCentre] = useState(null);
@@ -832,6 +985,7 @@ export default function AdminPage({ language, onLanguageChange, onLogout, onHome
   const [allBookings, setAllBookings] = useState([]);
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [detailModalBooking, setDetailModalBooking] = useState(null);
+  const [highlightedBookingId, setHighlightedBookingId] = useState(null);
 
   const [status, setStatus] = useState("BOOKED");
   const [procurement, setProcurement] = useState(null);
@@ -904,12 +1058,18 @@ export default function AdminPage({ language, onLanguageChange, onLogout, onHome
   const inQueueBookings = allBookings.filter(b => b.booking.status !== "PAID" && b.booking.status !== "COMPLETED");
   const processingBookings = allBookings.filter(b => b.booking.status === "QUALITY_CHECK" || b.booking.status === "WEIGHING" || b.booking.status === "ACCEPTED");
 
+  const handleBookingFound = (bookingId) => {
+    setHighlightedBookingId(bookingId);
+    setActiveTab("bookings");
+  };
+
 
   const navItems = [
     { id: "dashboard", label: t("overview"), icon: LayoutDashboard },
     { id: "centres", label: "Centres", icon: DatabaseZap },
     { id: "crops", label: t("cropsMsp") || "Crops & MSP", icon: FileText },
     { id: "bookings", label: t("todayBookings"), icon: Users },
+    { id: "scan-qr", label: "Scan QR", icon: QrCode },
     { id: "queue", label: t("activeQueue"), icon: Activity },
     { id: "procurement", label: t("procurementJourney"), icon: FileText },
     { id: "payments", label: t("paymentStatus"), icon: DatabaseZap },
@@ -1085,7 +1245,8 @@ export default function AdminPage({ language, onLanguageChange, onLogout, onHome
 
       {activeTab === "centres" && <CentresTab />}
       {activeTab === "crops" && <CropsTab />}
-      {activeTab === "bookings" && <TodaysBookingsTab bookings={allBookings} onRemove={handleDeleteBooking} onViewDetails={setDetailModalBooking} />}
+      {activeTab === "bookings" && <TodaysBookingsTab bookings={allBookings} highlightedBookingId={highlightedBookingId} onRemove={handleDeleteBooking} onViewDetails={setDetailModalBooking} />}
+      {activeTab === "scan-qr" && <ScanQrTab bookings={allBookings} centre={centre} onBookingFound={handleBookingFound} />}
       {activeTab === "queue" && <ActiveQueueTab bookings={inQueueBookings} onRemove={handleDeleteBooking} onViewDetails={setDetailModalBooking} />}
       {activeTab === "payments" && <PaymentManagementTab bookings={allBookings} />}
 
@@ -1093,7 +1254,7 @@ export default function AdminPage({ language, onLanguageChange, onLogout, onHome
       {activeTab === "alerts" && <AlertsTab notifications={notifications} onMarkRead={handleMarkRead} />}
       {activeTab === "reports" && <ReportsTab bookings={allBookings} />}
 
-      {activeTab !== "dashboard" && activeTab !== "crops" && activeTab !== "centres" && activeTab !== "bookings" && activeTab !== "queue" && activeTab !== "payments" && activeTab !== "procurement" && activeTab !== "alerts" && activeTab !== "reports" && (
+      {activeTab !== "dashboard" && activeTab !== "crops" && activeTab !== "centres" && activeTab !== "bookings" && activeTab !== "scan-qr" && activeTab !== "queue" && activeTab !== "payments" && activeTab !== "procurement" && activeTab !== "alerts" && activeTab !== "reports" && (
         <div className="flex flex-col items-center justify-center py-32 text-center">
           <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 mb-6">
             <LayoutDashboard className="w-10 h-10" />
