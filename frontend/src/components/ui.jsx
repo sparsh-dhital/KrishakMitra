@@ -293,6 +293,7 @@ export function SidebarLayout({
   navItems,
   onLogout,
   onHome,
+  onProfile,
   language,
   onLanguageChange,
   displayName = "Ramesh Kumar",
@@ -350,7 +351,9 @@ export function SidebarLayout({
             onClick={() => setIsExpanded(false)}
             className={cn(
               "ml-2 w-8 h-8 rounded-lg flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition-all shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60",
-              isExpanded ? "opacity-100" : "opacity-0 w-0 overflow-hidden pointer-events-none p-0 ml-0 border-none",
+              isExpanded
+                ? "opacity-100"
+                : "opacity-0 w-0 overflow-hidden pointer-events-none p-0 ml-0 border-none",
             )}
             title="Collapse sidebar"
           >
@@ -376,7 +379,11 @@ export function SidebarLayout({
             isExpanded ? "justify-between" : "justify-center px-2",
           )}
         >
-          <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={onProfile}
+            className="flex items-center gap-3 text-left"
+          >
             <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white text-sm font-bold shrink-0 shadow-inner">
               SM
             </div>
@@ -393,7 +400,7 @@ export function SidebarLayout({
                 {displayName}
               </p>
             </div>
-          </div>
+          </button>
         </div>
 
         <nav
@@ -509,9 +516,11 @@ export function SidebarLayout({
 
               <LanguagePicker value={language} onChange={onLanguageChange} />
 
-              <button 
+              <button
                 onClick={() => {
-                  const target = navItems.find((n) => n.id === "notifications" || n.id === "reports");
+                  const target = navItems.find(
+                    (n) => n.id === "notifications" || n.id === "reports",
+                  );
                   if (target) onTabChange(target.id);
                 }}
                 className="relative w-10 h-10 rounded-full flex items-center justify-center text-slate-500 hover:text-brand hover:bg-brand/5 transition-all focus:outline-none"
@@ -520,7 +529,11 @@ export function SidebarLayout({
                 <span className="absolute top-2 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white shadow-sm" />
               </button>
 
-              <div className="flex items-center gap-3 pl-2 sm:pl-4 border-l border-slate-200">
+              <button
+                type="button"
+                onClick={onProfile}
+                className="flex items-center gap-3 pl-2 sm:pl-4 border-l border-slate-200 text-left"
+              >
                 <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-brand to-emerald-400 flex items-center justify-center text-white text-sm font-extrabold shadow-md shrink-0 border border-white">
                   {displayName
                     .split(" ")
@@ -537,7 +550,7 @@ export function SidebarLayout({
                     {defaultRoleLabel}
                   </p>
                 </div>
-              </div>
+              </button>
 
               <button
                 onClick={onLogout}

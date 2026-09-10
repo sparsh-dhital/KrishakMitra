@@ -32,6 +32,7 @@ import {
 } from "../components/ui";
 import AuctionCard from "../components/AuctionCard";
 import QRCodeModal from "../components/QRCodeModal";
+import FarmerProfilePage from "./FarmerProfilePage";
 import {
   createAuctionDirectly,
   getFarmerAuctions,
@@ -99,6 +100,24 @@ export default function FarmerPage({
   const [useManualCrop, setUseManualCrop] = useState(false);
   const [manualCropName, setManualCropName] = useState("");
   const [showQRModal, setShowQRModal] = useState(false);
+  const [farmerProfile, setFarmerProfile] = useState(null);
+
+  const formatNotification = (notification) => {
+    if (notification?.message) return notification.message;
+    const data = notification?.data || {};
+    const messages = {
+      bookingCreated: "bookingCreated",
+      bookingStatus: "bookingStatusAlert",
+      paymentRequested: "paymentRequestedAlert",
+      centrePublished: "centrePublishedAlert",
+    };
+    const key = messages[notification?.type];
+    if (key) return t(key, data);
+    return t("alertsIntro");
+  };
+
+  const notificationIsUnread = (notification) =>
+    notification?.read !== true && notification?.is_read !== true;
 
   useEffect(() => {
     async function loadCentres() {
@@ -108,11 +127,12 @@ export default function FarmerPage({
           api.getCrops(),
           api.getNotifications(),
         ]);
+        const safeNotifications = Array.isArray(notifs) ? notifs : [];
         setCentres(centreData);
         setCrops(cropData);
-        setNotifications(notifs);
+        setNotifications(safeNotifications);
 
-        const unread = notifs.filter((n) => !n.read);
+        const unread = safeNotifications.filter(notificationIsUnread);
         if (unread.length > 0) {
           toast(`You have ${unread.length} new notification(s)!`, { icon: "" });
         }
@@ -136,9 +156,11 @@ export default function FarmerPage({
 
         setSelectedCentre((current) => current || centreData?.[0]?.id || "");
         if (farmerId || config.farmerId) {
-          setFarmer(
-            await api.getFarmer(farmerId || config.farmerId).catch(() => null),
-          );
+          const profile = await api
+            .getFarmer(farmerId || config.farmerId)
+            .catch(() => null);
+          setFarmer(profile);
+          setFarmerProfile(profile);
         }
       } catch (err) {
         toast.error("Failed to load centre data");
@@ -149,16 +171,17 @@ export default function FarmerPage({
 
   useEffect(() => {
     if (activeTab !== "notifications" || !farmerId) return;
-    api
-      .getNotifications(farmerId)
-      .then(setNotifications)
-      .catch(() => {});
-
-    // Bid notifications
     let active = true;
-    getFarmerBidNotifications(farmerId).then((notifications) => {
-      if (active) setBidNotifications(notifications);
-    });
+    Promise.all([
+      api.getNotifications(farmerId),
+      getFarmerBidNotifications(farmerId),
+    ])
+      .then(([localNotifications, bidItems]) => {
+        if (!active) return;
+        setNotifications(localNotifications || []);
+        setBidNotifications(bidItems || []);
+      })
+      .catch(() => {});
     return () => {
       active = false;
     };
@@ -226,12 +249,36 @@ export default function FarmerPage({
 
   useEffect(() => {
     if (!farmerId) return;
-    getFarmerBidNotifications(farmerId)
-      .then((notifications) => setNotificationCount(notifications.length))
+    Promise.all([
+      api.getNotifications(farmerId),
+      getFarmerBidNotifications(farmerId),
+    ])
+      .then(([localNotifications, bidItems]) => {
+        setNotifications(localNotifications || []);
+        setBidNotifications(bidItems || []);
+        setNotificationCount(
+          [...(localNotifications || []), ...(bidItems || [])].filter(
+            notificationIsUnread,
+          ).length,
+        );
+      })
       .catch(() => {});
-  }, [farmerId]);
+  }, [farmerId, syncTick]);
+
+  useEffect(() => {
+    if (!farmerId || !syncTick) return;
+    api
+      .getFarmer(farmerId)
+      .then(setFarmerProfile)
+      .catch(() => {});
+  }, [farmerId, syncTick]);
 
   async function createBooking() {
+    if (farmerProfile?.kyc_status !== "approved") {
+      setActiveTab("profile");
+      toast.error("Please complete KYC verification before booking a slot.");
+      return;
+    }
     if (
       !selectedSlot ||
       !selectedCentre ||
@@ -422,9 +469,10 @@ export default function FarmerPage({
       setBookingStep(0);
       setShowNewBookingForm(false);
     }
-    if (tabId === "notifications" && notifications.some((n) => !n.read)) {
+    if (tabId === "notifications" && notifications.some(notificationIsUnread)) {
       await api.markNotificationsRead();
       setNotifications(notifications.map((n) => ({ ...n, read: true })));
+      setNotificationCount(0);
     }
   };
 
@@ -444,6 +492,7 @@ export default function FarmerPage({
       onTabChange={handleTabChange}
       onLogout={onLogout}
       onHome={onHome}
+      onProfile={() => setActiveTab("profile")}
       language={language}
       onLanguageChange={onLanguageChange}
       displayName={displayName}
@@ -730,6 +779,13 @@ export default function FarmerPage({
             </Card>
           </div>
         </div>
+      )}
+
+      {activeTab === "profile" && (
+        <FarmerProfilePage
+          farmerId={farmerId || config.farmerId}
+          farmerName={farmerName}
+        />
       )}
 
       {activeTab === "centres" && (
@@ -1635,7 +1691,7 @@ export default function FarmerPage({
             Notifications
           </h1>
           <Card>
-            {bidNotifications.length > 0 ? (
+            {bidNotifications.length > 0 || notifications.length > 0 ? (
               <div className="space-y-4 mb-4">
                 {bidNotifications.map((notification) => (
                   <div
@@ -1648,14 +1704,12 @@ export default function FarmerPage({
                         {notification?.title || "New bid"}
                       </p>
                       <p className="text-xs text-muted mt-0.5">
-                        {notification?.message}
+                        {notification?.message ||
+                          t("bidPlacedAlert", notification)}
                       </p>
                     </div>
                   </div>
                 ))}
-              </div>
-            ) : notifications.length > 0 ? (
-              <div className="space-y-4">
                 {notifications.map((n) => (
                   <div
                     key={n.id}
@@ -1666,10 +1720,12 @@ export default function FarmerPage({
                     />
                     <div>
                       <p className="text-sm font-bold text-forest">
-                        {n.message}
+                        {formatNotification(n)}
                       </p>
                       <p className="text-xs text-muted mt-0.5">
-                        {new Date(n.date).toLocaleString()}
+                        {new Date(
+                          n.date || n.created_at || Date.now(),
+                        ).toLocaleString()}
                       </p>
                     </div>
                   </div>

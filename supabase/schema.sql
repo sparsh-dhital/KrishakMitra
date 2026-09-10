@@ -29,6 +29,8 @@ CREATE TABLE public.farmers (
     aadhaar_ref TEXT UNIQUE NOT NULL,
     village TEXT NOT NULL,
     land_details JSONB DEFAULT '{}'::jsonb,
+    kyc_status TEXT NOT NULL DEFAULT 'pending' CHECK (kyc_status IN ('pending', 'approved', 'changes_requested', 'denied')),
+    kyc_note TEXT DEFAULT '',
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );

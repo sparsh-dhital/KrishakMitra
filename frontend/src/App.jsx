@@ -12,14 +12,10 @@ import BuyerPage from "./pages/BuyerPage";
 import BuyerMarketplace from "./pages/BuyerMarketplace";
 import ContactPage from "./pages/ContactPage";
 import StatusPage from "./pages/StatusPage";
+import NotFoundPage from "./pages/NotFoundPage";
 
 function SmoothScroll({ children }) {
   useEffect(() => {
-    // Disable Lenis on touch devices to prevent it from hijacking touch events
-    // and causing input focus issues on mobile.
-    const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
-    if (isTouch) return;
-
     const lenis = new Lenis({
       duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
@@ -48,10 +44,13 @@ function SmoothScroll({ children }) {
 export default function App() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const [language, setLanguage] = useState(() => i18n.resolvedLanguage || i18n.language || "en");
+  const [language, setLanguage] = useState(
+    () => i18n.resolvedLanguage || i18n.language || "en",
+  );
 
   useEffect(() => {
-    const handleLanguageChanged = (nextLanguage) => setLanguage(nextLanguage || "en");
+    const handleLanguageChanged = (nextLanguage) =>
+      setLanguage(nextLanguage || "en");
     i18n.on("languageChanged", handleLanguageChanged);
     return () => i18n.off("languageChanged", handleLanguageChanged);
   }, [i18n]);
@@ -59,7 +58,9 @@ export default function App() {
   // Load persisted session
   const [session, setSession] = useState(() => {
     try {
-      return JSON.parse(localStorage.getItem("krishak-mitra-session") || "null");
+      return JSON.parse(
+        localStorage.getItem("krishak-mitra-session") || "null",
+      );
     } catch {
       return null;
     }
@@ -126,56 +127,102 @@ export default function App() {
       />
 
       <Routes>
-        <Route path="/" element={
-          <LandingPage
-            onNavigateLogin={handleNavigateLogin}
-            onNavigateContact={() => navigate("/contact")}
-            hasSession={!!session}
-            language={language}
-            onLanguageChange={changeLanguage}
-          />
-        } />
+        <Route
+          path="/"
+          element={
+            <LandingPage
+              onNavigateLogin={handleNavigateLogin}
+              onNavigateContact={() => navigate("/contact")}
+              hasSession={!!session}
+              language={language}
+              onLanguageChange={changeLanguage}
+            />
+          }
+        />
 
-        <Route path="/contact" element={
-          <ContactPage
-            onBack={() => navigate("/")}
-            language={language}
-            onLanguageChange={changeLanguage}
-          />
-        } />
+        <Route
+          path="/contact"
+          element={
+            <ContactPage
+              onBack={() => navigate("/")}
+              language={language}
+              onLanguageChange={changeLanguage}
+            />
+          }
+        />
 
         <Route path="/status/:tokenId" element={<StatusPage />} />
 
-        <Route path="/login" element={
-          <LoginPage
-            language={language}
-            onLanguageChange={changeLanguage}
-            t={t}
-            onBack={() => navigate("/")}
-            onLogin={handleLogin}
-          />
-        } />
+        <Route
+          path="/login"
+          element={
+            <LoginPage
+              language={language}
+              onLanguageChange={changeLanguage}
+              t={t}
+              onBack={() => navigate("/")}
+              onLogin={handleLogin}
+            />
+          }
+        />
 
-        <Route path="/farmer" element={
-          <ProtectedRoute allowedRole="farmer">
-            <FarmerPage language={language} onLanguageChange={changeLanguage} onLogout={logout} onHome={() => navigate("/")} farmerId={session?.farmerId} farmerName={session?.name} />
-          </ProtectedRoute>
-        } />
+        <Route
+          path="/farmer"
+          element={
+            <ProtectedRoute allowedRole="farmer">
+              <FarmerPage
+                language={language}
+                onLanguageChange={changeLanguage}
+                onLogout={logout}
+                onHome={() => navigate("/")}
+                farmerId={session?.farmerId}
+                farmerName={session?.name}
+              />
+            </ProtectedRoute>
+          }
+        />
 
-        <Route path="/admin" element={
-          <ProtectedRoute allowedRole="admin">
-            <AdminPage language={language} onLanguageChange={changeLanguage} onLogout={logout} onHome={() => navigate("/")} adminName={session?.name} />
-          </ProtectedRoute>
-        } />
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute allowedRole="admin">
+              <AdminPage
+                language={language}
+                onLanguageChange={changeLanguage}
+                onLogout={logout}
+                onHome={() => navigate("/")}
+                adminName={session?.name}
+              />
+            </ProtectedRoute>
+          }
+        />
 
-        <Route path="/buyer" element={
-          <ProtectedRoute allowedRole="buyer">
-            <BuyerPage language={language} onLanguageChange={changeLanguage} onLogout={logout} onHome={() => navigate("/")} buyerId={session?.buyerId || "demo-buyer"} buyerName={session?.name} />
-          </ProtectedRoute>
-        } />
+        <Route
+          path="/buyer"
+          element={
+            <ProtectedRoute allowedRole="buyer">
+              <BuyerPage
+                language={language}
+                onLanguageChange={changeLanguage}
+                onLogout={logout}
+                onHome={() => navigate("/")}
+                buyerId={session?.buyerId || "demo-buyer"}
+                buyerName={session?.name}
+              />
+            </ProtectedRoute>
+          }
+        />
 
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route
+          path="*"
+          element={
+            <NotFoundPage
+              onBack={() => navigate(-1)}
+              onHome={() => navigate("/")}
+            />
+          }
+        />
       </Routes>
     </SmoothScroll>
   );
-}
+}
