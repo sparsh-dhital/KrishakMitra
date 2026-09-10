@@ -19,7 +19,8 @@ export default function QRCodeModal({ isOpen, onClose, slotData }) {
   // ── Safely extract data with fallbacks ──────────────────────────
   const booking = slotData?.booking || {};
   const token = slotData?.token || {};
-  const farmerName = slotData?.farmerName || booking.farmer_name || "Unknown Farmer";
+  const farmerName =
+    slotData?.farmerName || booking.farmer_name || "Unknown Farmer";
   const centreName = slotData?.centreName || "Unknown Centre";
   const centreId = booking.centre_id || "N/A";
   const ticketId = booking.id || token.id || "N/A";
@@ -81,6 +82,7 @@ export default function QRCodeModal({ isOpen, onClose, slotData }) {
     <div style={styles.overlay} onClick={handleClose}>
       <div
         style={styles.modalContainer}
+        data-lenis-prevent="true"
         onClick={(e) => e.stopPropagation()}
       >
         {/* ── Header ────────────────────────────────────────── */}
@@ -90,7 +92,16 @@ export default function QRCodeModal({ isOpen, onClose, slotData }) {
             <h2 style={styles.headerTitle}>KrishakMitra</h2>
           </div>
           <button style={styles.closeButton} onClick={handleClose}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <line x1="18" y1="6" x2="6" y2="18" />
               <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
@@ -165,7 +176,9 @@ export default function QRCodeModal({ isOpen, onClose, slotData }) {
             </div>
             <div style={{ ...styles.metaItem, textAlign: "right" }}>
               <p style={styles.metaLabel}>Estimated Fare</p>
-              <p style={styles.fareValue}>₹ {estimatedFare.toLocaleString("en-IN")}</p>
+              <p style={styles.fareValue}>
+                ₹ {estimatedFare.toLocaleString("en-IN")}
+              </p>
             </div>
           </div>
 
@@ -188,7 +201,16 @@ export default function QRCodeModal({ isOpen, onClose, slotData }) {
         <div style={styles.footer}>
           {verified ? (
             <div style={styles.verifiedBanner}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#065F46" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#065F46"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
                 <polyline points="22 4 12 14.01 9 11.01" />
               </svg>
@@ -211,7 +233,16 @@ export default function QRCodeModal({ isOpen, onClose, slotData }) {
                 </>
               ) : (
                 <>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
                     <path d="M9 11l3 3L22 4" />
                     <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
                   </svg>
@@ -220,7 +251,9 @@ export default function QRCodeModal({ isOpen, onClose, slotData }) {
               )}
             </button>
           )}
-          <p style={styles.footerHint}>Present this QR code at the mandi gate</p>
+          <p style={styles.footerHint}>
+            Present this QR code at the mandi gate
+          </p>
         </div>
       </div>
     </div>
@@ -249,6 +282,9 @@ const styles = {
     maxWidth: "420px",
     maxHeight: "90vh",
     overflowY: "auto",
+    overscrollBehavior: "contain",
+    WebkitOverflowScrolling: "touch",
+    touchAction: "pan-y",
     backgroundColor: "#FFFFFF",
     borderRadius: "24px",
     boxShadow: "0 25px 60px rgba(0,0,0,0.25), 0 0 0 1px rgba(0,0,0,0.05)",
@@ -494,7 +530,10 @@ const styles = {
 };
 
 // ── Inject keyframe animations (runs once) ────────────────────────
-if (typeof document !== "undefined" && !document.getElementById("qr-modal-keyframes")) {
+if (
+  typeof document !== "undefined" &&
+  !document.getElementById("qr-modal-keyframes")
+) {
   const styleEl = document.createElement("style");
   styleEl.id = "qr-modal-keyframes";
   styleEl.textContent = `

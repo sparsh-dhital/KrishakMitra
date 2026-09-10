@@ -5,8 +5,8 @@
   --font-display: "Plus Jakarta Sans", ui-sans-serif, sans-serif;
   --font-body: "Inter", ui-sans-serif, sans-serif;
 
-  --color-forest: #0A2A1B;
-  --color-forest-dark: #071D12;
+  --color-forest: #0a2a1b;
+  --color-forest-dark: #071d12;
   --color-forest-card: #123b2a;
   --color-brand: #187948;
   --color-brand-hover: #126038;
@@ -16,7 +16,7 @@
   --color-surface: #ffffff;
   --color-surface-warm: #f7f9f4;
   --color-line: #dce6d7;
-  --color-muted: #4B6358;
+  --color-muted: #4b6358;
 }
 
 /* Custom Utilities for lenis smooth scroll */
@@ -24,8 +24,12 @@ html {
   scroll-behavior: smooth;
   text-size-adjust: 100%;
   -webkit-text-size-adjust: 100%;
+  overflow-x: hidden;
+  scrollbar-color: var(--color-brand) var(--color-surface-warm);
+  scrollbar-width: thin;
 }
-html.lenis, html.lenis body {
+html.lenis,
+html.lenis body {
   height: auto;
 }
 .lenis.lenis-smooth {
@@ -55,6 +59,14 @@ body {
   margin: 0;
   min-width: 320px;
   overflow-x: hidden;
+  scrollbar-color: var(--color-brand) var(--color-surface-warm);
+  scrollbar-width: thin;
+}
+
+#root {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 ::selection {
@@ -63,18 +75,20 @@ body {
 }
 
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 10px;
+  height: 10px;
 }
 ::-webkit-scrollbar-track {
-  background: transparent; 
+  background: var(--color-surface-warm);
+  border-left: 1px solid var(--color-line);
 }
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1; 
-  border-radius: 10px;
+  background: var(--color-brand);
+  border: 2px solid var(--color-surface-warm);
+  border-radius: 999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8; 
+  background: var(--color-forest);
 }
 
 /* Base Card from Reference */
@@ -107,17 +121,22 @@ aside *:focus-visible {
 }
 
 /* ─── Smooth Transitions ──────────────────────────────────────────────── */
-button, a, input, select, textarea {
-  transition-property: color, background-color, border-color, box-shadow, transform, opacity;
+button,
+a,
+input,
+select,
+textarea {
+  transition-property:
+    color, background-color, border-color, box-shadow, transform, opacity;
   transition-duration: 150ms;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* ─── Scrollbar Hide Utility ──────────────────────────────────────────── */
 .scrollbar-hide {
-  -ms-overflow-style: none;  /* IE/Edge */
-  scrollbar-width: none;     /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+  scrollbar-width: none; /* Firefox */
 }
 .scrollbar-hide::-webkit-scrollbar {
-  display: none;             /* Chrome/Safari */
+  display: none; /* Chrome/Safari */
 }
