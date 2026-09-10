@@ -300,11 +300,24 @@ export function SidebarLayout({
   roleLabel,
 }) {
   const { t } = useTranslation();
-  const defaultRoleLabel = roleLabel || t("greetingFarmer");
+  const [currentTime, setCurrentTime] = useState(() => new Date());
   const [moreOpen, setMoreOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(true);
   const primaryNavItems = navItems.slice(0, 4);
   const secondaryNavItems = navItems.slice(4);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setCurrentTime(new Date()), 60000);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  const defaultRoleLabel =
+    roleLabel ||
+    (currentTime.getHours() < 12
+      ? "Good morning"
+      : currentTime.getHours() < 17
+        ? "Good afternoon"
+        : "Good evening");
 
   function selectMobileTab(tabId) {
     onTabChange(tabId);

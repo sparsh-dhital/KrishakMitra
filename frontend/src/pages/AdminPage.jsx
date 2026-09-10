@@ -519,7 +519,12 @@ function CentresTab() {
   );
 }
 
-function TodaysBookingsTab({ bookings, onRemove, onViewDetails }) {
+function TodaysBookingsTab({
+  bookings,
+  highlightedBookingId,
+  onRemove,
+  onViewDetails,
+}) {
   const { t } = useTranslation();
   const [exportMenuOpen, setExportMenuOpen] = useState(false);
 
@@ -759,7 +764,7 @@ function TodaysBookingsTab({ bookings, onRemove, onViewDetails }) {
                   return (
                     <tr
                       key={booking.id}
-                      className="hover:bg-slate-50 transition-colors"
+                      className={`transition-colors hover:bg-slate-50 ${highlightedBookingId === booking.id ? "qr-scan-success" : ""}`}
                     >
                       <td className="p-4 pl-6 font-bold text-forest">
                         {token?.token_number || "N/A"}
@@ -1255,6 +1260,8 @@ function ProcurementJourneyTab({ bookings, onStatusChange, onViewDetails }) {
 
 function AlertsTab({ notifications, onMarkRead }) {
   const { t } = useTranslation();
+  const messageFor = (notification) =>
+    notification.message || t(notification.type, notification.data || {});
   return (
     <div className="max-w-[1000px] mx-auto space-y-6">
       <div className="flex justify-between items-center mb-6">
@@ -1275,9 +1282,11 @@ function AlertsTab({ notifications, onMarkRead }) {
               key={n.id}
               className={`p-4 border-l-4 ${n.read ? "border-slate-200 opacity-70" : "border-amber-500 shadow-md"}`}
             >
-              <p className="text-forest font-medium">{n.message}</p>
+              <p className="text-forest font-medium">{messageFor(n)}</p>
               <p className="text-xs text-muted mt-2">
-                {new Date(n.date).toLocaleString()}
+                {new Date(
+                  n.date || n.created_at || Date.now(),
+                ).toLocaleString()}
               </p>
             </Card>
           ))
@@ -1681,13 +1690,18 @@ export default function AdminPage({
   onHome,
 }) {
   const { t } = useTranslation();
+  const [currentTime, setCurrentTime] = useState(() => new Date());
   const [centre, setCentre] = useState(null);
+  useEffect(() => {
+    const timer = window.setInterval(() => setCurrentTime(new Date()), 60000);
+    return () => window.clearInterval(timer);
+  }, []);
   const [activeTab, setActiveTab] = useState(
     () => sessionStorage.getItem("krishak-mitra-admin-tab") || "dashboard",
   );
 
   const getGreeting = () => {
-    const hour = new Date().getHours();
+    const hour = currentTime.getHours();
     if (hour < 12) return "GOOD MORNING";
     if (hour < 17) return "GOOD AFTERNOON";
     return "GOOD EVENING";
@@ -1726,12 +1740,12 @@ export default function AdminPage({
       .then((data) => setCentre(data?.[0] || null))
       .finally(() => setLoading(false));
     api.getAllBookings().then(setAllBookings);
-    api.getNotifications().then(setNotifications);
+    api.getNotifications(null, "admin").then(setNotifications);
   }, [syncTick]);
 
   const handleMarkRead = async () => {
-    await api.markNotificationsRead();
-    api.getNotifications().then(setNotifications);
+    await api.markNotificationsRead(null, "admin");
+    api.getNotifications(null, "admin").then(setNotifications);
   };
 
   useEffect(() => {

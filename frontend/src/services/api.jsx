@@ -85,13 +85,21 @@ function getStoredNotifications() {
   return [];
 }
 
-function addNotification(message, type = "info", data = {}) {
+function addNotification(
+  message,
+  type = "info",
+  data = {},
+  recipientId = null,
+  audience = null,
+) {
   const notifs = getStoredNotifications();
   notifs.unshift({
     id: "n-" + Date.now(),
     message,
     type,
     data,
+    recipient_id: recipientId,
+    audience,
     read: false,
     date: new Date().toISOString(),
   });
@@ -232,10 +240,16 @@ export const api = {
       saveSlots([...allSlots, ...centreSlots]);
     }
 
-    addNotification("", "centrePublished", {
-      name: newCentre.name,
-      district: newCentre.district,
-    });
+    addNotification(
+      "",
+      "centrePublished",
+      {
+        name: newCentre.name,
+        district: newCentre.district,
+      },
+      null,
+      "admin",
+    );
     return newCentre;
   },
   updateCentre: async (id, payload) => {
@@ -274,11 +288,22 @@ export const api = {
     saveCentres(centres);
     return { success: true };
   },
-  getNotifications: async () => {
-    return getStoredNotifications();
+  getNotifications: async (recipientId = null, audience = null) => {
+    return getStoredNotifications().filter(
+      (notification) =>
+        (!notification.recipient_id && !notification.audience) ||
+        notification.recipient_id === recipientId ||
+        notification.audience === audience,
+    );
   },
-  markNotificationsRead: async () => {
-    const notifs = getStoredNotifications().map((n) => ({ ...n, read: true }));
+  markNotificationsRead: async (recipientId = null, audience = null) => {
+    const notifs = getStoredNotifications().map((notification) =>
+      (!notification.recipient_id && !notification.audience) ||
+      notification.recipient_id === recipientId ||
+      notification.audience === audience
+        ? { ...notification, read: true }
+        : notification,
+    );
     localStorage.setItem("krishak-mitra-notifications", JSON.stringify(notifs));
     return { success: true };
   },
@@ -327,7 +352,6 @@ export const api = {
       mobile_number: "+91 98765 43210",
       district: "Guntur",
       email: "ramesh.kumar@example.com",
-      kyc_status: "VERIFIED",
       land_area: "5.4 Acres",
       bank_account: "**** **** 4567",
       kyc_status: "pending",
@@ -370,6 +394,7 @@ export const api = {
     if (index >= 0) farmers[index] = updated;
     else farmers.push(updated);
     saveFarmers(farmers);
+    addNotification("", "kycSubmitted", { name: updated.name }, null, "admin");
     return updated;
   },
   reviewFarmerKyc: async (farmerId, status, note = "") => {
@@ -378,6 +403,13 @@ export const api = {
     if (index < 0) throw new Error("Farmer profile not found");
     farmers[index] = { ...farmers[index], kyc_status: status, kyc_note: note };
     saveFarmers(farmers);
+    const type =
+      status === "approved"
+        ? "kycApproved"
+        : status === "denied"
+          ? "kycDenied"
+          : "kycChangesRequested";
+    addNotification("", type, { note }, farmerId, "farmer");
     return farmers[index];
   },
   getSlots: async (centreId, date) => {
@@ -417,6 +449,22 @@ export const api = {
       ? `${slot.start_time} - ${slot.end_time}`
       : "Unknown Time";
 
+    if (slot) {
+      saveSlots(
+        slots.map((item) =>
+          item.id === payload.slot_id
+            ? {
+                ...item,
+                booked_quintals: Math.min(
+                  Number(item.capacity_quintals || 0),
+                  Number(item.booked_quintals || 0) + totalQuantity,
+                ),
+              }
+            : item,
+        ),
+      );
+    }
+
     const newBooking = {
       booking: {
         id: "b-" + Math.random().toString(36).substring(7),
@@ -440,10 +488,16 @@ export const api = {
     const bookings = getStoredBookings();
     bookings.push(newBooking);
     saveBookings(bookings);
-    addNotification("", "bookingCreated", {
-      farmer: newBooking.booking.farmer_name || "Farmer",
-      slot: slotTime,
-    });
+    addNotification(
+      "",
+      "bookingCreated",
+      {
+        farmer: newBooking.booking.farmer_name || "Farmer",
+        slot: slotTime,
+      },
+      null,
+      "admin",
+    );
     return newBooking;
   },
   getAllBookings: async () => {
@@ -494,10 +548,16 @@ export const api = {
         updated_at: new Date().toISOString(),
       };
       saveProcurement(records);
-      addNotification("", "bookingStatus", {
-        farmer: bookings[idx].booking.farmer_name || "Farmer",
-        status,
-      });
+      addNotification(
+        "",
+        "bookingStatus",
+        {
+          farmer: bookings[idx].booking.farmer_name || "Farmer",
+          status,
+        },
+        bookings[idx].booking.farmer_id,
+        "farmer",
+      );
     }
     return updatedBooking;
   },
@@ -512,9 +572,15 @@ export const api = {
       if (bank) bookings[idx].booking.farmer_bank = bank;
       updatedBooking = bookings[idx].booking;
       saveBookings(bookings);
-      addNotification("", "paymentRequested", {
-        farmer: bookings[idx].booking.farmer_name || "Farmer",
-      });
+      addNotification(
+        "",
+        "paymentRequested",
+        {
+          farmer: bookings[idx].booking.farmer_name || "Farmer",
+        },
+        null,
+        "admin",
+      );
     }
     return updatedBooking;
   },

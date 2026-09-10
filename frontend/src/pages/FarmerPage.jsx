@@ -48,7 +48,13 @@ export default function FarmerPage({
   farmerName,
 }) {
   const { t } = useTranslation();
+  const [currentTime, setCurrentTime] = useState(() => new Date());
   const syncTick = useLiveSync();
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setCurrentTime(new Date()), 60000);
+    return () => window.clearInterval(timer);
+  }, []);
   const [activeTab, setActiveTab] = useState(
     () => sessionStorage.getItem("krishak-mitra-farmer-tab") || "dashboard",
   );
@@ -110,6 +116,10 @@ export default function FarmerPage({
       bookingStatus: "bookingStatusAlert",
       paymentRequested: "paymentRequestedAlert",
       centrePublished: "centrePublishedAlert",
+      kycApproved: "kycApproved",
+      kycDenied: "kycDenied",
+      kycChangesRequested: "kycChangesRequested",
+      kycSubmitted: "kycSubmitted",
     };
     const key = messages[notification?.type];
     if (key) return t(key, data);
@@ -125,7 +135,7 @@ export default function FarmerPage({
         const [centreData, cropData, notifs] = await Promise.all([
           api.getCentres(),
           api.getCrops(),
-          api.getNotifications(),
+          api.getNotifications(farmerId, "farmer"),
         ]);
         const safeNotifications = Array.isArray(notifs) ? notifs : [];
         setCentres(centreData);
@@ -173,7 +183,7 @@ export default function FarmerPage({
     if (activeTab !== "notifications" || !farmerId) return;
     let active = true;
     Promise.all([
-      api.getNotifications(farmerId),
+      api.getNotifications(farmerId, "farmer"),
       getFarmerBidNotifications(farmerId),
     ])
       .then(([localNotifications, bidItems]) => {
@@ -217,7 +227,7 @@ export default function FarmerPage({
     return () => {
       active = false;
     };
-  }, [selectedCentre, syncTick]);
+  }, [selectedCentre, syncTick, booking?.booking?.id]);
 
   useEffect(() => {
     const bookingId = booking?.booking?.id;
@@ -250,7 +260,7 @@ export default function FarmerPage({
   useEffect(() => {
     if (!farmerId) return;
     Promise.all([
-      api.getNotifications(farmerId),
+      api.getNotifications(farmerId, "farmer"),
       getFarmerBidNotifications(farmerId),
     ])
       .then(([localNotifications, bidItems]) => {
@@ -470,20 +480,38 @@ export default function FarmerPage({
       setShowNewBookingForm(false);
     }
     if (tabId === "notifications" && notifications.some(notificationIsUnread)) {
-      await api.markNotificationsRead();
+      await api.markNotificationsRead(farmerId, "farmer");
       setNotifications(notifications.map((n) => ({ ...n, read: true })));
       setNotificationCount(0);
     }
   };
 
   const getGreeting = () => {
-    const hour = new Date().getHours();
+    const hour = currentTime.getHours();
     if (hour < 12) return "Good morning";
     if (hour < 17) return "Good afternoon";
     return "Good evening";
   };
   const greeting = getGreeting();
   const displayName = farmerName || "Ramesh Kumar";
+  const totalCentreCapacity = slots.reduce(
+    (total, slot) => total + Number(slot.capacity_quintals || 0),
+    0,
+  );
+  const bookedCentreQuantity = slots.reduce(
+    (total, slot) => total + Number(slot.booked_quintals || 0),
+    0,
+  );
+  const remainingCentreQuantity = Math.max(
+    totalCentreCapacity - bookedCentreQuantity,
+    0,
+  );
+  const capacityPercentage = totalCentreCapacity
+    ? Math.min(
+        100,
+        Math.round((bookedCentreQuantity / totalCentreCapacity) * 100),
+      )
+    : 0;
 
   return (
     <SidebarLayout
@@ -508,6 +536,27 @@ export default function FarmerPage({
               <p className="text-muted text-base mt-2">{t("journeyIntro")}</p>
             </div>
 
+            {farmerProfile && farmerProfile.kyc_status !== "approved" && (
+              <button
+                type="button"
+                onClick={() => setActiveTab("profile")}
+                className={`w-full rounded-2xl border p-4 text-left transition-colors ${farmerProfile.kyc_status === "denied" ? "border-red-200 bg-red-50 hover:border-red-300" : farmerProfile.kyc_status === "changes_requested" ? "border-amber-200 bg-amber-50 hover:border-amber-300" : "border-line bg-surface-warm hover:border-brand/40"}`}
+              >
+                <p className="text-xs font-extrabold uppercase tracking-widest text-brand">
+                  KYC verification:{" "}
+                  {(farmerProfile.kyc_status || "pending").replace("_", " ")}
+                </p>
+                <p className="mt-1 text-sm font-bold text-forest">
+                  {farmerProfile.kyc_note ||
+                    "Complete your profile to request verification."}
+                </p>
+                <p className="mt-2 text-xs font-medium text-muted">
+                  Open your profile to review details. Booking is available
+                  after approval.
+                </p>
+              </button>
+            )}
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <button
                 onClick={() => setActiveTab("bookings")}
@@ -526,7 +575,7 @@ export default function FarmerPage({
               </button>
               <button
                 onClick={() => setActiveTab("bidding")}
-                className="text-left rounded-2xl border border-brand/30 bg-green-50/70 p-4 hover:border-brand hover:shadow-sm transition-all"
+                className="attention-glow text-left rounded-2xl border border-line bg-surface p-4 hover:border-brand hover:shadow-sm transition-all"
               >
                 <p className="text-xs font-bold uppercase tracking-widest text-brand">
                   {t("privateMarket") || "Private market"}
@@ -656,7 +705,11 @@ export default function FarmerPage({
                       {liveQueueStats.estimated_wait_time} min
                     </p>
                   </div>
-                  <CircularProgress value={81} label="Capacity" />
+                  <CircularProgress
+                    value={capacityPercentage}
+                    label="Capacity"
+                    subLabel={`${remainingCentreQuantity} q remaining`}
+                  />
                 </div>
               </div>
             </div>
@@ -970,6 +1023,13 @@ export default function FarmerPage({
                               <span className="text-sm font-bold text-forest">
                                 {c.name}
                               </span>
+                              <span className="ml-auto text-xs font-bold text-brand">
+                                MSP: ₹
+                                {Number(
+                                  c.minimum_support_price || 0,
+                                ).toLocaleString("en-IN")}
+                                /q
+                              </span>
                             </label>
                           ))}
                         </div>
@@ -1005,6 +1065,13 @@ export default function FarmerPage({
                               >
                                 <span className="text-sm font-bold text-forest">
                                   {crop?.name}
+                                  <span className="block text-xs font-medium text-brand">
+                                    MSP: ₹
+                                    {Number(
+                                      crop?.minimum_support_price || 0,
+                                    ).toLocaleString("en-IN")}
+                                    /q
+                                  </span>
                                 </span>
                                 <div className="w-1/3">
                                   <Input
@@ -1137,7 +1204,19 @@ export default function FarmerPage({
                                   className="font-bold text-forest text-sm"
                                 >
                                   {crops.find((c) => c.id === cropId)?.name}:{" "}
-                                  {quantities[cropId]} q
+                                  {quantities[cropId]} q × ₹
+                                  {Number(
+                                    crops.find((c) => c.id === cropId)
+                                      ?.minimum_support_price || 0,
+                                  ).toLocaleString("en-IN")}{" "}
+                                  = ₹
+                                  {(
+                                    Number(quantities[cropId] || 0) *
+                                    Number(
+                                      crops.find((c) => c.id === cropId)
+                                        ?.minimum_support_price || 0,
+                                    )
+                                  ).toLocaleString("en-IN")}
                                 </div>
                               ))}
                               <div className="text-xs text-muted mt-1 font-bold">
@@ -1292,7 +1371,16 @@ export default function FarmerPage({
                     <div className="font-bold text-forest">
                       {booking?.booking?.crops
                         ? booking.booking.crops.map((c) => (
-                            <div key={c.crop_id}>{c.crop_name}</div>
+                            <div key={c.crop_id}>
+                              {c.crop_name}
+                              <span className="block text-xs font-medium text-brand">
+                                MSP ₹
+                                {Number(
+                                  c.minimum_support_price || 0,
+                                ).toLocaleString("en-IN")}
+                                /q
+                              </span>
+                            </div>
                           ))
                         : "Unknown"}
                     </div>
@@ -1304,7 +1392,14 @@ export default function FarmerPage({
                     <div className="font-bold text-forest">
                       {booking?.booking?.crops
                         ? booking.booking.crops.map((c) => (
-                            <div key={c.crop_id}>{c.quantity} q</div>
+                            <div key={c.crop_id}>
+                              {c.quantity} q = ₹
+                              {Number(
+                                c.total_fare ||
+                                  Number(c.quantity || 0) *
+                                    Number(c.minimum_support_price || 0),
+                              ).toLocaleString("en-IN")}
+                            </div>
                           ))
                         : "0 q"}
                     </div>
@@ -1436,6 +1531,38 @@ export default function FarmerPage({
                     {booking.booking.estimated_fare?.toLocaleString("en-IN") ||
                       0}
                   </span>
+                </div>
+                <div className="space-y-2 rounded-xl border border-line bg-surface-warm p-4">
+                  <p className="text-xs font-extrabold uppercase tracking-widest text-brand">
+                    MSP calculation
+                  </p>
+                  {(booking.booking.crops || []).map((crop) => (
+                    <div
+                      key={crop.crop_id}
+                      className="flex justify-between gap-4 text-sm"
+                    >
+                      <span className="text-muted">
+                        {crop.crop_name} · {crop.quantity} q × ₹
+                        {Number(crop.minimum_support_price || 0).toLocaleString(
+                          "en-IN",
+                        )}
+                      </span>
+                      <span className="font-bold text-forest">
+                        ₹
+                        {Number(
+                          crop.total_fare ||
+                            Number(crop.quantity || 0) *
+                              Number(crop.minimum_support_price || 0),
+                        ).toLocaleString("en-IN")}
+                      </span>
+                    </div>
+                  ))}
+                  <p className="border-t border-line pt-2 text-xs font-bold text-muted">
+                    Final estimated MSP total: ₹
+                    {Number(booking.booking.estimated_fare || 0).toLocaleString(
+                      "en-IN",
+                    )}
+                  </p>
                 </div>
                 <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <span className="text-sm font-bold text-muted">Status</span>
