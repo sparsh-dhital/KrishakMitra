@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { LayoutDashboard, Users, Activity, FileText, Bell, DatabaseZap, ShieldAlert, CheckCircle2, Clock } from "lucide-react";
 import { api, useLiveSync } from "../services/api";
 import { SidebarLayout, Card, Badge, Button, Select, Input, Eyebrow } from "../components/ui";
+import QRCode from "react-qr-code";
 import { Plus, Trash2, Edit2 } from "lucide-react";
 
 function CentresTab() {
@@ -1157,6 +1158,29 @@ export default function AdminPage({ language, onLanguageChange, onLogout, onHome
                     <Badge tone={detailModalBooking.booking.status === "PAID" ? "success" : "warning"}>{detailModalBooking.booking.status}</Badge>
                   </div>
                 </div>
+              </div>
+
+              {/* QR Gate Pass for this booking */}
+              <div className="flex flex-col items-center gap-3 p-4 bg-white rounded-xl border border-line">
+                <p className="text-xs font-bold uppercase tracking-widest text-muted">Farmer's Gate Pass QR</p>
+                <div className="p-4 bg-white rounded-xl border-2 border-brand/20 shadow-sm">
+                  <QRCode
+                    value={JSON.stringify({
+                      ticketId: detailModalBooking.booking.id,
+                      tokenNumber: detailModalBooking.token?.token_number,
+                      farmerName: detailModalBooking.booking.farmer_name,
+                      crops: (detailModalBooking.booking.crops || []).map(c => ({ name: c.crop_name, quantity: c.quantity })),
+                      totalQuantity: detailModalBooking.booking.estimated_quantity || 0,
+                      centerId: detailModalBooking.booking.centre_id,
+                      status: detailModalBooking.booking.status || "BOOKED",
+                      date: detailModalBooking.booking.date,
+                      estimatedFare: detailModalBooking.booking.estimated_fare || 0,
+                    })}
+                    size={140}
+                    level="H"
+                  />
+                </div>
+                <p className="text-xs text-muted font-medium">Scan to verify farmer entry</p>
               </div>
             </div>
 
