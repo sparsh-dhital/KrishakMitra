@@ -10,10 +10,10 @@ from app.routers.farmers import router as farmers_router
 from app.routers.queue import router as queue_router
 from app.routers.slots import router as slots_router
 from app.routers.status import router as status_router
+from app.routers.assistant import router as assistant_router
 
 
 app = FastAPI(title="Smart Mandi API")
-
 
 app.add_middleware(
     CORSMiddleware,
@@ -30,7 +30,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 app.include_router(centres_router)
 app.include_router(contact_router)
 app.include_router(crops_router)
@@ -39,6 +38,7 @@ app.include_router(slots_router)
 app.include_router(bookings_router)
 app.include_router(queue_router)
 app.include_router(status_router)
+app.include_router(assistant_router)
 
 
 @app.get("/health")

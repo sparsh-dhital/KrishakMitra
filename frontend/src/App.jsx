@@ -12,6 +12,7 @@ import BuyerPage from "./pages/BuyerPage";
 import BuyerMarketplace from "./pages/BuyerMarketplace";
 import ContactPage from "./pages/ContactPage";
 import StatusPage from "./pages/StatusPage";
+import AssistantWidget from "./components/AssistantWidget";
 
 function SmoothScroll({ children }) {
   useEffect(() => {
@@ -171,6 +172,7 @@ export default function App() {
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <AssistantWidget language={language} />
     </SmoothScroll>
   );
 }
