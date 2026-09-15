@@ -1,5 +1,6 @@
 from uuid import UUID
 
+# pyrefly: ignore [missing-import]
 from fastapi import APIRouter
 
 from app.schemas.booking import BookingCreate
